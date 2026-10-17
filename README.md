@@ -48,7 +48,7 @@ run — is part of this repo's work, and most of its early friction.
   `sky130-riscv-soc` selects, so the two repos stress the tools with the same
   design on very different PDKs.
 
-## Target specification (DRAFT — engineering to ratify, see issue #1)
+## Target specification (DRAFT — engineering to ratify, see issue #3)
 
 All frequencies are predicted by STA against ASAP7's predictive models.
 
