@@ -56,7 +56,7 @@ Library: `asap7sc7p5t_28/LIB/NLDM/`, groups AO, OA, INVBUF, SEQ, SIMPLE
 
 | Corner | Role | Files (RVT) | V | °C |
 |---|---|---|---|---|
-| **SS — slow** | setup; **the 1 GHz target is measured here** | `asap7sc7p5t_AO_RVT_SS_nldm_211120.lib`, `…OA_RVT_SS_nldm_211120.lib`, `…INVBUF_RVT_SS_nldm_220122.lib`, `…SEQ_RVT_SS_nldm_220123.lib`, `…SIMPLE_RVT_SS_nldm_211120.lib` | 0.63 | 100 |
+| **SS — slow** | setup; **the 1 GHz target is evaluated here (predicted)** | `asap7sc7p5t_AO_RVT_SS_nldm_211120.lib`, `…OA_RVT_SS_nldm_211120.lib`, `…INVBUF_RVT_SS_nldm_220122.lib`, `…SEQ_RVT_SS_nldm_220123.lib`, `…SIMPLE_RVT_SS_nldm_211120.lib` | 0.63 | 100 |
 | TT — typical | reference | same groups, `TT` | 0.7 | 25 |
 | FF — fast | hold | same groups, `FF` | 0.77 | 0 |
 
