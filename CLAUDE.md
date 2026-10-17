@@ -1,0 +1,40 @@
+# asap7-riscv-core — agent instructions
+
+Open-source canary block: place-and-route of an Ibex/CVE2-class RISC-V core
+on ASAP7, designed and verified by AI agents. **Digital.**
+
+- **ASAP7 is a predictive PDK. This block is never fabricated.** It is
+  layout, DRC and timing only. Never write anything that implies silicon, a
+  shuttle, a tape-out or a measurement — every number here is a tool result
+  against a predictive model, and is labelled "predicted" where it is a
+  timing figure.
+- **PDK**: ASAP7 (The-OpenROAD-Project/asap7), 7.5-track standard cells.
+  Digital flow: cocotb + Icarus for simulation, Yosys for synthesis,
+  OpenROAD for place-and-route and timing. Layout, DRC, and LVS through
+  klayout-tools (`klt`).
+- **Bringing the PDK up is the first job.** ASAP7 is not in the fleet's
+  `open_pdks` store. Getting `klt` to resolve it — technology and layer
+  files, the cell library, a DRC/LVS deck klt can run — is work this repo
+  owns, pinned to an upstream commit and recorded in `spec/`. Every gap in
+  that bring-up is a klayout-tools issue.
+- **FinFET rules are the point, and the risk.** Fin-grid and gate-pitch
+  quantization and tight metal rules are what no planar fleet PDK has
+  exercised. Expect the deck and the checker to be weakest here. A DRC
+  "clean" means clean against a named, pinned deck; a waiver is recorded with
+  its reason, never silent.
+- **Scope discipline.** The core comes unmodified from a pinned upstream
+  commit, the same one `sky130-riscv-soc` selects; do not fork it or tune its
+  RTL for this PDK. No SRAM, caches or SoC around it.
+- **Friction protocol (the canary's job)**: every time klayout-tools is
+  awkward, missing a capability, or wrong for what you need, file an issue at
+  `2AMLogic/klayout-tools` describing the tool gap generically — that tracker
+  is scoped to the tool, so keep design-specific detail out of it and describe
+  the gap, not the design.
+- **Verification is the product**: no claim without a testbench. Functional
+  claims come from the architectural tests on the simulated netlist; layout
+  claims from DRC/LVS reports against the pinned deck; timing claims from STA
+  at stated corners. Recorded results are append-only evidence.
+- Spec changes go through `spec/` with a decision record; agents do not relax
+  the ratified spec to make results pass.
+- **1 GHz predicted post-route at the slow corner is the target.** 500 MHz is
+  the fallback and 1.5 GHz is a stretch.
