@@ -12,7 +12,7 @@ FinFET node for research and teaching; no fab manufactures it. This block is
 this repo is a tool result against a predictive model — there is no silicon,
 no shuttle and no measurement at the end of the ladder.
 
-**Status: just opened, specification phase.** Nothing is designed yet.
+**Status: specification ratified** (see [`spec/core.md`](spec/core.md); the core pin is deferred to `sky130-riscv-soc#2`). Nothing is designed yet.
 
 **Built agent-native.** Every specification, decision record, testbench, and
 line of documentation here is produced by AI agents working from a ratified
@@ -48,7 +48,7 @@ run — is part of this repo's work, and most of its early friction.
   `sky130-riscv-soc` selects, so the two repos stress the tools with the same
   design on very different PDKs.
 
-## Target specification (DRAFT — engineering to ratify, see issue #3)
+## Target specification (ratified in [`spec/core.md`](spec/core.md); summary below)
 
 All frequencies are predicted by STA against ASAP7's predictive models.
 
@@ -64,7 +64,7 @@ Maturity ladder: ASAP7 brought up under `klt` → spec ratified → core RTL
 passing the architectural tests in simulation → synthesized → placed and
 routed → DRC/LVS-clean → post-route multi-corner STA closed at the target.
 **That is the end of the ladder; there is no fabrication step.** **Current
-position: pre-spec.**
+position: spec ratified; PDK brought up under `klt` (see `spec/pdk-bringup.md`).**
 
 ## Repo layout
 

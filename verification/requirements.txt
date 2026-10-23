@@ -1,0 +1,2 @@
+# Pinned simulation-harness Python dependencies (exact == pins only).
+cocotb==2.0.1

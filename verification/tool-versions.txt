@@ -1,0 +1,7 @@
+# Host tool versions the harness requires. run.sh compares each installed
+# tool against these and refuses to run on a mismatch. Format: name=version
+# (the leading version number run.sh extracts from `<tool> --version`).
+# The cocotb pin lives in requirements.txt.
+iverilog=13.0
+verilator=5.050
+python=3.12
