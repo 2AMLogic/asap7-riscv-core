@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "imports": [
+    {
+      "from": "openhwgroup/cve2",
+      "commit": "d7f21568028a1114be663599bd42145dccf28928",
+      "mode": "fetched",
+      "files": [
+        { "upstream": "rtl/cve2_top.sv", "sha256": "d7bdb559738c0ccbe8f92ee3f194e92d7f9223f1066ed63f3a2bb1850e240b82" },
+        { "upstream": "rtl/cve2_pkg.sv", "sha256": "b656d1bae7dd486e7a4a87eb67f9d99a473988212d988f19ce2753c83645c038" },
+        { "upstream": "syn/README.md", "sha256": "f109a143f2cdd4d9de5fdedf4bb111c3f7a38609f653c02a1b97ffd31381d4bd" },
+        { "upstream": "LICENSE", "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30" }
+      ]
+    }
+  ]
+}

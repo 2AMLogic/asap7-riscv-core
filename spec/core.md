@@ -17,25 +17,28 @@ record; results are never relaxed to pass.
 
 | Parameter | Target | Fallback | Stretch | State |
 |---|---|---|---|---|
-| Core | RV32IMC, Ibex/CVE2-class, unmodified | RV32EC | — | **deferred** (decision 0006) |
+| Core | RV32IMC, Ibex/CVE2-class, unmodified | RV32EC | — | ratified (0007) |
 | Standard cells | ASAP7 7.5-track, `asap7sc7p5t_28` @ `f970bd3c`, RVT | — | — | ratified (0001) |
 | Predicted clock, post-route STA, slow corner | 1 GHz (1.000 ns) | 500 MHz | 1.5 GHz | ratified (0003) |
 | DRC | clean against the pinned deck (below) | clean with every waiver recorded | — | ratified (0005) |
 | LVS | clean against the pinned cell CDL, with the recorded bulk policy | — | — | ratified (0005) |
 
-### Core (deferred)
+### Core (adopted, decision 0007)
 
 The core, its configuration and the upstream commit are the ones
-`sky130-riscv-soc` selects. That repo's spec issue
-(`2AMLogic/sky130-riscv-soc#2`) is still open on 2026-10-17, so no pin exists
-to share. **Owner:** this repo's spec author. **Trigger:** `sky130-riscv-soc#2`
-closes with a pinned commit and configuration; then a decision record adopts
-that pin verbatim. The RV32IMC target / RV32EC fallback stands in the meantime.
+`sky130-riscv-soc` ratified: CVE2 (`cve2_top`), RV32IMC (`RV32E=0`,
+`RV32M=RV32MFast`), no debug module, at
+`openhwgroup/cve2@d7f21568028a1114be663599bd42145dccf28928`. The pin and file
+hashes are in [`../reuse.lock.json`](../reuse.lock.json). The origin decision
+record is `spec/decision-records/0001-core-choice.md` at `sky130-riscv-soc`
+commit `1e6c447d571e95f2aa4f8e29ae1ef30ab03bdaa8`. The RV32EC fallback stands.
 No RTL is selected, forked or modified by this spec.
 
 **sv2v:** if the pinned core is SystemVerilog needing conversion for Icarus
 and Yosys, this repo uses the same pinned conversion as `sky130-riscv-soc`
-rather than a second one. Deferred on the same trigger and owner as the core.
+rather than a second one. This part stays deferred: the origin has not pinned
+sv2v yet. **Owner:** this repo's spec author. **Trigger:** `sky130-riscv-soc`
+pins sv2v (decision 0007).
 
 ## PDK and tools (pinned)
 
