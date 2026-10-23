@@ -181,3 +181,68 @@ uvx --from klayout-tools==0.7.0 klt extract --deck asap7 <INVx1.gds> --top INVx1
 The one-cell-per-file GDS split used a 10-line script with the `klayout` PyPI
 package (`copy_tree` of each cell into a fresh layout). It is not committed:
 it is a workaround for #3788 and should disappear when that closes.
+
+## 7. Smoke re-run, 2026-10-23
+
+Appended; sections 1-6 above are unchanged. `flow/smoke/run.sh` runs the
+placeholder `counter` DUT through the ASAP7 flow; records are in
+`flow/smoke/records/2026-10-23/` (tool and input versions in
+`tool-versions.txt`). Every figure is a tool result against a predictive model
+and **not a design claim**: the counter is not the core.
+
+Builds compared: the pin from `spec/core.md`, `0.7.1.dev1743+g7ee09483b748`,
+and the current dev build `0.7.1.dev2517+g6bb7cf233677`, which is **not the
+pin** (`uvx --from git+https://github.com/2AMLogic/klayout-tools@6bb7cf233677 klt`).
+Differences are evidence for a later pin-bump decision record; the pin and the
+ratified hash are unchanged here.
+
+### 7.1 The section 2 table, re-run
+
+| Item | Pinned build | Current dev build |
+|---|---|---|
+| `klt pdk find --pdk asap7` on a plain upstream checkout | No (same error as section 2) | No: needs a `klt-pdk.json` descriptor, which the run script writes in a scratch overlay (the checkout is not modified) |
+| Same, with the descriptor | No: descriptor not read | Yes (Liberty only; see 7.3) |
+| `klt deck info --deck asap7` (extraction deck) | `sha256:30a8d86c…` released 0.7.0 | same hash; also reports the DRC deck `sha256:827ad7eb…`, **not the pinned** `08dba3ee…` |
+| `klt deck rules --deck asap7` / `klt drc --deck asap7` | "unknown deck 'asap7'" | refused with "no curated DRC rule table ... use `--engine klayout --deck-file`" |
+| Multi-top-cell cell GDS | `--top` unsupported with `--engine klayout`; `klt clip --cell` makes a one-cell stream instead | `--top` works |
+| Liberty | `.7z` only; extracted with a throwaway `py7zr` env | same; five group files per corner, merged in scratch |
+
+### 7.2 Step results
+
+| Step | Result | Build | Record |
+|---|---|---|---|
+| synth | `ok`: 31 instances, 4.87 um2 against the merged RVT SS Liberty | current (the pin cannot resolve the PDK) | `synth.json` |
+| par | **`not_run`**. Pinned: PDK does not resolve. Current: `no clock-tree buffer cell known for standard-cell library`, `no power pin-pattern table known`, `[ERROR RSZ-0089] Could not find a resistance value` without `request.power`. With `power` removed and `target_stage: floorplan` it reaches floorplan only, after a scratch tech-LEF edit (M2 `OFFSET -0.27` to `0.0`). No DEF or GDS exists. | none | `par.json`; klayout-tools #4086, #4087, #4088 |
+| drc | `clean`, 0 violations, `--expect-rule-categories 263` satisfied, `provenance.deck.content_hash` = `sha256:08dba3ee…aa6a`, equal to the pin in `spec/core.md` | pinned | `drc.json` |
+| lvs | `match` with `options.finfet_bulk = {"nmos":"VSS","pmos":"VDD"}`; three warnings (2x `device.finfet_bulk_tied`, `net.supply_fragmented`); layout, reference and deck hashes recorded | pinned | `lvs.json` |
+| erc | `not_checked`: the spec-file connectivity checks pass (0 findings) but there is no ASAP7 antenna table, so every antenna level is skipped | pinned | `erc.json`; klayout-tools #4090 |
+| sta | `ok` at SS (0.63 V / 100 C) and TT (0.7 V / 25 C), RVT, **predicted**, 1.000 ns clock, ideal clock, **netlist estimate, not post-route**: worst setup path slack -0.211 ns (SS) and -0.143 ns (TT) | current | `sta.json`; klayout-tools #4089 |
+
+Limits stated, not hidden:
+
+- **drc, lvs and erc ran on a stand-in**, library cell `INVx1_ASAP7_75t_R`
+  clipped from the pinned cell GDS, because place-and-route produced no
+  layout. They show that the pinned deck and the pinned LVS/ERC path run; they
+  say nothing about the counter. The rules listed unchecked in section 3 and in
+  `spec/core.md` remain unchecked.
+- **STA numbers are not the 1 GHz target result.** The target is predicted
+  post-route at the slow corner; this is a pre-placement netlist estimate. The
+  aggregate `worst_slack_ns`, `worst_hold_slack_ns` and `fmax_mhz` fields in
+  `sta.json` are 1000x off because the Liberty `time_unit` is 1 ps (#4089); the
+  worst-path slack is the figure above. FF is not run (decision 0002).
+- The tech-LEF edit and the Liberty merge are scratch-only workarounds,
+  recorded by hash in `tool-versions.txt`; neither is committed.
+
+### 7.3 Gaps filed in klayout-tools
+
+| Issue | Gap |
+|---|---|
+| #4086 | place-and-route: no CTS buffer, power pin-pattern or wire-RC table for a library outside the built-in set, and no request override |
+| #4087 | `klt-pdk.json` maps Liberty only (one file per corner); LEF and tech LEF still need open_pdks naming |
+| #4088 | bare `make_tracks` aborts (IFP-0039) on a tech-LEF layer with a negative `OFFSET` |
+| #4089 | `klt sta`: a Liberty with `time_unit` 1 ps scales the aggregate slack fields and `fmax_mhz` 1000x |
+| #4090 | `klt erc`: no ASAP7 antenna-ratio table |
+
+Not re-filed: the pinned build's failures that the current build fixes
+(descriptor resolution, `--top` with `--engine klayout`) are recorded in 7.1 as
+pin-versus-current differences, per the pin-bump route above.

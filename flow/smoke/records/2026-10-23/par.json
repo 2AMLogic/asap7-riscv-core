@@ -1,0 +1,31 @@
+{
+  "smoke": {
+    "failed_attempts": [
+      {
+        "build": "pinned",
+        "error": "{\n  \"schema_version\": 1,\n  \"error\": {\n    \"command\": \"place-and-route\",\n    \"message\": \"no supported-layout PDK install providing variant 'asap7' was found. Searched, in order: --pdk-root flag (<scratch>/pdk). Point $PDK_ROOT (or --pdk-root) at an install, or install one, e.g. `ciel enable --pdk-family sky130 <version>` (or build open_pdks with `make install`).\"\n  }\n}",
+        "version": "klt 0.7.1.dev1743+g7ee09483b748"
+      },
+      {
+        "build": "current",
+        "error": "{\n  \"schema_version\": 1,\n  \"error\": {\n    \"command\": \"place-and-route\",\n    \"message\": \"no clock-tree buffer cell known for standard-cell library 'asap7sc7p5t_28_RVT' (supported: gf180mcu_fd_sc_mcu7t5v0, gf180mcu_fd_sc_mcu9t5v0, sg13g2_stdcell, sky130_fd_sc_hd) -- cannot reach target_stage 'route'\"\n  }\n}",
+        "version": "klt 0.7.1.dev2517+g6bb7cf233677"
+      }
+    ],
+    "input": "counter synthesized netlist; target_stage route with a power grid",
+    "klayout_tools_issues": [
+      "4086",
+      "4087",
+      "4088"
+    ],
+    "klt_build": {
+      "ref": "",
+      "role": "none",
+      "version": ""
+    },
+    "note": "Step failed on every build tried. With request.power removed and target_stage floorplan, the current dev build reaches stage floorplan (using the scratch tech-LEF OFFSET workaround, klayout-tools #4088). Placement, CTS and routing were not reached; no DEF or GDS was produced.",
+    "run_state": "not_run",
+    "step": "par"
+  },
+  "status": "not_run"
+}

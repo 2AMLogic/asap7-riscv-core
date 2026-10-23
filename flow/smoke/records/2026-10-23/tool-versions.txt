@@ -1,0 +1,18 @@
+# Tool and input versions for flow/smoke/run.sh (predictive PDK; nothing here is fabricated)
+klt_pinned:   klt 0.7.1.dev1743+g7ee09483b748  (git+https://github.com/2AMLogic/klayout-tools@7ee09483b748)
+klt_current:  klt 0.7.1.dev2517+g6bb7cf233677  (git+https://github.com/2AMLogic/klayout-tools@6bb7cf233677)  [comparison build, not the pin]
+yosys:        Yosys 0.67+post (git sha1 b8e7da6f40ae8f552c116bf6c359b07c6533e159, Release, GNU /usr/bin/c++ 13.3.0)
+openroad:     26Q3-1510-g6cb3f2b704 
+python:       Python 3.12.3
+uv:           uvx 0.13.5 (x86_64-unknown-linux-gnu)
+py7zr:        1.1.4
+asap7:        d24f8b857ff74cf5b21ab18a7e1b11a3954c449b
+asap7sc7p5t_28: f970bd3c3292b79ae4d022a3ec80533534614066
+asap7_pdk_r1p7: 58d72c9d291e186a77468586ab0c43d8a21eda6a
+pinned_drc_deck: sha256:08dba3ee047a3ec68b3cd761f982809c62a0d128b8d34ef4e76a28f61221aa6a
+tech_lef_source:  sha256:830a032810b054d0dc24601c3f57c86073469e6c9cfb0314b2c82eb335b021d2
+tech_lef_patched: sha256:f9c74c76c1595d8f7a18f2749f8aa35cfef18f25ca11603b3e1e0dd83eade744  (OFFSET -0.27 -> 0.0 on M2; klayout-tools #4088)
+cell_lef:     sha256:43b68456f51949b5aeb7295b7ab8444e8c36d25c600e9bc6c3ee9d9aeb13ca0b
+cell_gds:     sha256:f43d5b33df635cf9e66cbca66b6bdd05364f824d8040cd21528b9e12808b9263
+cell_cdl:     sha256:444a08c16f5a44b4ec6f64e5ad4112d0dd8ca5a3fe5da7a7644e63f538bf681e
+counter.sv:   sha256:9a6d5c2255afe38be413a833c4f6582656b77de68304edfbd97858dba6a87210

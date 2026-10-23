@@ -1,0 +1,153 @@
+{
+  "area_um2": 4.86972,
+  "arithmetic": null,
+  "baseline": null,
+  "blackbox_modules": [],
+  "cell_exclusions": {
+    "effective": [],
+    "engine_supports_dont_use": null,
+    "library_defaults": [],
+    "mode": "additive",
+    "requested": [],
+    "validated": null
+  },
+  "clock_targets": {
+    "clocks": [],
+    "delay_target_basis": "clock_period_ns",
+    "delay_target_ps": 1000,
+    "per_clock_enforced": false
+  },
+  "engine": "yosys",
+  "engine_version": "0.67+post",
+  "equivalence": null,
+  "hdl_toplevel": "counter",
+  "instance_count": 31,
+  "instance_counts_by_type": {
+    "AOI31xp33_ASAP7_75t_R": 1,
+    "DFFASRHQNx1_ASAP7_75t_R": 8,
+    "INVx1_ASAP7_75t_R": 8,
+    "NAND2xp33_ASAP7_75t_R": 1,
+    "NAND5xp2_ASAP7_75t_R": 1,
+    "NOR2xp33_ASAP7_75t_R": 2,
+    "NOR3xp33_ASAP7_75t_R": 2,
+    "NOR4xp25_ASAP7_75t_R": 1,
+    "OA21x2_ASAP7_75t_R": 1,
+    "XNOR2xp5_ASAP7_75t_R": 6
+  },
+  "leakage_by_type_nw": null,
+  "leakage_power_nw": null,
+  "memory_mapping": {
+    "modules": [],
+    "reason": null,
+    "script_path": {
+      "path": null,
+      "scope": "external"
+    },
+    "status": "none_detected"
+  },
+  "netlist_path": {
+    "path": null,
+    "scope": "external"
+  },
+  "netlist_sha256": "ad1c51cab2f434b2b095f638b57061691fa628415555fa0d516788a22c39ecfc",
+  "parameters": {},
+  "provenance": {
+    "deck": {
+      "content_hash": "sha256:363b4c861cfea690e3fb25ef92823881ffca51d60739ffccbaa74ac22ab7925e",
+      "name": "asap7sc7p5t_28_RVT__SS",
+      "released": false
+    },
+    "input": {
+      "content_hash": "sha256:9a6d5c2255afe38be413a833c4f6582656b77de68304edfbd97858dba6a87210",
+      "role": "source"
+    },
+    "klayout_version": "0.30.12",
+    "klt_version": "0.7.1.dev2517+g6bb7cf233677",
+    "parameters": {},
+    "pdk": {
+      "name": "asap7",
+      "source": "--pdk-root flag",
+      "version": null
+    }
+  },
+  "restructuring": null,
+  "run_id": "run-536dc136b8f449c388a62a80bef04047",
+  "run_script_path": {
+    "path": null,
+    "scope": "external"
+  },
+  "schema_version": 2,
+  "script_path": {
+    "path": null,
+    "scope": "external"
+  },
+  "sequential_area_um2": 3.03264,
+  "smoke": {
+    "exit_code": 0,
+    "failed_attempts": [
+      {
+        "build": "pinned",
+        "error": "{\n  \"schema_version\": 1,\n  \"error\": {\n    \"command\": \"synthesize\",\n    \"message\": \"no supported-layout PDK install providing variant 'asap7' was found. Searched, in order: --pdk-root flag (<scratch>/pdk). Point $PDK_ROOT (or --pdk-root) at an install, or install one, e.g. `ciel enable --pdk-family sky130 <version>` (or build open_pdks with `make install`).\"\n  }\n}",
+        "version": "klt 0.7.1.dev1743+g7ee09483b748"
+      }
+    ],
+    "input": "counter.sv (placeholder DUT), RVT, SS Liberty; not a design claim",
+    "klayout_tools_issues": [],
+    "klt_build": {
+      "ref": "git+https://github.com/2AMLogic/klayout-tools@6bb7cf233677",
+      "role": "current",
+      "version": "klt 0.7.1.dev2517+g6bb7cf233677"
+    },
+    "liberty": {
+      "SS": {
+        "merged_sha256": "sha256:363b4c861cfea690e3fb25ef92823881ffca51d60739ffccbaa74ac22ab7925e",
+        "source_files": [
+          "asap7sc7p5t_AO_RVT_SS_nldm_211120.lib",
+          "asap7sc7p5t_INVBUF_RVT_SS_nldm_220122.lib",
+          "asap7sc7p5t_OA_RVT_SS_nldm_211120.lib",
+          "asap7sc7p5t_SEQ_RVT_SS_nldm_220123.lib",
+          "asap7sc7p5t_SIMPLE_RVT_SS_nldm_211120.lib"
+        ]
+      },
+      "TT": {
+        "merged_sha256": "sha256:e77c418fd687bc0bb880be2dc63a978ce12b588fb07f0a34eea7656bd9455668",
+        "source_files": [
+          "asap7sc7p5t_AO_RVT_TT_nldm_211120.lib",
+          "asap7sc7p5t_INVBUF_RVT_TT_nldm_220122.lib",
+          "asap7sc7p5t_OA_RVT_TT_nldm_211120.lib",
+          "asap7sc7p5t_SEQ_RVT_TT_nldm_220123.lib",
+          "asap7sc7p5t_SIMPLE_RVT_TT_nldm_211120.lib"
+        ]
+      }
+    },
+    "note": "Not performed by the pinned build (see failed_attempts); performed by the current dev build, which is not the pin. Synthesized against the merged RVT SS Liberty.",
+    "predicted": true,
+    "run_state": "ran",
+    "step": "synth"
+  },
+  "sta": null,
+  "sta_unavailable_reason": "the optional klt_statime_native extension is not installed (it is not shipped with the published klayout-tools package), so no gate-level static timing analysis was attempted -- from a repo checkout, run `uv sync --group statime` (or `maturin develop --release` inside native/statime/) and re-run to populate `sta`; from an installed package, `klt sta` with a `verilog` request gives a netlist-level timing estimate (needs OpenSTA)",
+  "status": "ok",
+  "structural": {
+    "comb_loops": 0,
+    "expected_latches": 0,
+    "has_critical": false,
+    "latches": 0,
+    "multi_driven": 0,
+    "unexpected_latches": 0
+  },
+  "timing": null,
+  "warnings": {
+    "by_category": {
+      "unsupported_cell_library": 1
+    },
+    "representatives": [
+      {
+        "category": "unsupported_cell_library",
+        "count": 1,
+        "text": "cell_library 'asap7sc7p5t_28_RVT' has no verified mapping for: ABC -constr (driving cell/output load), load-driven sizing/buffering and ABC timing (timing is null); setundef -zero/hilomap (bare 0/1/x constants may remain unroutable in place-and-route). These capabilities were skipped."
+      }
+    ],
+    "total": 1
+  }
+}

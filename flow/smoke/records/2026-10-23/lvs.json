@@ -1,0 +1,213 @@
+{
+  "body_verification": {
+    "device_classes": [],
+    "device_count": 0,
+    "finding_count": 0,
+    "findings": [],
+    "reason": null,
+    "status": "verified"
+  },
+  "category_counts": {
+    "device.finfet_bulk_tied": 2,
+    "net.supply_fragmented": 1
+  },
+  "category_error_counts": {},
+  "constant_nets_applied": null,
+  "counts": {
+    "devices": {
+      "layout": 2,
+      "matched": 2,
+      "reference": 2
+    },
+    "nets": {
+      "layout": 4,
+      "matched": 4,
+      "reference": 4
+    },
+    "pins": {
+      "layout": 4,
+      "matched": 4,
+      "reference": 4
+    }
+  },
+  "device_classes": [
+    "nfet",
+    "pfet"
+  ],
+  "device_parameter_coverage": [],
+  "engine": "klayout",
+  "environment": {
+    "engine": "klayout",
+    "engine_version": "0.30.12",
+    "extracted_netlist": null,
+    "layout_sha256": "f607970c1dd215c21fa4d6901434cd65367cc5b1e4bcbc7cf3bd1338b1eeefe1",
+    "netgen_binary": null,
+    "reference_sha256": "444a08c16f5a44b4ec6f64e5ad4112d0dd8ca5a3fe5da7a7644e63f538bf681e"
+  },
+  "error_count": 0,
+  "hints_applied": null,
+  "layout": "<scratch>/work/standin.gds",
+  "mismatch_count": 3,
+  "mismatches": [
+    {
+      "category": "device.finfet_bulk_tied",
+      "circuit": null,
+      "description": "options.finfet_bulk joined the nmos bulk net 'vsubs' onto layout net 'VSS' on 1 device(s) before comparing -- the bulk connectivity is a caller assertion, not geometry read from the layout",
+      "details": {
+        "bulk_net": "vsubs",
+        "device_classes": [
+          "nmos_rvt"
+        ],
+        "device_count": 1,
+        "net": "VSS",
+        "polarity": "nmos",
+        "status": "joined"
+      },
+      "device": null,
+      "instance": null,
+      "net": null,
+      "property": null,
+      "severity": "warning",
+      "side": "layout",
+      "subcircuit": null
+    },
+    {
+      "category": "device.finfet_bulk_tied",
+      "circuit": null,
+      "description": "options.finfet_bulk joined the pmos bulk net 'VDD' onto layout net 'VDD' on 1 device(s) before comparing -- the bulk connectivity is a caller assertion, not geometry read from the layout",
+      "details": {
+        "bulk_net": "VDD",
+        "device_classes": [
+          "pmos_rvt"
+        ],
+        "device_count": 1,
+        "net": "VDD",
+        "polarity": "pmos",
+        "status": "joined"
+      },
+      "device": null,
+      "instance": null,
+      "net": null,
+      "property": null,
+      "severity": "warning",
+      "side": "layout",
+      "subcircuit": null
+    },
+    {
+      "category": "net.supply_fragmented",
+      "circuit": {
+        "layout": "INVx1_ASAP7_75t_R",
+        "reference": null
+      },
+      "description": "supply 'VDD' spans 2 disconnected layout nets in circuit 'INVx1_ASAP7_75t_R'; connect the supply grid or configure options.supply_nets for this design's domains. A signal-topology match does not verify power delivery.",
+      "details": {
+        "fragment_count": 2,
+        "supply": "VDD"
+      },
+      "device": null,
+      "instance": null,
+      "net": {
+        "layout": "VDD",
+        "reference": null
+      },
+      "property": null,
+      "severity": "warning",
+      "side": "layout",
+      "subcircuit": null
+    }
+  ],
+  "net_correspondence": [
+    {
+      "layout": "A",
+      "pin": true,
+      "reference": "A"
+    },
+    {
+      "layout": "VDD",
+      "pin": true,
+      "reference": "VDD"
+    },
+    {
+      "layout": "VSS|vsubs",
+      "pin": true,
+      "reference": "VSS"
+    },
+    {
+      "layout": "Y",
+      "pin": true,
+      "reference": "Y"
+    }
+  ],
+  "options": {
+    "anchor_top_level_pins": null,
+    "combine_devices": false,
+    "combine_devices_max_attempts": 5,
+    "combine_devices_per_circuit": null,
+    "compare_mos_flavour": false,
+    "compare_parameters": null,
+    "finfet_bulk": {
+      "nmos": "VSS",
+      "pmos": "VDD"
+    },
+    "flatten_layout": false,
+    "flatten_reference": false,
+    "netgen_setup": null,
+    "parameter_tolerance": null,
+    "power_connectivity": null,
+    "strict_top_level_pin_count": false,
+    "supply_nets": [
+      "GND",
+      "VCC",
+      "VDD",
+      "VGND",
+      "VPWR",
+      "VSS"
+    ]
+  },
+  "parameter_tolerance": null,
+  "power_connectivity": {
+    "expected_nets": null,
+    "finding_count": 0,
+    "findings": [],
+    "instance_count": 0,
+    "power_pins": [],
+    "power_pins_derivation": null,
+    "reason": "reference.form is 'plain-element', whose reference netlist carries its own power/ground pins and nets -- they take part in the ordinary compare, so this check (which exists to cover the signal-only 'gate-level-verilog' form) does not apply",
+    "status": "unchecked",
+    "unchecked_expected_pins": []
+  },
+  "provenance": {
+    "deck": {
+      "content_hash": "sha256:30a8d86cc36f99ffc54b0c86ab69a737acd91ba0fd21f6de3c842f9fba9d2aaf",
+      "name": "asap7",
+      "released": true
+    },
+    "input": {
+      "content_hash": "sha256:f607970c1dd215c21fa4d6901434cd65367cc5b1e4bcbc7cf3bd1338b1eeefe1",
+      "role": "layout"
+    },
+    "klayout_version": "0.30.12",
+    "klayout_version_mismatch": false,
+    "klt_version": "0.7.1.dev1743+g7ee09483b748",
+    "pdk": null
+  },
+  "reference": "<asap7-checkout>/asap7sc7p5t_28/CDL/LVS/asap7sc7p5t_28_R.cdl",
+  "reference_top": "INVX1_ASAP7_75T_R",
+  "schema_version": 1,
+  "smoke": {
+    "bulk_policy": "options.finfet_bulk nmos=VSS pmos=VDD (decision 0005); disclosed by the tool as device.finfet_bulk_tied",
+    "exit_code": 0,
+    "input": "library cell INVx1_ASAP7_75t_R clipped from the pinned cell GDS (stand-in: the counter has no layout because place-and-route is not_run), against its subckt in the pinned cell CDL",
+    "klayout_tools_issues": [],
+    "klt_build": {
+      "ref": "git+https://github.com/2AMLogic/klayout-tools@7ee09483b748",
+      "role": "pinned",
+      "version": "klt 0.7.1.dev1743+g7ee09483b748"
+    },
+    "note": "Pinned klt; layout, reference and deck hashes are in environment and provenance.",
+    "run_state": "ran",
+    "step": "lvs"
+  },
+  "status": "match",
+  "top": "INVx1_ASAP7_75t_R"
+}
