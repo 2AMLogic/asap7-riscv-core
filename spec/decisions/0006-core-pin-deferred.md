@@ -1,6 +1,6 @@
 # 0006 — Core pin deferred to sky130-riscv-soc
 
-**Status:** deferred 2026-10-17.
+**Status:** deferred 2026-10-17; resolved 2026-10-23 by [0007](0007-adopt-core-pin.md).
 
 **Decision.** This repo adopts the core, configuration, upstream commit and sv2v conversion that
 `sky130-riscv-soc` ratifies. As of 2026-10-17, `2AMLogic/sky130-riscv-soc#2` is open and that repo's
