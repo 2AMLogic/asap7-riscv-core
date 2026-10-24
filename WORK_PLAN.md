@@ -31,7 +31,7 @@ _None._
 
 Issues currently being built (`loom:building`).
 
-- **#5**: Commit a T1 block manifest and a klt signoff CI job (T1 item 10)
+_None._
 
 ## PRs Awaiting Review
 
@@ -43,13 +43,12 @@ _None._
 
 PRs that passed review and are queued for Champion auto-merge (`loom:pr`).
 
-- **#7**: ci: add klt signoff block manifest and verdict-record freshness check
+_None._
 
 ## Proposed
 
 Issues carrying `loom:curated`.
 
-- **#5**: Commit a T1 block manifest and a klt signoff CI job (T1 item 10) *(curated)*
 - **#17**: Follow-on from PR #16: place-and-route on the counter smoke DUT (par.json is not_run) *(curated)*
 
 ## Proposed (Architect / Hermit)
@@ -68,10 +67,10 @@ _None._
 | Very important | 0 |
 | Important | 0 |
 | Ready (`loom:issue`) | 0 |
-| In Progress (`loom:building`) | 1 |
+| In Progress (`loom:building`) | 0 |
 | PRs awaiting review | 0 |
-| Approved PRs awaiting merge | 1 |
-| Curated | 2 |
+| Approved PRs awaiting merge | 0 |
+| Curated | 1 |
 | Architect / Hermit proposals | 0 |
 | Active epics | 0 |
 <!-- guide:plan-body:end -->
