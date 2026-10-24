@@ -3,6 +3,11 @@
 Chronological record of merged PRs and closed issues, maintained by the Guide
 triage role. Newest first.
 
+### 2026-10-24
+
+- **PR #7**: ci: add klt signoff block manifest and verdict-record freshness check
+- **Issue #5** (closed): Commit a T1 block manifest and a klt signoff CI job (T1 item 10)
+
 ### 2026-10-23
 
 - **PR #19**: fix: wire package.json check/test/lint scripts to verification/run.sh
