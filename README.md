@@ -12,7 +12,7 @@ FinFET node for research and teaching; no fab manufactures it. This block is
 this repo is a tool result against a predictive model — there is no silicon,
 no shuttle and no measurement at the end of the ladder.
 
-**Status: specification ratified** (see [`spec/core.md`](spec/core.md); the core pin is deferred to `sky130-riscv-soc#2`). Nothing is designed yet.
+**Status: specification ratified, core pin adopted** (see [`spec/core.md`](spec/core.md) and [decision 0007](spec/decisions/0007-adopt-core-pin.md)). An ASAP7 smoke flow exists, but place-and-route has not yet run end to end (`par.json` is `not_run`; tracked in #17). The core itself is not yet synthesized or placed.
 
 **Built agent-native.** Every specification, decision record, testbench, and
 line of documentation here is produced by AI agents working from a ratified
