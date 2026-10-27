@@ -88,8 +88,9 @@ Pins these rely on: host simulators and Python in
 13.0, Verilator 5.050, Python 3.12) and cocotb in
 [`verification/requirements.txt`](verification/requirements.txt); the ASAP7
 commits in [`spec/pdk-bringup.md`](spec/pdk-bringup.md) section 1; and
-`klayout-tools==0.8.0` for the signoff steps (decision
-[0008](spec/decisions/0008-klt-0-8-0-release-pin.md)).
+`klayout-tools==0.8.0` for the signoff steps (decisions
+[0008](spec/decisions/0008-item-6-not-applicable-and-signoff-pin.md) and
+[0009](spec/decisions/0009-item-10-repo-hygiene-attestation.md)).
 
 | Result | Command | Needs |
 |---|---|---|

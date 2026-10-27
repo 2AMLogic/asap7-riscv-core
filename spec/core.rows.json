@@ -1,0 +1,13 @@
+{
+  "status": "ratified",
+  "source": "spec/core.md",
+  "source_content_hash": "sha256:c070a2993904ea475a11ed47ee14d10e12cb91372f7e9f007a0a332863d4c81d",
+  "note": "Machine-readable listing of the ratified target table in spec/core.md, one row per table row, in table order. spec/core.md is authoritative; this file adds no row and relaxes none. Predictive PDK, layout/DRC/timing only, never fabricated.",
+  "rows": [
+    {"id": "core", "target": "RV32IMC, Ibex/CVE2-class, unmodified", "decision": "0007"},
+    {"id": "standard-cells", "target": "ASAP7 7.5-track, asap7sc7p5t_28 @ f970bd3c, RVT", "decision": "0001"},
+    {"id": "predicted-clock", "target": "1 GHz (1.000 ns) predicted, post-route STA, SS corner", "decision": "0003"},
+    {"id": "drc", "target": "clean against the pinned deck", "decision": "0005"},
+    {"id": "lvs", "target": "clean against the pinned cell CDL, with the recorded bulk policy", "decision": "0005"}
+  ]
+}

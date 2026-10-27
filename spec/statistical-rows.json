@@ -1,0 +1,34 @@
+{
+  "statement": "Every ratified row of spec/core.md is accounted for below with the reason its row class is not statistical. All figures are predicted-model tool results; nothing here implies fabrication or measurement.",
+  "covers": "spec/core.rows.json",
+  "covers_source": "spec/core.md",
+  "covers_source_content_hash": "sha256:c070a2993904ea475a11ed47ee14d10e12cb91372f7e9f007a0a332863d4c81d",
+  "voided_by": "Adding any accuracy, offset, matching, yield, Cpk or sigma row to spec/core.md voids this statement; that row needs klt yield evidence.",
+  "rows": [
+    {
+      "id": "core",
+      "class": "pinned-identifier",
+      "reason": "A pinned upstream commit and file hashes (reuse.lock.json, decision 0007); the row names an exact source, not a measured quantity."
+    },
+    {
+      "id": "standard-cells",
+      "class": "pinned-identifier",
+      "reason": "A pinned cell-library revision and flavour (decision 0001); the row names an exact artifact, not a measured quantity."
+    },
+    {
+      "id": "predicted-clock",
+      "class": "corner-bounded-sta",
+      "reason": "A static timing result at the SS Liberty corner named in spec/core.md (STA corner set); the characterised corner files bound the result and there is no sampled variation. Reported as predicted."
+    },
+    {
+      "id": "drc",
+      "class": "deterministic-verdict",
+      "reason": "A rule-check verdict on one GDS against a content-hash-pinned deck (decision 0005); the same inputs always give the same verdict."
+    },
+    {
+      "id": "lvs",
+      "class": "deterministic-verdict",
+      "reason": "A netlist-match verdict on one layout against a pinned cell CDL and deck hash (decision 0005); the same inputs always give the same verdict."
+    }
+  ]
+}
