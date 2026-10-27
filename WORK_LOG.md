@@ -3,6 +3,13 @@
 Chronological record of merged PRs and closed issues, maintained by the Guide
 triage role. Newest first.
 
+### 2026-10-27
+
+- **PR #37**: feat: attest repo hygiene, add harness CI, bump klt pin to 0.8.0
+- **PR #38**: docs(spec): record T1 item 6 as not applicable and bump signoff grader to 0.8.0
+- **Issue #26** (closed): T1 item 10 (repo hygiene): README reproduction steps, harness in CI, and a klt signoff --attest 10 envelope
+- **Issue #33** (closed): T1 item 6 (statistical rows): commit the hash-bound "not applicable" statement for the ratified spec
+
 ### 2026-10-24
 
 - **PR #7**: ci: add klt signoff block manifest and verdict-record freshness check
