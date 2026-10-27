@@ -1,5 +1,7 @@
 {
   "block": "asap7-riscv-core",
   "kind": "digital",
-  "evidence": {}
+  "evidence": {
+    "10": {"file": "evidence/item10.json", "content_hash": "sha256:ecb04175c5b0d15f388a4a146f1ff6571d2cc7cc311d95a54c7cad7768e2ad2d"}
+  }
 }

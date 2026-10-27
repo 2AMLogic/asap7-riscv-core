@@ -45,7 +45,7 @@ pins sv2v (decision 0007).
 - Upstream ASAP7 `d24f8b857ff74cf5b21ab18a7e1b11a3954c449b`; cell library
   `asap7sc7p5t_28` `f970bd3c3292b79ae4d022a3ec80533534614066`; PDK
   `asap7_pdk_r1p7` `58d72c9d291e186a77468586ab0c43d8a21eda6a`.
-- `klt`: release `klayout-tools==0.7.0` is the pinned release; the metal DRC
+- `klt`: release `klayout-tools==0.8.0` is the pinned release (decision 0008); the metal DRC
   deck and FinFET LVS need the unreleased tree, pinned as
   `git+https://github.com/2AMLogic/klayout-tools@7ee09483b748` (decision 0005).
 - `klt pdk` does not resolve ASAP7 yet; the repo's flow points at the pinned

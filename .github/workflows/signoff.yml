@@ -33,7 +33,7 @@ jobs:
           python-version: "3.10"
 
       - name: Install pinned klt
-        run: pip install klayout-tools==0.7.0
+        run: pip install klayout-tools==0.8.0
 
       - name: Re-run klt signoff and compare against the committed record
         run: |
@@ -62,3 +62,15 @@ jobs:
           fi
           echo "Committed signoff record is fresh: it matches a fresh klt signoff run."
           python3 -c "import json; d=json.load(open('manifests/asap7-riscv-core.signoff.json')); print('tier verdict of record:', d['tier'], '(T1 items met: %d/%d)' % (d['t1_met_count'], d['t1_item_count']))"
+
+      # Item 10 (repo hygiene) is attested by klt, not hand-read. --check
+      # re-attests the committed envelope: every hygiene file is re-hashed and
+      # any change is drift. The harness commands in attest/item10.json are
+      # local_only (they need iverilog/verilator), so they are skipped here and
+      # listed as [SKIP]; the harness runs in ci.yml instead. After editing
+      # README.md, LICENSE or either workflow, re-attest and commit:
+      #   klt signoff --attest 10 --inventory attest/item10.json -o evidence/item10.json
+      - name: Re-check the item 10 attestation envelope
+        run: |
+          klt signoff --attest 10 --inventory attest/item10.json \
+                      --check evidence/item10.json

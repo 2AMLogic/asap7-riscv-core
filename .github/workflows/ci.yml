@@ -1,0 +1,89 @@
+name: harness
+
+# Keeps the PDK-free verification harness (cocotb + Icarus, Verilator lint)
+# runnable from a cold clone. It calls verification/run.sh only, never its
+# internals, so changes to the harness do not need an edit here.
+#
+# run.sh refuses any iverilog / verilator / python other than the versions in
+# verification/tool-versions.txt, and stock ubuntu-latest apt packages do not
+# match them. The job therefore builds the pinned releases from their upstream
+# tags and caches the install prefix, keyed on tool-versions.txt.
+#
+# The harness makes no claim about any design; see verification/README.md.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  harness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read pinned tool versions
+        id: pins
+        run: |
+          set -euo pipefail
+          for t in iverilog verilator python; do
+            v="$(sed -n "s/^$t=//p" verification/tool-versions.txt)"
+            [ -n "$v" ] || { echo "::error::no $t pin in verification/tool-versions.txt"; exit 1; }
+            echo "$t=$v" >> "$GITHUB_OUTPUT"
+          done
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ steps.pins.outputs.python }}
+
+      - name: Restore pinned simulators
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: ~/tools
+          key: sim-tools-${{ runner.os }}-iverilog-${{ steps.pins.outputs.iverilog }}-verilator-${{ steps.pins.outputs.verilator }}
+
+      - name: Install build dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            autoconf automake bison build-essential ccache flex gperf git help2man \
+            libfl-dev libfl2 perl python3 zlib1g-dev
+
+      - name: Build pinned Icarus Verilog
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          set -euo pipefail
+          tag="v$(echo '${{ steps.pins.outputs.iverilog }}' | tr . _)"
+          git clone --depth 1 --branch "$tag" https://github.com/steveicarus/iverilog.git "$RUNNER_TEMP/iverilog"
+          cd "$RUNNER_TEMP/iverilog"
+          sh autoconf.sh
+          ./configure --prefix="$HOME/tools"
+          make -j2
+          make install
+
+      - name: Build pinned Verilator
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          set -euo pipefail
+          git clone --depth 1 --branch "v${{ steps.pins.outputs.verilator }}" https://github.com/verilator/verilator.git "$RUNNER_TEMP/verilator"
+          cd "$RUNNER_TEMP/verilator"
+          autoconf
+          ./configure --prefix="$HOME/tools"
+          make -j2
+          make install
+
+      - name: Put pinned simulators on PATH
+        run: echo "$HOME/tools/bin" >> "$GITHUB_PATH"
+
+      - name: Harness (lint + cocotb test)
+        run: verification/run.sh
+
+      - name: Harness negative control (must see the test fail)
+        run: verification/run.sh --negative-control
