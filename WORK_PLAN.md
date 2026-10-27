@@ -50,6 +50,8 @@ _None._
 Issues carrying `loom:curated`.
 
 - **#17**: Follow-on from PR #16: place-and-route on the counter smoke DUT (par.json is not_run) *(curated)*
+- **#25**: T1 item 1 (design sources): fetch the pinned CVE2 RTL and synthesize cve2_top to a committed ASAP7 gate-level netlist *(curated)*
+- **#26**: T1 item 10 (repo hygiene): README reproduction steps, harness in CI, and a klt signoff --attest 10 envelope *(curated)*
 
 ## Proposed (Architect / Hermit)
 
@@ -70,7 +72,7 @@ _None._
 | In Progress (`loom:building`) | 0 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 0 |
-| Curated | 1 |
+| Curated | 3 |
 | Architect / Hermit proposals | 0 |
 | Active epics | 0 |
 <!-- guide:plan-body:end -->
