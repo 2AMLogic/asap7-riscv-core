@@ -19,7 +19,7 @@
 #   KLT_DECK_FILE    asap7.drc of the pinned build (default: looked up through
 #                    the pinned build's own Python; required if KLT_CMD is set)
 #   KLT_CURRENT_CMD  comparison klt for steps the pin cannot perform (default:
-#                    the dev build below, via uvx). Its results are labelled
+#                    the comparison build below (release 0.8.0), via uvx). Its results are labelled
 #                    "current", never presented as the pin.
 #   KEEP_SCRATCH=1   keep the scratch directory (extracted Liberty, run trees)
 #
@@ -30,7 +30,7 @@
 set -euo pipefail
 
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-CURRENT_PIN="git+https://github.com/2AMLogic/klayout-tools@6bb7cf233677"
+CURRENT_PIN="klayout-tools==0.8.0"
 DUT=counter
 DUT_SRC="$REPO/verification/smoke/counter.sv"
 STANDIN_CELL=INVx1_ASAP7_75t_R
@@ -144,7 +144,7 @@ PY
 }
 
 # step <name> <input-label> <note-on-success> <issues-on-gap> <fallback:0|1> <klt args...>
-# Runs the pinned klt; when fallback=1 and the pin cannot, runs the current dev
+# Runs the pinned klt; when fallback=1 and the pin cannot, runs the current comparison
 # build and says so. Sets STEP_OK=1 when a report exists.
 step() {
   local name="$1" input="$2" note="$3" issues="$4" fallback="$5"; shift 5
@@ -166,7 +166,7 @@ step() {
       STEP_OK=1
       extra="$(python3 -I -c 'import json,sys; print(json.dumps({"exit_code":int(sys.argv[1]),"_subs":sys.argv[2],"failed_attempts":json.loads(sys.argv[3]),**json.loads(sys.argv[4])}))' "$rc" "$SCRATCH/subs.json" "$attempts" "${STEP_EXTRA:-{\}}")"
       python3 -I "$SCRATCH/mkrecord.py" "$OUT/$name.json" "$name" ran current "$V_CUR" "$CURRENT_PIN" \
-        "Not performed by the pinned build (see failed_attempts); performed by the current dev build, which is not the pin. $note" "${RAN_ISSUES:-}" "$input" "$out" "$extra"
+        "Not performed by the pinned build (see failed_attempts); performed by the comparison build (klayout-tools release 0.8.0), which is not the pin. $note" "${RAN_ISSUES:-}" "$input" "$out" "$extra"
       return
     fi
     attempts="$(python3 -I -c 'import json,sys; a=json.loads(sys.argv[1]); a.append({"build":"current","version":sys.argv[2],"error":sys.argv[3]}); print(json.dumps(a))' "$attempts" "$V_CUR" "$(errmsg "$out" "$err" "$rc")")"
@@ -309,7 +309,7 @@ PY
     FP_RC=0
     ( cd "$W" && "${KLT_CUR[@]}" place-and-route par_fp.req.json "${PDKARGS[@]}" --format json ) >"$SCRATCH/par_fp.out" 2>"$SCRATCH/par_fp.err" || FP_RC=$?
     if usable "$SCRATCH/par_fp.out"; then
-      FP_NOTE="With request.power removed and target_stage floorplan, the current dev build reaches stage floorplan (using the scratch tech-LEF OFFSET workaround, klayout-tools #4088). Placement, CTS and routing were not reached; no DEF or GDS was produced."
+      FP_NOTE="With request.power removed and target_stage floorplan, the comparison build (release 0.8.0) reaches stage floorplan (using the scratch tech-LEF OFFSET workaround, klayout-tools #4088). Placement, CTS and routing were not reached; no DEF or GDS was produced."
     else
       FP_NOTE="floorplan-only probe also failed: $(errmsg "$SCRATCH/par_fp.out" "$SCRATCH/par_fp.err" "$FP_RC")"
     fi
