@@ -72,8 +72,51 @@ position: spec ratified; PDK brought up under `klt` (see `spec/pdk-bringup.md`).
 spec/          ratified spec + decision records, including the PDK bring-up
 rtl/           core configuration wrapper (the core is pinned upstream)
 verification/  cocotb testbenches + architectural-test runs
+flow/          ASAP7 smoke flow and its dated result records
+manifests/     block manifest and the klt signoff verdict of record
+attest/        klt --attest inventories; evidence/ holds the generated envelopes
 layout/        GDS + DRC/LVS reports + STA reports (klayout-tools driven)
 ```
+
+## Reproduce
+
+Every committed result maps to one command below. All of them are tool results
+against a predictive model; none is a measurement.
+
+Pins these rely on: host simulators and Python in
+[`verification/tool-versions.txt`](verification/tool-versions.txt) (iverilog
+13.0, Verilator 5.050, Python 3.12) and cocotb in
+[`verification/requirements.txt`](verification/requirements.txt); the ASAP7
+commits in [`spec/pdk-bringup.md`](spec/pdk-bringup.md) section 1; and
+`klayout-tools==0.8.0` for the signoff steps (decisions
+[0008](spec/decisions/0008-item-6-not-applicable-and-signoff-pin.md) and
+[0009](spec/decisions/0009-item-10-repo-hygiene-attestation.md)).
+
+| Result | Command | Needs |
+|---|---|---|
+| Harness lint + cocotb test (placeholder DUT, no claim about the core) | `verification/run.sh` | pinned iverilog, Verilator, Python |
+| Harness negative control (passes only if the broken assertion fails) | `verification/run.sh --negative-control` | same |
+| `flow/smoke/records/2026-10-23/*.json` (ASAP7 smoke flow, `par.json` is `not_run`) | `RECORD_DATE=<new date> flow/smoke/run.sh <asap7-checkout>` | ASAP7 checkout at the `spec/pdk-bringup.md` pins; refuses to write into the existing dated directory |
+| `manifests/asap7-riscv-core.signoff.json` (tier verdict of record) | `uvx --from "klayout-tools==0.8.0" klt signoff --manifest manifests/asap7-riscv-core.json --tiers-doc manifests/design-evidence-tiers.md --format json > manifests/asap7-riscv-core.signoff.json` | network for `uvx` |
+| `evidence/item10.json` (repo-hygiene attestation) | `uvx --python 3.12 --from "klayout-tools==0.8.0" klt signoff --attest 10 --inventory attest/item10.json -o evidence/item10.json` | pinned iverilog and Verilator (the harness checks run) |
+
+`--python 3.12` matters for the `--attest` command: `uvx` puts its own Python
+first on `PATH`, `klt` runs the harness checks with that `PATH`, and
+`verification/run.sh` refuses any Python other than the pinned 3.12.
+
+Re-check the attestation without the simulators (the harness checks are shown
+as `[SKIP]`, file hashes still verified):
+
+```sh
+uvx --python 3.12 --from "klayout-tools==0.8.0" klt signoff --attest 10 \
+    --inventory attest/item10.json --check evidence/item10.json
+```
+
+The attestation hashes `README.md`, `LICENSE` and the workflow files, so after
+editing any of them re-run the `--attest 10 ... -o` command above, regenerate
+the signoff record, and commit both. CI (`.github/workflows/ci.yml` for the
+harness, `.github/workflows/signoff.yml` for the record and attestation) fails
+on a stale one.
 
 ## License
 

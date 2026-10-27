@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "kind": "t1-attestation-inventory",
+  "t1_item": 10,
+  "description": "Repo hygiene: README, LICENSE and the CI workflows exist, and the PDK-free harness CI runs passes (with its negative control). Harness checks need iverilog 13.0 and verilator 5.050, so they are local_only.",
+  "hygiene": [
+    "README.md",
+    "LICENSE",
+    ".github/workflows/ci.yml",
+    ".github/workflows/signoff.yml"
+  ],
+  "checks": [
+    {"name": "harness", "argv": ["verification/run.sh"], "local_only": true},
+    {"name": "harness-negative-control", "argv": ["verification/run.sh", "--negative-control"], "local_only": true}
+  ]
+}
