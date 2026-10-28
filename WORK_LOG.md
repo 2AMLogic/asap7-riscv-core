@@ -5,6 +5,8 @@ triage role. Newest first.
 
 ### 2026-10-27
 
+- **PR #41**: build: pin smoke comparison build to klayout-tools 0.8.0
+- **Issue #40** (closed): Bump klayout-tools pin 6bb7cf233677 → 0.8.0
 - **PR #37**: feat: attest repo hygiene, add harness CI, bump klt pin to 0.8.0
 - **PR #38**: docs(spec): record T1 item 6 as not applicable and bump signoff grader to 0.8.0
 - **Issue #26** (closed): T1 item 10 (repo hygiene): README reproduction steps, harness in CI, and a klt signoff --attest 10 envelope

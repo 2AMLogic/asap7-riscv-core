@@ -20,7 +20,6 @@ _None._
 `loom:important`; taken before unlabelled work.
 
 - **#17**: Follow-on from PR #16: place-and-route on the counter smoke DUT (par.json is not_run)
-- **#25**: T1 item 1 (design sources): fetch the pinned CVE2 RTL and synthesize cve2_top to a committed ASAP7 gate-level netlist
 
 ## Ready
 
@@ -67,7 +66,7 @@ _None._
 |------|-------|
 | Operator merge-risk holds | 0 |
 | Very important | 1 |
-| Important | 2 |
+| Important | 1 |
 | Ready (`loom:issue`) | 0 |
 | In Progress (`loom:building`) | 0 |
 | PRs awaiting review | 0 |
