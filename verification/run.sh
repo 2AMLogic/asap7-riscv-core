@@ -4,6 +4,11 @@
 #   verification/run.sh                    lint + placeholder test; exit 0 on pass
 #   verification/run.sh --negative-control same, but with a deliberately failing
 #                                          assertion; exit 0 only if the test FAILS
+#   verification/run.sh --core             riscv-arch-test I/M/C on the RV32IMC core
+#                                          (cve2_rv32imc_wrapper), signatures vs Sail
+#   verification/run.sh --core --negative-control
+#                                          same with one expected signature word
+#                                          flipped; exit 0 only if the run FAILS
 #
 # Tool versions come from verification/tool-versions.txt and
 # verification/requirements.txt, never from whatever is on PATH.
@@ -12,11 +17,14 @@ set -euo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 VENV="$HERE/.venv"
 NEGATIVE=0
-case "${1:-}" in
-  "") ;;
-  --negative-control) NEGATIVE=1 ;;
-  *) echo "usage: run.sh [--negative-control]" >&2; exit 2 ;;
-esac
+CORE=0
+for arg in "$@"; do
+  case "$arg" in
+    --negative-control) NEGATIVE=1 ;;
+    --core) CORE=1 ;;
+    *) echo "usage: run.sh [--core] [--negative-control]" >&2; exit 2 ;;
+  esac
+done
 
 die() { echo "run.sh: $*" >&2; exit 1; }
 
@@ -56,6 +64,21 @@ fi
 RUN_DIR="$HERE/runs/$(date -u +%Y%m%dT%H%M%SZ)-$$"
 mkdir -p "$RUN_DIR"
 echo "run dir: $RUN_DIR"
+
+if [ "$CORE" = 1 ]; then
+  "$HERE/core/setup.sh"
+  echo "== riscv-arch-test I/M/C on cve2_rv32imc_wrapper (cocotb + icarus) =="
+  if [ "$NEGATIVE" = 1 ]; then
+    if "$VENV/bin/python" "$HERE/core/runner.py" "$RUN_DIR" --negative-control; then
+      die "negative control: run passed but was expected to fail"
+    fi
+    echo "negative control: run failed as expected"
+    exit 0
+  fi
+  "$VENV/bin/python" "$HERE/core/runner.py" "$RUN_DIR"
+  echo "PASS: results in $RUN_DIR/results.xml"
+  exit 0
+fi
 
 echo "== lint (verilator --lint-only -Wall) =="
 verilator --lint-only -Wall --top-module counter "$HERE/smoke/counter.sv"

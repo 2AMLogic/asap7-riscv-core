@@ -5,3 +5,15 @@
 iverilog=13.0
 verilator=5.050
 python=3.12
+
+# Core architectural-test suite (verification/run.sh --core). verification/core/setup.sh
+# downloads each of these into verification/build/ and refuses a sha256 mismatch.
+# riscv-arch-test 3.4.0 (the last release whose I/M/C tests are plain signature
+# tests the pinned Sail model can reference).
+riscv_arch_test_commit=331b0cd934eda5d0b177556669d56a9e34e0d030
+# Golden model that produces the expected signatures (not the DUT).
+sail_riscv_release=2026-11-02-a83603b
+sail_riscv_sha256=cd2eb9f04ccb31e26590b090d70af94e87349d9265df6299710dc7e46df2c8b2
+# Bare-metal RV32 toolchain (xPack GNU RISC-V Embedded GCC).
+riscv_gcc_release=v15.2.0-1
+riscv_gcc_sha256=aaaa8060c914851a3e5ee1ba82cc3d6f80972f90638a05c6e823a37557a33758

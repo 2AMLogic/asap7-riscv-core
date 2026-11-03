@@ -9,6 +9,7 @@
         "statement": {"file": "spec/statistical-rows.json", "content_hash": "sha256:6d72ca002e0cf60237cf4be7745b7980e6e5f8ff5f8f10744969ab25326a256f"}
       }
     },
+    "9": {"file": "evidence/item9.json", "content_hash": "sha256:df12dece5cb0441634688e30beb6151acb0c4889da31d7933f135833b59010f8"},
     "10": {"file": "evidence/item10.json", "content_hash": "sha256:ecb04175c5b0d15f388a4a146f1ff6571d2cc7cc311d95a54c7cad7768e2ad2d"}
   }
 }

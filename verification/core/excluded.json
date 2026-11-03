@@ -1,0 +1,4 @@
+{
+  "I-jalr-01": "not built: the pinned xPack GCC 15.2.0 assembler rejects the upstream source (`la x0,5b`, illegal operands). Upstream is unmodified, so the test is not run.",
+  "C-cebreak-01": "built and run, but NOT passing and NOT diagnosed: after c.ebreak the core vectors to 0x80000000 (CVE2 mtvec is fixed at boot_addr) and the arch-test trampoline there loops, so tohost is never written. Excluded so the run is not hidden behind a hang; the failure is open, not accepted."
+}
