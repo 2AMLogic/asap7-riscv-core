@@ -3,6 +3,11 @@
 Chronological record of merged PRs and closed issues, maintained by the Guide
 triage role. Newest first.
 
+### 2026-11-03
+
+- **PR #45**: feat(flow): synthesize unmodified CVE2 RV32IMC and attest design sources
+- **Issue #25** (closed): T1 item 1 (design sources): fetch the pinned CVE2 RTL and synthesize cve2_top to a committed ASAP7 gate-level netlist
+
 ### 2026-11-01
 
 - **PR #43**: Bump Repo Skills 0.24.7 -> 0.25.1
