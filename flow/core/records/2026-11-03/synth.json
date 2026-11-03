@@ -1,0 +1,191 @@
+{
+  "area_um2": 2286.04194,
+  "arithmetic": null,
+  "baseline": null,
+  "blackbox_modules": [],
+  "cell_exclusions": {
+    "effective": [],
+    "engine_supports_dont_use": null,
+    "library_defaults": [],
+    "mode": "additive",
+    "requested": [],
+    "validated": null
+  },
+  "clock_targets": {
+    "clocks": [],
+    "delay_target_basis": "clock_period_ns",
+    "delay_target_ps": 1000,
+    "per_clock_enforced": false
+  },
+  "core_flow": {
+    "note": "Synthesis of the RV32IMC wrapper around unmodified CVE2; predicted PDK, no timing claimed.",
+    "predicted": true
+  },
+  "engine": "yosys",
+  "engine_version": "0.67+post",
+  "equivalence": null,
+  "hdl_toplevel": "cve2_rv32imc_wrapper",
+  "instance_count": 20441,
+  "instance_counts_by_type": {
+    "$_DLATCH_N_": 1,
+    "A2O1A1Ixp33_ASAP7_75t_R": 579,
+    "A2O1A1O1Ixp25_ASAP7_75t_R": 58,
+    "AND2x2_ASAP7_75t_R": 267,
+    "AND3x1_ASAP7_75t_R": 150,
+    "AND4x1_ASAP7_75t_R": 65,
+    "AND5x1_ASAP7_75t_R": 18,
+    "AO21x1_ASAP7_75t_R": 302,
+    "AO221x1_ASAP7_75t_R": 10,
+    "AO222x2_ASAP7_75t_R": 27,
+    "AO22x1_ASAP7_75t_R": 50,
+    "AO32x1_ASAP7_75t_R": 35,
+    "AOI211xp5_ASAP7_75t_R": 275,
+    "AOI21xp33_ASAP7_75t_R": 1442,
+    "AOI221xp5_ASAP7_75t_R": 147,
+    "AOI222xp33_ASAP7_75t_R": 136,
+    "AOI22xp33_ASAP7_75t_R": 884,
+    "AOI311xp33_ASAP7_75t_R": 27,
+    "AOI31xp33_ASAP7_75t_R": 139,
+    "AOI321xp33_ASAP7_75t_R": 2,
+    "AOI32xp33_ASAP7_75t_R": 23,
+    "AOI33xp33_ASAP7_75t_R": 2,
+    "DFFASRHQNx1_ASAP7_75t_R": 2423,
+    "HB1xp67_ASAP7_75t_R": 3,
+    "INVx1_ASAP7_75t_R": 2142,
+    "MAJIxp5_ASAP7_75t_R": 161,
+    "MAJx2_ASAP7_75t_R": 23,
+    "NAND2xp33_ASAP7_75t_R": 2842,
+    "NAND3xp33_ASAP7_75t_R": 298,
+    "NAND4xp25_ASAP7_75t_R": 84,
+    "NAND5xp2_ASAP7_75t_R": 54,
+    "NOR2xp33_ASAP7_75t_R": 1329,
+    "NOR3xp33_ASAP7_75t_R": 265,
+    "NOR4xp25_ASAP7_75t_R": 90,
+    "NOR5xp2_ASAP7_75t_R": 63,
+    "O2A1O1Ixp33_ASAP7_75t_R": 425,
+    "OA211x2_ASAP7_75t_R": 19,
+    "OA21x2_ASAP7_75t_R": 128,
+    "OA222x2_ASAP7_75t_R": 5,
+    "OA22x2_ASAP7_75t_R": 17,
+    "OA31x2_ASAP7_75t_R": 1,
+    "OAI211xp5_ASAP7_75t_R": 393,
+    "OAI21xp33_ASAP7_75t_R": 3097,
+    "OAI221xp5_ASAP7_75t_R": 348,
+    "OAI222xp33_ASAP7_75t_R": 1,
+    "OAI22xp33_ASAP7_75t_R": 132,
+    "OAI311xp33_ASAP7_75t_R": 13,
+    "OAI31xp33_ASAP7_75t_R": 90,
+    "OAI321xp33_ASAP7_75t_R": 2,
+    "OAI32xp33_ASAP7_75t_R": 47,
+    "OAI33xp33_ASAP7_75t_R": 2,
+    "OR2x2_ASAP7_75t_R": 168,
+    "OR3x1_ASAP7_75t_R": 66,
+    "OR4x1_ASAP7_75t_R": 29,
+    "OR5x1_ASAP7_75t_R": 72,
+    "XNOR2xp5_ASAP7_75t_R": 706,
+    "XOR2xp5_ASAP7_75t_R": 264
+  },
+  "leakage_by_type_nw": null,
+  "leakage_power_nw": null,
+  "memory_mapping": {
+    "modules": [
+      {
+        "elaborated_memories": 1,
+        "elaborated_memory_bits": 32,
+        "final_memories": 0,
+        "module": "$paramod$2806d0a77015858ba718eaa88cae9d86203633c6\\cve2_decoder",
+        "pre_lowering_memories": 0,
+        "status": "optimized_away"
+      },
+      {
+        "elaborated_memories": 1,
+        "elaborated_memory_bits": 64,
+        "final_memories": 0,
+        "module": "$paramod\\cve2_alu\\RV32B=s32'00000000000000000000000000000000",
+        "pre_lowering_memories": 1,
+        "status": "lowered_to_logic"
+      }
+    ],
+    "reason": null,
+    "script_path": {
+      "path": null,
+      "scope": "external"
+    },
+    "status": "mixed"
+  },
+  "netlist_path": {
+    "path": null,
+    "scope": "external"
+  },
+  "netlist_sha256": "754ee8731dc0262696cd69044176b14b0c9376e9eecec3420f085802a6860809",
+  "netlist_sha256_as_emitted_by_klt": "ee6cad9e5a4695d92978f15632879b3b23b6e377afed185f226215e10ea138ac",
+  "parameters": {},
+  "provenance": {
+    "deck": {
+      "content_hash": "sha256:363b4c861cfea690e3fb25ef92823881ffca51d60739ffccbaa74ac22ab7925e",
+      "name": "asap7sc7p5t_28_RVT__SS",
+      "released": false
+    },
+    "input": {
+      "content_hash": "sha256:442c836867cbab82ca113c008655a9fcef4775e7baffc2ad50640c774d7a28e4",
+      "role": "source"
+    },
+    "klayout_version": "0.30.12",
+    "klt_version": "0.8.0",
+    "parameters": {},
+    "pdk": {
+      "name": "asap7",
+      "source": "--pdk-root flag",
+      "version": null
+    }
+  },
+  "restructuring": null,
+  "run_id": "run-6d5b3b2bbdf843b494bdd97e1b80487c",
+  "run_script_path": {
+    "path": null,
+    "scope": "external"
+  },
+  "schema_version": 2,
+  "script_path": {
+    "path": null,
+    "scope": "external"
+  },
+  "sequential_area_um2": 918.51084,
+  "sta": null,
+  "sta_unavailable_reason": "the optional klt_statime_native extension is not installed (it is not shipped with the published klayout-tools package), so no gate-level static timing analysis was attempted -- from a repo checkout, run `uv sync --group statime` (or `maturin develop --release` inside native/statime/) and re-run to populate `sta`; from an installed package, `klt sta` with a `verilog` request gives a netlist-level timing estimate (needs OpenSTA)",
+  "status": "ok",
+  "structural": {
+    "comb_loops": 0,
+    "expected_latches": 0,
+    "has_critical": true,
+    "latches": 1,
+    "multi_driven": 0,
+    "unexpected_latches": 1
+  },
+  "timing": null,
+  "warnings": {
+    "by_category": {
+      "latch_inferred": 1,
+      "other": 8,
+      "unsupported_cell_library": 1
+    },
+    "representatives": [
+      {
+        "category": "latch_inferred",
+        "count": 1,
+        "text": "Latch inferred for signal `\\cve2_clock_gate.\\clk_en' from process `\\cve2_clock_gate.$proc$<scratch>/work/cve2_rv32imc_wrapper.v:900$80': $auto$proc_dlatch.cc:547:proc_dlatch$9881"
+      },
+      {
+        "category": "other",
+        "count": 8,
+        "text": "Replacing memory \\pmp_addr_rdata with list of registers. See <scratch>/work/cve2_rv32imc_wrapper.v:2433"
+      },
+      {
+        "category": "unsupported_cell_library",
+        "count": 1,
+        "text": "cell_library 'asap7sc7p5t_28_RVT' has no verified mapping for: ABC -constr (driving cell/output load), load-driven sizing/buffering and ABC timing (timing is null); setundef -zero/hilomap (bare 0/1/x constants may remain unroutable in place-and-route). These capabilities were skipped."
+      }
+    ],
+    "total": 10
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "kind": "t1-attestation-inventory",
+  "t1_item": 1,
+  "description": "Design sources: the RV32IMC wrapper, the lock pinning the unmodified CVE2 closure, and the fetch/synthesis scripts, plus the gate-level netlist derived from them. The freshness check regenerates the netlist (needs the pinned ASAP7 checkout in $ASAP7_DIR, network and uvx) and byte-compares it, so it is local_only.",
+  "sources": [
+    "rtl/cve2_rv32imc_wrapper.sv",
+    "reuse.lock.json",
+    "flow/core/fetch.sh",
+    "flow/core/synth.sh"
+  ],
+  "derived": [
+    {
+      "path": "flow/core/records/2026-11-03/netlist.v",
+      "generator": "flow/core/synth.sh (klt synthesize)",
+      "check": {"argv": ["flow/core/synth.sh", "--check"], "local_only": true}
+    }
+  ]
+}

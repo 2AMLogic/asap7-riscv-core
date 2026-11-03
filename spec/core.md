@@ -34,11 +34,12 @@ record is `spec/decision-records/0001-core-choice.md` at `sky130-riscv-soc`
 commit `1e6c447d571e95f2aa4f8e29ae1ef30ab03bdaa8`. The RV32EC fallback stands.
 No RTL is selected, forked or modified by this spec.
 
-**sv2v:** if the pinned core is SystemVerilog needing conversion for Icarus
-and Yosys, this repo uses the same pinned conversion as `sky130-riscv-soc`
-rather than a second one. This part stays deferred: the origin has not pinned
-sv2v yet. **Owner:** this repo's spec author. **Trigger:** `sky130-riscv-soc`
-pins sv2v (decision 0007).
+**sv2v (decision 0010):** the pinned core is SystemVerilog, converted for Icarus
+and Yosys with the same pinned `sv2v` as `sky130-riscv-soc`: `sv2v v0.0.13`
+(`zachjs/sv2v` release asset `sv2v-Linux.zip` sha256
+`552799a1d76cd177b9b4cc63a3e77823a3d2a6eb4ec006569288abeff28e1ff8`; the
+`flow/core/synth.sh` fetch checks it). The conversion command is
+`flow/core/synth.sh`'s, mirroring the origin's `scripts/convert-cve2.sh`.
 
 ## PDK and tools (pinned)
 
