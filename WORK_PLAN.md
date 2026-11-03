@@ -13,7 +13,7 @@ _None._
 
 `loom:very-important` (one counts per workspace); every stage takes these first.
 
-- **#25**: T1 item 1 (design sources): fetch the pinned CVE2 RTL and synthesize cve2_top to a committed ASAP7 gate-level netlist
+_None._
 
 ## Important
 
@@ -31,7 +31,7 @@ _None._
 
 Issues currently being built (`loom:building`).
 
-_None._
+- **#27**: T1 item 9 (testbenches shipped): core-level RV32IMC test suite with cold-start invocation and --attest 9 inventory
 
 ## PRs Awaiting Review
 
@@ -50,7 +50,7 @@ _None._
 Issues carrying `loom:curated`.
 
 - **#17**: Follow-on from PR #16: place-and-route on the counter smoke DUT (par.json is not_run) *(curated)*
-- **#25**: T1 item 1 (design sources): fetch the pinned CVE2 RTL and synthesize cve2_top to a committed ASAP7 gate-level netlist *(curated)*
+- **#27**: T1 item 9 (testbenches shipped): core-level RV32IMC test suite with cold-start invocation and --attest 9 inventory *(curated)*
 
 ## Proposed (Architect / Hermit)
 
@@ -65,10 +65,10 @@ _None._
 | Bucket | Count |
 |------|-------|
 | Operator merge-risk holds | 0 |
-| Very important | 1 |
+| Very important | 0 |
 | Important | 1 |
 | Ready (`loom:issue`) | 0 |
-| In Progress (`loom:building`) | 0 |
+| In Progress (`loom:building`) | 1 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 0 |
 | Curated | 2 |
