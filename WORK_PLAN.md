@@ -53,8 +53,7 @@ Issues carrying `loom:curated`.
 
 ## Proposed (Architect / Hermit)
 
-- **#46**: Dedupe shared PDK/pin helpers between flow/smoke/run.sh and flow/core/synth.sh *(hermit)*
-- **#53**: Consolidate duplicated sv2v pin/fetch and CVE2 conversion closure (synth.sh, setup.sh, runner.py) *(hermit)*
+_None._
 
 ## Epics
 
@@ -72,6 +71,6 @@ _None._
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 0 |
 | Curated | 1 |
-| Architect / Hermit proposals | 2 |
+| Architect / Hermit proposals | 0 |
 | Active epics | 0 |
 <!-- guide:plan-body:end -->

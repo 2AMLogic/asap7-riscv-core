@@ -5,6 +5,10 @@ triage role. Newest first.
 
 ### 2026-11-03
 
+- **PR #56**: refactor: share PDK pin and Liberty-merge helpers between flow scripts
+- **PR #55**: refactor: share sv2v pin/fetch and CVE2 conversion across synth, setup and runner
+- **Issue #53** (closed): Consolidate duplicated sv2v pin/fetch and CVE2 conversion closure (synth.sh, setup.sh, runner.py)
+- **Issue #46** (closed): Dedupe shared PDK/pin helpers between flow/smoke/run.sh and flow/core/synth.sh
 - **PR #52**: test: pin clang for I-jalr-01, diagnose C-cebreak-01, re-attest item 9
 - **Issue #50** (closed): Diagnose C-cebreak-01 hang on cve2_rv32imc_wrapper in the arch-test core bench
 - **PR #49**: test: run riscv-arch-test I/M/C on the RV32IMC core and attest T1 item 9
