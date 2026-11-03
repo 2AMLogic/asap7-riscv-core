@@ -5,6 +5,8 @@ triage role. Newest first.
 
 ### 2026-11-03
 
+- **PR #52**: test: pin clang for I-jalr-01, diagnose C-cebreak-01, re-attest item 9
+- **Issue #50** (closed): Diagnose C-cebreak-01 hang on cve2_rv32imc_wrapper in the arch-test core bench
 - **PR #49**: test: run riscv-arch-test I/M/C on the RV32IMC core and attest T1 item 9
 - **Issue #27** (closed): T1 item 9 (testbenches shipped): core-level RV32IMC test suite with cold-start invocation and --attest 9 inventory
 - **PR #45**: feat(flow): synthesize unmodified CVE2 RV32IMC and attest design sources

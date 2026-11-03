@@ -31,7 +31,7 @@ _None._
 
 Issues currently being built (`loom:building`).
 
-- **#27**: T1 item 9 (testbenches shipped): core-level RV32IMC test suite with cold-start invocation and --attest 9 inventory
+_None._
 
 ## PRs Awaiting Review
 
@@ -50,11 +50,11 @@ _None._
 Issues carrying `loom:curated`.
 
 - **#17**: Follow-on from PR #16: place-and-route on the counter smoke DUT (par.json is not_run) *(curated)*
-- **#27**: T1 item 9 (testbenches shipped): core-level RV32IMC test suite with cold-start invocation and --attest 9 inventory *(curated)*
 
 ## Proposed (Architect / Hermit)
 
 - **#46**: Dedupe shared PDK/pin helpers between flow/smoke/run.sh and flow/core/synth.sh *(hermit)*
+- **#53**: Consolidate duplicated sv2v pin/fetch and CVE2 conversion closure (synth.sh, setup.sh, runner.py) *(hermit)*
 
 ## Epics
 
@@ -68,10 +68,10 @@ _None._
 | Very important | 0 |
 | Important | 1 |
 | Ready (`loom:issue`) | 0 |
-| In Progress (`loom:building`) | 1 |
+| In Progress (`loom:building`) | 0 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 0 |
-| Curated | 2 |
-| Architect / Hermit proposals | 1 |
+| Curated | 1 |
+| Architect / Hermit proposals | 2 |
 | Active epics | 0 |
 <!-- guide:plan-body:end -->
