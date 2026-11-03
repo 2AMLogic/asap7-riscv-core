@@ -59,9 +59,7 @@ spec_sha() {  # first 40-hex sha on the first row of pdk-bringup.md starting wit
 PIN_UPSTREAM="$(spec_sha 'Upstream repo')"
 PIN_CELLS="$(spec_sha 'Cell library')"
 PIN_KLT="$(grep -o 'klayout-tools==[0-9][0-9.]*' "$REPO/spec/core.md" | head -1)"
-PIN_SV2V="$(grep -o 'sv2v v[0-9][0-9.]*' "$REPO/spec/core.md" | head -1 | cut -d' ' -f2)"
-PIN_SV2V_SHA="$(grep -A2 'zachjs/sv2v' "$REPO/spec/core.md" | grep -o '[0-9a-f]\{64\}' | head -1)"
-for v in PIN_UPSTREAM PIN_CELLS PIN_KLT PIN_SV2V PIN_SV2V_SHA; do
+for v in PIN_UPSTREAM PIN_CELLS PIN_KLT; do
   [[ -n "${!v}" ]] || die "could not read $v from spec/" 1
 done
 
@@ -94,33 +92,14 @@ UP="$SCRATCH/upstream"
 "$REPO/flow/core/fetch.sh" "$UP" >&2
 
 # ---- 2. pinned sv2v ---------------------------------------------------------
-if [[ -z "${SV2V:-}" ]]; then
-  SV2V="$BUILD/sv2v/$PIN_SV2V/sv2v-Linux/sv2v"
-  if [[ ! -x "$SV2V" ]]; then
-    mkdir -p "$BUILD/sv2v/$PIN_SV2V"
-    zip="$BUILD/sv2v/$PIN_SV2V/sv2v-Linux.zip"
-    curl -fsSL --retry 2 -o "$zip" "https://github.com/zachjs/sv2v/releases/download/$PIN_SV2V/sv2v-Linux.zip"
-    [[ "$(sha256sum "$zip" | cut -d' ' -f1)" == "$PIN_SV2V_SHA" ]] || { rm -f "$zip"; die "sv2v-Linux.zip sha256 does not match the pin" 1; }
-    python3 -I -c 'import sys, zipfile; zipfile.ZipFile(sys.argv[1]).extractall(sys.argv[2])' "$zip" "$BUILD/sv2v/$PIN_SV2V"
-    chmod +x "$SV2V"
-  fi
-fi
-SV2V_VERSION="$("$SV2V" --version)"
-[[ "$SV2V_VERSION" == "sv2v $PIN_SV2V" ]] || die "sv2v reports '$SV2V_VERSION', spec/core.md pins $PIN_SV2V" 1
+# shellcheck source=flow/core/sv2v.sh
+source "$REPO/flow/core/sv2v.sh"
+sv2v_ensure "$BUILD"
 
 # ---- 3. SystemVerilog -> Verilog ------------------------------------------
-# Same command as sky130-riscv-soc scripts/convert-cve2.sh, plus the wrapper.
-# SYNTHESIS drops the simulation-only DPI export block in cve2_if_stage.sv.
+# One shared conversion (flow/core/sv2v.sh), also used by verification/core/runner.py.
 W="$SCRATCH/work"; mkdir -p "$W"
-PRIM=vendor/lowrisc_ip/ip/prim/rtl
-(
-  cd "$UP"
-  mapfile -t REST < <(ls rtl/*.sv | grep -v -e cve2_pkg.sv -e cve2_core.sv -e cve2_top.sv | sort)
-  "$SV2V" -DSYNTHESIS -I "$PRIM" -I rtl -I vendor/lowrisc_ip/dv/sv/dv_utils \
-    "$PRIM/prim_assert.sv" rtl/cve2_pkg.sv "$PRIM/prim_ram_1p_pkg.sv" \
-    "${REST[@]}" rtl/cve2_core.sv rtl/cve2_top.sv "$WRAPPER" \
-    --top "$TOP" -w "$W/$TOP.v"
-)
+sv2v_convert "$SV2V" "$UP" "$WRAPPER" "$TOP" "$W/$TOP.v"
 iverilog -g2012 -s "$TOP" -o "$W/$TOP.vvp" "$W/$TOP.v"
 echo "synth.sh: sv2v + Icarus elaboration ok" >&2
 
