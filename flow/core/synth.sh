@@ -30,12 +30,12 @@
 set -euo pipefail
 
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+# shellcheck source=flow/lib.sh
+source "$REPO/flow/lib.sh"
 TOP=cve2_rv32imc_wrapper
 WRAPPER="$REPO/rtl/$TOP.sv"
 CELL_LIB=asap7sc7p5t_28_RVT
 CORNER=SS
-
-die() { echo "synth.sh: $*" >&2; exit "${2:-2}"; }
 
 CHECK=0
 ARGS=()
@@ -53,9 +53,6 @@ ASAP7_ARG="${ARGS[0]:-${ASAP7_DIR:-}}"
 ASAP7="$(cd "$ASAP7_ARG" && pwd)"
 
 # ---- pins, read from the spec -------------------------------------------
-spec_sha() {  # first 40-hex sha on the first row of pdk-bringup.md starting with "| $1"
-  grep -m1 "^| $1" "$REPO/spec/pdk-bringup.md" | grep -o '[0-9a-f]\{40\}' | head -1
-}
 PIN_UPSTREAM="$(spec_sha 'Upstream repo')"
 PIN_CELLS="$(spec_sha 'Cell library')"
 PIN_KLT="$(grep -o 'klayout-tools==[0-9][0-9.]*' "$REPO/spec/core.md" | head -1)"
@@ -63,28 +60,19 @@ for v in PIN_UPSTREAM PIN_CELLS PIN_KLT; do
   [[ -n "${!v}" ]] || die "could not read $v from spec/" 1
 done
 
-check_pin() {  # dir want label
-  local got
-  got="$(git -C "$1" rev-parse HEAD 2>/dev/null)" || die "$3: $1 is not a git checkout"
-  [[ "$got" == "$2" ]] || die "$3 is at $got, spec/pdk-bringup.md pins $2"
-}
 check_pin "$ASAP7" "$PIN_UPSTREAM" "upstream asap7"
 check_pin "$ASAP7/asap7sc7p5t_28" "$PIN_CELLS" "submodule asap7sc7p5t_28"
 
 read -r -a KLT <<<"${KLT_CMD:-uvx --quiet --from $PIN_KLT klt}"
 BUILD="$REPO/flow/build"
-SCRATCH="$(mktemp -d "${TMPDIR:-/tmp}/asap7-core.XXXXXX")"
-cleanup() { [[ "${KEEP_SCRATCH:-0}" == 1 ]] || rm -rf "$SCRATCH"; }
-trap cleanup EXIT
+setup_scratch core
 
 # ---- output directory (never overwrite) ---------------------------------
-DATE="${RECORD_DATE:-$(date -u +%Y-%m-%d)}"
-OUT="$REPO/flow/core/records/$DATE"
 if [[ $CHECK == 0 ]]; then
-  if compgen -G "$OUT/*.json" >/dev/null; then
-    die "records already exist in flow/core/records/$DATE; set RECORD_DATE to a new label (records are append-only evidence)"
-  fi
-  mkdir -p "$OUT"
+  new_record_dir core
+else
+  DATE="${RECORD_DATE:-$(date -u +%Y-%m-%d)}"
+  OUT="$REPO/flow/core/records/$DATE"
 fi
 
 # ---- 1. fetch, hash-checked ----------------------------------------------
@@ -104,34 +92,8 @@ iverilog -g2012 -s "$TOP" -o "$W/$TOP.vvp" "$W/$TOP.v"
 echo "synth.sh: sv2v + Icarus elaboration ok" >&2
 
 # ---- 4. PDK overlay in scratch: merged RVT SS Liberty --------------------
-LIBDIR="$ASAP7/asap7sc7p5t_28/LIB/NLDM"
-PDK="$SCRATCH/pdk"; mkdir -p "$PDK/lib/7z" "$PDK/libs/$CELL_LIB"
-# Liberty ships as .7z only (no 7z on the workers): extract with a throwaway py7zr env.
-uvx --quiet --from py7zr python -I - "$LIBDIR" "$PDK/lib/7z" "$CORNER" <<'PY'
-import glob, sys, py7zr
-src, dst, corner = sys.argv[1:4]
-for f in sorted(glob.glob(f"{src}/*_RVT_{corner}_nldm_*.lib.7z")):
-    with py7zr.SevenZipFile(f) as z:
-        z.extractall(dst)
-PY
-python3 -I - "$PDK/lib/${CELL_LIB}_$CORNER.lib" "${CELL_LIB}_$CORNER" "$PDK"/lib/7z/*_RVT_"$CORNER"_nldm_*.lib <<'PY'
-import re, sys
-out, name, *files = sys.argv[1:]
-header, cells = None, []
-for i, f in enumerate(sorted(files)):
-    t = open(f, encoding="utf-8").read()
-    m = re.search(r"^\s*cell\s*\(", t, re.M)
-    if i == 0:
-        header = re.sub(r"library\s*\([^)]*\)", "library (%s)" % name, t[: m.start()], count=1)
-    body = t[m.start():].rstrip()
-    assert body.endswith("}")
-    cells.append(body[:-1].rstrip() + "\n")
-open(out, "w", encoding="utf-8").write(header + "".join(cells) + "}\n")
-PY
-cat >"$PDK/klt-pdk.json" <<JSON
-{"schema_version":1,"variant":"asap7","assets":{"libs_ref":"libs"},
- "liberty":{"$CELL_LIB":{"$CORNER":"lib/${CELL_LIB}_$CORNER.lib"}}}
-JSON
+PDK="$SCRATCH/pdk"; mkdir -p "$PDK/libs/$CELL_LIB"
+build_liberty_overlay "$ASAP7" "$PDK" "$CELL_LIB" "$CORNER"
 
 # ---- 5. klt synthesize ------------------------------------------------------
 cat >"$W/synth.req.json" <<JSON

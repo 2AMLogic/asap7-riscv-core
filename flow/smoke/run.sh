@@ -30,22 +30,19 @@
 set -euo pipefail
 
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+# shellcheck source=flow/lib.sh
+source "$REPO/flow/lib.sh"
 CURRENT_PIN="klayout-tools==0.8.0"
 DUT=counter
 DUT_SRC="$REPO/verification/smoke/counter.sv"
 STANDIN_CELL=INVx1_ASAP7_75t_R
 CELL_LIB=asap7sc7p5t_28_RVT
 
-die() { echo "run.sh: $*" >&2; exit "${2:-2}"; }
-
 [[ $# -eq 1 ]] || die "usage: flow/smoke/run.sh <asap7-checkout>"
 [[ -d "$1" ]] || die "not a directory: $1"
 ASAP7="$(cd "$1" && pwd)"
 
 # ---- pins, read from the spec -------------------------------------------
-spec_sha() {  # first 40-hex sha on the first row of pdk-bringup.md starting with "| $1"
-  grep -m1 "^| $1" "$REPO/spec/pdk-bringup.md" | grep -o '[0-9a-f]\{40\}' | head -1
-}
 PIN_UPSTREAM="$(spec_sha 'Upstream repo')"
 PIN_CELLS="$(spec_sha 'Cell library')"
 PIN_PDK="$(spec_sha 'PDK (DRM')"
@@ -56,30 +53,18 @@ for v in PIN_UPSTREAM PIN_CELLS PIN_PDK PIN_KLT PIN_DECK; do
 done
 
 # ---- the checkout must be at the pins -----------------------------------
-check_pin() {  # dir want label
-  local got
-  got="$(git -C "$1" rev-parse HEAD 2>/dev/null)" || die "$3: $1 is not a git checkout"
-  [[ "$got" == "$2" ]] || die "$3 is at $got, spec/pdk-bringup.md pins $2"
-}
 check_pin "$ASAP7" "$PIN_UPSTREAM" "upstream asap7"
 check_pin "$ASAP7/asap7sc7p5t_28" "$PIN_CELLS" "submodule asap7sc7p5t_28"
 check_pin "$ASAP7/asap7_pdk_r1p7" "$PIN_PDK" "submodule asap7_pdk_r1p7"
 
 # ---- output directory (never overwrite) ---------------------------------
-DATE="${RECORD_DATE:-$(date -u +%Y-%m-%d)}"
-OUT="$REPO/flow/smoke/records/$DATE"
-if compgen -G "$OUT/*.json" >/dev/null; then
-  die "records already exist in flow/smoke/records/$DATE; set RECORD_DATE to a new label (records are append-only evidence)"
-fi
-mkdir -p "$OUT"
+new_record_dir smoke
 
 # ---- klt commands --------------------------------------------------------
 read -r -a KLT <<<"${KLT_CMD:-uvx --from $PIN_KLT klt}"
 read -r -a KLT_CUR <<<"${KLT_CURRENT_CMD:-uvx --from $CURRENT_PIN klt}"
 
-SCRATCH="$(mktemp -d "${TMPDIR:-/tmp}/asap7-smoke.XXXXXX")"
-cleanup() { [[ "${KEEP_SCRATCH:-0}" == 1 ]] || rm -rf "$SCRATCH"; }
-trap cleanup EXIT
+setup_scratch smoke
 W="$SCRATCH/work"; ROOT="$SCRATCH/pdk"; mkdir -p "$W" "$ROOT"
 echo "run.sh: records -> flow/smoke/records/$DATE" >&2
 
@@ -188,36 +173,10 @@ not_run() {
 
 # ---- PDK overlay in scratch (the checkout is read only) ------------------
 LIBDIR="$ASAP7/asap7sc7p5t_28/LIB/NLDM"
-mkdir -p "$ROOT/lib/7z" "$ROOT/libs/$CELL_LIB/lef" "$ROOT/libs/$CELL_LIB/techlef"
-cat >"$SCRATCH/merge_lib.py" <<'PY'
-import re, sys
-out, name, *files = sys.argv[1:]
-header, cells = None, []
-for i, f in enumerate(files):
-    t = open(f, encoding="utf-8").read()
-    m = re.search(r"^\s*cell\s*\(", t, re.M)
-    if i == 0:
-        header = re.sub(r"library\s*\([^)]*\)", "library (%s)" % name, t[: m.start()], count=1)
-    body = t[m.start():].rstrip()
-    assert body.endswith("}")
-    cells.append(body[:-1].rstrip() + "\n")
-open(out, "w", encoding="utf-8").write(header + "".join(cells) + "}\n")
-PY
-# Liberty ships as .7z only (no 7z on the workers): extract with a throwaway py7zr env.
+mkdir -p "$ROOT/libs/$CELL_LIB/lef" "$ROOT/libs/$CELL_LIB/techlef"
+build_liberty_overlay "$ASAP7" "$ROOT" "$CELL_LIB" SS TT
 LIBJSON="$SCRATCH/liberty.json"
-uvx --quiet --from py7zr python -I - "$LIBDIR" "$ROOT/lib/7z" <<'PY'
-import glob, sys, py7zr
-src, dst = sys.argv[1:3]
-for f in sorted(glob.glob(src + "/*_RVT_*_nldm_*.lib.7z")):
-    if "_RVT_SS_" in f or "_RVT_TT_" in f:
-        with py7zr.SevenZipFile(f) as z:
-            z.extractall(dst)
-PY
-for c in SS TT; do
-  # shellcheck disable=SC2046
-  python3 -I "$SCRATCH/merge_lib.py" "$ROOT/lib/${CELL_LIB}_$c.lib" "${CELL_LIB}_$c" $(ls "$ROOT"/lib/7z/*_RVT_${c}_nldm_*.lib | sort)
-done
-python3 -I - "$ROOT/lib" "$LIBDIR" >"$LIBJSON" <<'PY'
+python3 -I - "$ROOT/lib" "$LIBDIR" >"$LIBJSON" <<'PY2'
 import glob, hashlib, json, os, sys
 root, libdir = sys.argv[1:3]
 sha = lambda p: "sha256:" + hashlib.sha256(open(p, "rb").read()).hexdigest()
@@ -230,11 +189,7 @@ for c in ("SS", "TT"):
         "merged_sha256": sha(f"{root}/asap7sc7p5t_28_RVT_{c}.lib"),
     }
 print(json.dumps(out, indent=1))
-PY
-cat >"$ROOT/klt-pdk.json" <<EOF
-{"schema_version":1,"variant":"asap7","assets":{"libs_ref":"libs"},
- "liberty":{"$CELL_LIB":{"SS":"lib/${CELL_LIB}_SS.lib","TT":"lib/${CELL_LIB}_TT.lib"}}}
-EOF
+PY2
 ln -s "$ASAP7/asap7sc7p5t_28/LEF/asap7sc7p5t_28_R_1x_220121a.lef" "$ROOT/libs/$CELL_LIB/lef/$CELL_LIB.lef"
 # Workaround for klayout-tools #4088: M2 declares OFFSET -0.27 and bare make_tracks aborts.
 TECH_SRC="$ASAP7/asap7sc7p5t_28/techlef_misc/asap7_tech_1x_201209.lef"
