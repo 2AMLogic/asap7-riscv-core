@@ -1,4 +1,3 @@
 {
-  "I-jalr-01": "not built: the pinned xPack GCC 15.2.0 assembler rejects the upstream source (`la x0,5b`, illegal operands). Upstream is unmodified, so the test is not run.",
-  "C-cebreak-01": "built and run, but NOT passing and NOT diagnosed: after c.ebreak the core vectors to 0x80000000 (CVE2 mtvec is fixed at boot_addr) and the arch-test trampoline there loops, so tohost is never written. Excluded so the run is not hidden behind a hang; the failure is open, not accepted."
+  "C-cebreak-01": "diagnosed, not a bench-glue fault: the suite's trap prolog (riscv-arch-test README, target requirement 1) needs a fully writable mtvec. CVE2 forces mtvec = {base[31:8], 6'b0, MODE=2'b01}, so the prolog's read-back never equals its trampoline address and it falls back to copying the 16-word trampoline over the reset mtvec value, using that raw value (0x80000001, MODE bit included) as a word pointer. The copy lands one byte off, 0x80000000 holds 0x00006f00, and c.ebreak vectors into a fetch loop at 0x80000000..0x80000008 so tohost is never written. See spec/decisions/0011-c-cebreak-01-mtvec-not-writable.md."
 }

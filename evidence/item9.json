@@ -24,14 +24,14 @@
         "role": "testbench",
         "path": "verification/core/build_tests.py",
         "passed": true,
-        "content_hash": "sha256:d40bb1887c68c4964026725bcf8412f3e422a1cd15870d0e057ce22a1e6d9728"
+        "content_hash": "sha256:7f45dd28395b0cf60d8674617fe11aefb2c5578c48895a55f3290888c58841f4"
       },
       {
         "check": "present",
         "role": "testbench",
         "path": "verification/core/excluded.json",
         "passed": true,
-        "content_hash": "sha256:aee09e11c3534b9706b4c21bc6d4604a1bb38222f57df1303d219d373bb74581"
+        "content_hash": "sha256:123d19a459a8e7f4b8952711cf8a220388f1da48195c81f5af74cc81c49c6f68"
       },
       {
         "check": "present",
@@ -59,7 +59,7 @@
         "role": "testbench",
         "path": "verification/core/setup.sh",
         "passed": true,
-        "content_hash": "sha256:5179420c3cc0908b38cc9c6bbc6af0f307055717c7b90380c92b900a8749a733"
+        "content_hash": "sha256:818148f1c5382e94aa452c4239167600d007fdc22c0e238212f1a01ea329ed61"
       },
       {
         "check": "present",
@@ -112,6 +112,7 @@
           "cve2": "d7f21568028a1114be663599bd42145dccf28928",
           "iverilog": "13.0",
           "klt": "0.8.0",
+          "llvm-clang": "19.1.7",
           "python": "3.12",
           "riscv-arch-test": "331b0cd934eda5d0b177556669d56a9e34e0d030",
           "riscv-none-elf-gcc": "v15.2.0-1",
@@ -132,7 +133,7 @@
         "path": "attest/item9.json",
         "scope": "repo"
       },
-      "content_hash": "sha256:df12dece5cb0441634688e30beb6151acb0c4889da31d7933f135833b59010f8"
+      "content_hash": "sha256:306dffb5b56954d9142b6b8f4256caa2a75c0c8bbf75e01b3970eefc90a9904d"
     }
   }
 }

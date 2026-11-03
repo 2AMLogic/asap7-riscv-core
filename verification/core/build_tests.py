@@ -24,6 +24,12 @@ MEM_WORDS = 1 << 19  # 2 MiB
 EXCLUDE = json.loads((HERE / "excluded.json").read_text())
 
 
+# Tests assembled with the pinned LLVM clang instead of GNU gcc: the upstream
+# source uses `la x0,<label>`, which GNU as rejects ("illegal operands"). The
+# source is unmodified; clang emits `auipc zero`, and the pinned GNU ld links it.
+CLANG_ASSEMBLED = {"I-jalr-01"}
+
+
 def paths():
     return dict(l.split("=", 1) for l in (BUILD / "paths.env").read_text().split())
 
@@ -41,13 +47,24 @@ def build_one(p, at, ext, src, out):
     if name in EXCLUDE:
         return None
     elf = out / f"{name}.elf"
-    subprocess.run(
-        [p["GCC"], "-march=rv32imc_zicsr", "-mabi=ilp32", "-static", "-mcmodel=medany",
-         "-fvisibility=hidden", "-nostdlib", "-nostartfiles", "-DXLEN=32", "-DTEST_CASE_1=True",
-         "-w", "-T", str(HERE / "link.ld"), f"-I{HERE}", f"-I{at}/riscv-test-suite/env",
-         str(src), "-o", str(elf)], check=True)
-    # Memory image.
     gcc_bin = Path(p["GCC"]).parent
+    inc = [f"-I{HERE}", f"-I{at}/riscv-test-suite/env"]
+    defs = ["-DXLEN=32", "-DTEST_CASE_1=True"]
+    if name in CLANG_ASSEMBLED:
+        obj = out / f"{name}.o"
+        subprocess.run(
+            [p["CLANG"], "--target=riscv32", "-march=rv32imc_zicsr", "-mabi=ilp32", "-mno-relax",
+             "-w", *defs, *inc, "-c", str(src), "-o", str(obj)], check=True)
+        subprocess.run([str(gcc_bin / "riscv-none-elf-ld"), "-T", str(HERE / "link.ld"),
+                        "-o", str(elf), str(obj)], check=True)
+        obj.unlink()
+    else:
+        subprocess.run(
+            [p["GCC"], "-march=rv32imc_zicsr", "-mabi=ilp32", "-static", "-mcmodel=medany",
+             "-fvisibility=hidden", "-nostdlib", "-nostartfiles", *defs,
+             "-w", "-T", str(HERE / "link.ld"), *inc,
+             str(src), "-o", str(elf)], check=True)
+    # Memory image.
     objcopy = gcc_bin / "riscv-none-elf-objcopy"
     binf = out / f"{name}.bin"
     subprocess.run([str(objcopy), "-O", "binary", str(elf), str(binf)], check=True)

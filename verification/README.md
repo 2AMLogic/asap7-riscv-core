@@ -63,15 +63,23 @@ fail on exactly that.
 
 What it claims: RTL simulation of the converted source (not the gate-level
 netlist) matches Sail on the programs actually run, which are those listed in
-`results.xml` (71 as of this writing). The target-specific glue is
+`results.xml` (72 as of this writing). The target-specific glue is
 `core/model_test.h` and `core/link.ld` (program at `0x80000080` because CVE2
 boots at `boot_addr_i`; RAM at `0x80000000`).
 
 **Not run, with reasons, in `core/excluded.json`:**
 
-- `I-jalr-01`: the pinned GCC assembler rejects the upstream source.
-- `C-cebreak-01`: runs but hangs in the trap path; the cause is not diagnosed.
-  This is an open failure, not an accepted one.
+- `C-cebreak-01`: the suite's trap prolog needs a fully writable `mtvec`; CVE2
+  forces `mtvec` MODE=01 and a 256-byte-aligned base, so the prolog copies its
+  trampoline one byte off and `c.ebreak` lands in a fetch loop. Diagnosed with a
+  measurement in
+  [decision 0011](../spec/decisions/0011-c-cebreak-01-mtvec-not-writable.md);
+  not bench glue, and the exclusion stays.
+
+`I-jalr-01` is no longer excluded: the pinned GCC's assembler rejects the
+upstream `la x0,<label>`, so `build_tests.py` assembles that one program with
+the pinned LLVM clang (`llvm_release` in `tool-versions.txt`) and links it with
+the pinned GNU `ld`. The upstream source is unmodified.
 
 Sail's default RV32 configuration is richer than RV32IMC; the programs only
 exercise I/M/C instructions, but the golden model is not configured down to
