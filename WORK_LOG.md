@@ -5,6 +5,8 @@ triage role. Newest first.
 
 ### 2026-11-03
 
+- **PR #49**: test: run riscv-arch-test I/M/C on the RV32IMC core and attest T1 item 9
+- **Issue #27** (closed): T1 item 9 (testbenches shipped): core-level RV32IMC test suite with cold-start invocation and --attest 9 inventory
 - **PR #45**: feat(flow): synthesize unmodified CVE2 RV32IMC and attest design sources
 - **Issue #25** (closed): T1 item 1 (design sources): fetch the pinned CVE2 RTL and synthesize cve2_top to a committed ASAP7 gate-level netlist
 
