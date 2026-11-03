@@ -28,20 +28,12 @@ def paths():
 
 
 def convert(p, out: Path) -> Path:
-    """sv2v exactly as flow/core/synth.sh does (same closure, same flags)."""
-    up = Path(p["CVE2"])
-    prim = "vendor/lowrisc_ip/ip/prim/rtl"
-    rest = sorted(
-        str(f.relative_to(up)) for f in (up / "rtl").glob("*.sv")
-        if f.name not in ("cve2_pkg.sv", "cve2_core.sv", "cve2_top.sv")
-    )
+    """Convert via flow/core/sv2v.sh, the same entry point flow/core/synth.sh sources."""
     dest = out / f"{TOP}.v"
     subprocess.run(
-        [p["SV2V"], "-DSYNTHESIS", "-I", prim, "-I", "rtl", "-I", "vendor/lowrisc_ip/dv/sv/dv_utils",
-         f"{prim}/prim_assert.sv", "rtl/cve2_pkg.sv", f"{prim}/prim_ram_1p_pkg.sv", *rest,
-         "rtl/cve2_core.sv", "rtl/cve2_top.sv", str(REPO / "rtl" / f"{TOP}.sv"),
-         "--top", TOP, "-w", str(dest)],
-        cwd=up, check=True)
+        ["bash", str(REPO / "flow" / "core" / "sv2v.sh"), "convert", p["SV2V"], p["CVE2"],
+         str(REPO / "rtl" / f"{TOP}.sv"), TOP, str(dest)],
+        check=True)
     return dest
 
 

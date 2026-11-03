@@ -84,19 +84,10 @@ fi
   || die "clang version is not $LLVM_REL"
 
 # ---- sv2v (the pin flow/core/synth.sh uses, read from spec/core.md) ----------
-PIN_SV2V="$(grep -o 'sv2v v[0-9][0-9.]*' "$REPO/spec/core.md" | head -1 | cut -d' ' -f2)"
-PIN_SV2V_SHA="$(grep -A2 'zachjs/sv2v' "$REPO/spec/core.md" | grep -o '[0-9a-f]\{64\}' | head -1)"
-[ -n "$PIN_SV2V" ] && [ -n "$PIN_SV2V_SHA" ] || die "could not read the sv2v pin from spec/core.md"
+# shellcheck source=flow/core/sv2v.sh
+. "$REPO/flow/core/sv2v.sh"
+sv2v_ensure "$BUILD"
 SV2V_DIR="$BUILD/sv2v/$PIN_SV2V"
-if [ ! -x "$SV2V_DIR/sv2v-Linux/sv2v" ]; then
-  mkdir -p "$SV2V_DIR"
-  fetch_checked "https://github.com/zachjs/sv2v/releases/download/$PIN_SV2V/sv2v-Linux.zip" \
-    "$SV2V_DIR/sv2v-Linux.zip" "$PIN_SV2V_SHA"
-  python3 -I -c 'import sys, zipfile; zipfile.ZipFile(sys.argv[1]).extractall(sys.argv[2])' \
-    "$SV2V_DIR/sv2v-Linux.zip" "$SV2V_DIR"
-  chmod +x "$SV2V_DIR/sv2v-Linux/sv2v"
-fi
-[ "$("$SV2V_DIR/sv2v-Linux/sv2v" --version)" = "sv2v $PIN_SV2V" ] || die "sv2v version is not $PIN_SV2V"
 
 # ---- CVE2 closure, sha256-checked against reuse.lock.json --------------------
 if [ ! -f "$BUILD/cve2/upstream/rtl/cve2_top.sv" ]; then
