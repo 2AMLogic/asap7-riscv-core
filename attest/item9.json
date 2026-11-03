@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "kind": "t1-attestation-inventory",
+  "t1_item": 9,
+  "description": "Testbenches backing the core-functional claim only: the riscv-arch-test I/M/C subset (71 programs; I-jalr-01 and C-cebreak-01 are excluded with reasons in verification/core/excluded.json) run on cve2_rv32imc_wrapper under cocotb + Icarus, signatures compared with the Sail golden model; plus the negative control. flow/smoke/run.sh drives the ASAP7 smoke flow on the placeholder counter DUT only; it is listed as a driver, backs no core claim, and its cold start (needs an ASAP7 checkout and writes a dated record) is not run by this attestation. No bench exists yet for the standard-cells, predicted-clock, drc or lvs rows (owners: #28 standard-cells, #6 predicted-clock, #29 drc, #30 lvs). RTL simulation of the converted CVE2 closure, not the gate-level netlist. ASAP7 is a predictive PDK; nothing here is fabricated or measured.",
+  "testbenches": [
+    "verification/run.sh",
+    "verification/core/setup.sh",
+    "verification/core/build_tests.py",
+    "verification/core/runner.py",
+    "verification/core/tb_core.v",
+    "verification/core/test_archtest.py",
+    "verification/core/model_test.h",
+    "verification/core/link.ld",
+    "verification/core/excluded.json",
+    "flow/smoke/run.sh"
+  ],
+  "cold_start": {
+    "argv": [
+      "verification/run.sh",
+      "--core"
+    ],
+    "local_only": true,
+    "timeout_s": 1800
+  },
+  "pins": {
+    "pdk": {
+      "name": "asap7",
+      "revision": "d24f8b857ff74cf5b21ab18a7e1b11a3954c449b"
+    },
+    "tools": {
+      "klt": "0.8.0",
+      "iverilog": "13.0",
+      "verilator": "5.050",
+      "python": "3.12",
+      "cocotb": "2.0.1",
+      "sv2v": "v0.0.13",
+      "cve2": "d7f21568028a1114be663599bd42145dccf28928",
+      "riscv-arch-test": "331b0cd934eda5d0b177556669d56a9e34e0d030",
+      "sail-riscv": "2026-11-02-a83603b",
+      "riscv-none-elf-gcc": "v15.2.0-1"
+    }
+  }
+}

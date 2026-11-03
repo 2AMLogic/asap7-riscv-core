@@ -111,3 +111,6 @@ verification/runs/
 
 # Repo Skills Codex-side machine-local install metadata (never committed)
 .agents/skills/repo/.install-local.json
+
+# verification/core tool downloads (verification/core/setup.sh)
+verification/build/
