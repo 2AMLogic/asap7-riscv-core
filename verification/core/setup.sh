@@ -65,6 +65,24 @@ if [ ! -x "$GCC_DIR/$GCC_NAME/bin/riscv-none-elf-gcc" ]; then
   tar xzf "$GCC_DIR/gcc.tar.gz" -C "$GCC_DIR"
 fi
 
+# ---- LLVM clang, used only as the assembler for the tests GNU as rejects ----
+# (I-jalr-01: `la x0,<label>` is an illegal operand to GNU as >= 2.36 but valid
+# for LLVM's assembler). Only bin/clang-<major> is extracted; linking stays with
+# the pinned GNU toolchain above.
+LLVM_REL="$(pin llvm_release)"
+LLVM_DIR="$BUILD/llvm/$LLVM_REL"
+LLVM_NAME="LLVM-$LLVM_REL-Linux-X64"
+LLVM_MAJOR="${LLVM_REL%%.*}"
+if [ ! -x "$LLVM_DIR/$LLVM_NAME/bin/clang-$LLVM_MAJOR" ]; then
+  mkdir -p "$LLVM_DIR"
+  fetch_checked "https://github.com/llvm/llvm-project/releases/download/llvmorg-$LLVM_REL/$LLVM_NAME.tar.xz" \
+    "$LLVM_DIR/llvm.tar.xz" "$(pin llvm_sha256)"
+  tar xJf "$LLVM_DIR/llvm.tar.xz" -C "$LLVM_DIR" "$LLVM_NAME/bin/clang-$LLVM_MAJOR"
+  rm -f "$LLVM_DIR/llvm.tar.xz"
+fi
+"$LLVM_DIR/$LLVM_NAME/bin/clang-$LLVM_MAJOR" --version | head -1 | grep -q "clang version $LLVM_REL" \
+  || die "clang version is not $LLVM_REL"
+
 # ---- sv2v (the pin flow/core/synth.sh uses, read from spec/core.md) ----------
 PIN_SV2V="$(grep -o 'sv2v v[0-9][0-9.]*' "$REPO/spec/core.md" | head -1 | cut -d' ' -f2)"
 PIN_SV2V_SHA="$(grep -A2 'zachjs/sv2v' "$REPO/spec/core.md" | grep -o '[0-9a-f]\{64\}' | head -1)"
@@ -91,6 +109,7 @@ AT=$AT
 SAIL=$SAIL_DIR/sail-riscv-Linux-x86_64/bin/sail_riscv_sim
 GCC=$GCC_DIR/$GCC_NAME/bin/riscv-none-elf-gcc
 SV2V=$SV2V_DIR/sv2v-Linux/sv2v
+CLANG=$LLVM_DIR/$LLVM_NAME/bin/clang-$LLVM_MAJOR
 CVE2=$BUILD/cve2/upstream
 EOF
 echo "setup.sh: ok"

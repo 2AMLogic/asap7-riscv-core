@@ -17,3 +17,9 @@ sail_riscv_sha256=cd2eb9f04ccb31e26590b090d70af94e87349d9265df6299710dc7e46df2c8
 # Bare-metal RV32 toolchain (xPack GNU RISC-V Embedded GCC).
 riscv_gcc_release=v15.2.0-1
 riscv_gcc_sha256=aaaa8060c914851a3e5ee1ba82cc3d6f80972f90638a05c6e823a37557a33758
+# Assembler for tests the GNU assembler rejects (only I-jalr-01: `la x0,<label>`).
+# LLVM 19.1.7 release (the 18.1.8 x86_64 tarball needs libtinfo.so.5, absent on
+# current hosts); only bin/clang-19 is used, as an assembler. Linking stays with
+# the pinned xPack GCC's ld.
+llvm_release=19.1.7
+llvm_sha256=4a5ec53951a584ed36f80240f6fbf8fdd46b4cf6c7ee87cc2d5018dc37caf679
