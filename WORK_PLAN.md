@@ -49,6 +49,7 @@ _None._
 
 Issues carrying `loom:curated`.
 
+- **#6**: Track the gap to T1 (klayout-tools design-evidence-tiers.md) *(curated)*
 - **#17**: Follow-on from PR #16: place-and-route on the counter smoke DUT (par.json is not_run) *(curated)*
 
 ## Proposed (Architect / Hermit)
@@ -70,7 +71,7 @@ _None._
 | In Progress (`loom:building`) | 0 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 0 |
-| Curated | 1 |
+| Curated | 2 |
 | Architect / Hermit proposals | 0 |
 | Active epics | 0 |
 <!-- guide:plan-body:end -->
