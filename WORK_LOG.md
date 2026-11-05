@@ -5,6 +5,8 @@ triage role. Newest first.
 
 ### 2026-11-05
 
+- **PR #63**: feat: run core arch-test suite through klt functional-verification
+- **Issue #59** (closed): Run the riscv-arch-test core suite through klt functional-verification and commit the report
 - **PR #61**: feat: add SIMPLE RVT FF Liberty comparison script and record
 - **Issue #60** (closed): Gather evidence on whether the SIMPLE RVT FF Liberty is characterised at 0.77 V / 0 °C
 
