@@ -1,0 +1,396 @@
+{
+  "headers": {
+    "AO_FF": {
+      "default_operating_conditions": "PVT_0P77V_0C",
+      "file": "asap7sc7p5t_AO_RVT_FF_nldm_211120.lib",
+      "n_cells": 42,
+      "nom_temperature": "0",
+      "nom_voltage": "0.77",
+      "oc_temperature": "0",
+      "oc_voltage": "0.77",
+      "operating_conditions": "PVT_0P77V_0C"
+    },
+    "AO_SS": {
+      "default_operating_conditions": "PVT_0P63V_100C",
+      "file": "asap7sc7p5t_AO_RVT_SS_nldm_211120.lib",
+      "n_cells": 42,
+      "nom_temperature": "100",
+      "nom_voltage": "0.63",
+      "oc_temperature": "100",
+      "oc_voltage": "0.63",
+      "operating_conditions": "PVT_0P63V_100C"
+    },
+    "AO_TT": {
+      "default_operating_conditions": "PVT_0P7V_25C",
+      "file": "asap7sc7p5t_AO_RVT_TT_nldm_211120.lib",
+      "n_cells": 42,
+      "nom_temperature": "25",
+      "nom_voltage": "0.7",
+      "oc_temperature": "25",
+      "oc_voltage": "0.7",
+      "operating_conditions": "PVT_0P7V_25C"
+    },
+    "INVBUF_FF": {
+      "default_operating_conditions": "PVT_0P77V_0C",
+      "file": "asap7sc7p5t_INVBUF_RVT_FF_nldm_220122.lib",
+      "n_cells": 37,
+      "nom_temperature": "0",
+      "nom_voltage": "0.77",
+      "oc_temperature": "0",
+      "oc_voltage": "0.77",
+      "operating_conditions": "PVT_0P77V_0C"
+    },
+    "INVBUF_SS": {
+      "default_operating_conditions": "PVT_0P63V_100C",
+      "file": "asap7sc7p5t_INVBUF_RVT_SS_nldm_220122.lib",
+      "n_cells": 37,
+      "nom_temperature": "100",
+      "nom_voltage": "0.63",
+      "oc_temperature": "100",
+      "oc_voltage": "0.63",
+      "operating_conditions": "PVT_0P63V_100C"
+    },
+    "INVBUF_TT": {
+      "default_operating_conditions": "PVT_0P7V_25C",
+      "file": "asap7sc7p5t_INVBUF_RVT_TT_nldm_220122.lib",
+      "n_cells": 37,
+      "nom_temperature": "25",
+      "nom_voltage": "0.7",
+      "oc_temperature": "25",
+      "oc_voltage": "0.7",
+      "operating_conditions": "PVT_0P7V_25C"
+    },
+    "OA_FF": {
+      "default_operating_conditions": "PVT_0P77V_0C",
+      "file": "asap7sc7p5t_OA_RVT_FF_nldm_211120.lib",
+      "n_cells": 34,
+      "nom_temperature": "0",
+      "nom_voltage": "0.77",
+      "oc_temperature": "0",
+      "oc_voltage": "0.77",
+      "operating_conditions": "PVT_0P77V_0C"
+    },
+    "OA_SS": {
+      "default_operating_conditions": "PVT_0P63V_100C",
+      "file": "asap7sc7p5t_OA_RVT_SS_nldm_211120.lib",
+      "n_cells": 34,
+      "nom_temperature": "100",
+      "nom_voltage": "0.63",
+      "oc_temperature": "100",
+      "oc_voltage": "0.63",
+      "operating_conditions": "PVT_0P63V_100C"
+    },
+    "OA_TT": {
+      "default_operating_conditions": "PVT_0P7V_25C",
+      "file": "asap7sc7p5t_OA_RVT_TT_nldm_211120.lib",
+      "n_cells": 34,
+      "nom_temperature": "25",
+      "nom_voltage": "0.7",
+      "oc_temperature": "25",
+      "oc_voltage": "0.7",
+      "operating_conditions": "PVT_0P7V_25C"
+    },
+    "SEQ_FF": {
+      "default_operating_conditions": "PVT_0P77V_0C",
+      "file": "asap7sc7p5t_SEQ_RVT_FF_nldm_220123.lib",
+      "n_cells": 33,
+      "nom_temperature": "0",
+      "nom_voltage": "0.77",
+      "oc_temperature": "0",
+      "oc_voltage": "0.77",
+      "operating_conditions": "PVT_0P77V_0C"
+    },
+    "SEQ_SS": {
+      "default_operating_conditions": "PVT_0P63V_100C",
+      "file": "asap7sc7p5t_SEQ_RVT_SS_nldm_220123.lib",
+      "n_cells": 33,
+      "nom_temperature": "100",
+      "nom_voltage": "0.63",
+      "oc_temperature": "100",
+      "oc_voltage": "0.63",
+      "operating_conditions": "PVT_0P63V_100C"
+    },
+    "SEQ_TT": {
+      "default_operating_conditions": "PVT_0P7V_25C",
+      "file": "asap7sc7p5t_SEQ_RVT_TT_nldm_220123.lib",
+      "n_cells": 33,
+      "nom_temperature": "25",
+      "nom_voltage": "0.7",
+      "oc_temperature": "25",
+      "oc_voltage": "0.7",
+      "operating_conditions": "PVT_0P7V_25C"
+    },
+    "SIMPLE_FF": {
+      "default_operating_conditions": "PVT_0P7V_25C",
+      "file": "asap7sc7p5t_SIMPLE_RVT_FF_nldm_211120.lib",
+      "n_cells": 56,
+      "nom_temperature": "25",
+      "nom_voltage": "0.7",
+      "oc_temperature": "25",
+      "oc_voltage": "0.7",
+      "operating_conditions": "PVT_0P7V_25C"
+    },
+    "SIMPLE_SS": {
+      "default_operating_conditions": "PVT_0P63V_100C",
+      "file": "asap7sc7p5t_SIMPLE_RVT_SS_nldm_211120.lib",
+      "n_cells": 56,
+      "nom_temperature": "100",
+      "nom_voltage": "0.63",
+      "oc_temperature": "100",
+      "oc_voltage": "0.63",
+      "operating_conditions": "PVT_0P63V_100C"
+    },
+    "SIMPLE_TT": {
+      "default_operating_conditions": "PVT_0P7V_25C",
+      "file": "asap7sc7p5t_SIMPLE_RVT_TT_nldm_211120.lib",
+      "n_cells": 56,
+      "nom_temperature": "25",
+      "nom_voltage": "0.7",
+      "oc_temperature": "25",
+      "oc_voltage": "0.7",
+      "operating_conditions": "PVT_0P7V_25C"
+    }
+  },
+  "later_upstream_check": "remote head e5bd25da72cd297b8c0ec6f77600e0cbaa1124d0; commits after pin touching the SIMPLE RVT FF Liberty: 66eaebcda32195db3777da9ba3389fbe509cba76 2025-04-30 Corrected three wrongly extracted SIMPLE_RVT_FF Liberty files.",
+  "note": "predicted (ASAP7 is a predictive PDK); ratios of Liberty NLDM delay-table values, not measurements",
+  "pinned_asap7sc7p5t_28": "f970bd3c3292b79ae4d022a3ec80533534614066",
+  "points_index_pairs": [
+    [
+      1,
+      1
+    ],
+    [
+      3,
+      3
+    ],
+    [
+      5,
+      5
+    ]
+  ],
+  "ratios_by_group": {
+    "AO": {
+      "FF_over_TT": {
+        "cells_missing_or_mismatched": [],
+        "grids_identical": true,
+        "max": 0.8286,
+        "median": 0.736,
+        "min": 0.6594,
+        "n_samples": 15234,
+        "n_tables": 5078
+      },
+      "SS_over_TT": {
+        "cells_missing_or_mismatched": [],
+        "grids_identical": true,
+        "max": 1.5703,
+        "median": 1.4446,
+        "min": 1.2627,
+        "n_samples": 15234,
+        "n_tables": 5078
+      }
+    },
+    "INVBUF": {
+      "FF_over_TT": {
+        "cells_missing_or_mismatched": [],
+        "grids_identical": true,
+        "max": 0.8303,
+        "median": 0.7649,
+        "min": 0.6769,
+        "n_samples": 222,
+        "n_tables": 74
+      },
+      "SS_over_TT": {
+        "cells_missing_or_mismatched": [],
+        "grids_identical": true,
+        "max": 1.5486,
+        "median": 1.3736,
+        "min": 1.2533,
+        "n_samples": 222,
+        "n_tables": 74
+      }
+    },
+    "OA": {
+      "FF_over_TT": {
+        "cells_missing_or_mismatched": [],
+        "grids_identical": true,
+        "max": 0.8221,
+        "median": 0.736,
+        "min": 0.6654,
+        "n_samples": 13764,
+        "n_tables": 4588
+      },
+      "SS_over_TT": {
+        "cells_missing_or_mismatched": [],
+        "grids_identical": true,
+        "max": 1.6007,
+        "median": 1.4442,
+        "min": 1.2331,
+        "n_samples": 13764,
+        "n_tables": 4588
+      }
+    },
+    "SEQ": {
+      "FF_over_TT": {
+        "cells_missing_or_mismatched": [],
+        "grids_identical": true,
+        "max": 0.7741,
+        "median": 0.7251,
+        "min": 0.5835,
+        "n_samples": 339,
+        "n_tables": 113
+      },
+      "SS_over_TT": {
+        "cells_missing_or_mismatched": [],
+        "grids_identical": true,
+        "max": 1.5761,
+        "median": 1.4557,
+        "min": 1.3242,
+        "n_samples": 339,
+        "n_tables": 113
+      }
+    },
+    "SIMPLE": {
+      "FF_over_TT": {
+        "cells_missing_or_mismatched": [],
+        "grids_identical": true,
+        "max": 0.9016,
+        "median": 0.8434,
+        "min": 0.7734,
+        "n_samples": 1314,
+        "n_tables": 438
+      },
+      "SS_over_TT": {
+        "cells_missing_or_mismatched": [],
+        "grids_identical": true,
+        "max": 1.607,
+        "median": 1.4366,
+        "min": 1.2546,
+        "n_samples": 1314,
+        "n_tables": 438
+      }
+    }
+  },
+  "schema_version": 1,
+  "simple_FF_tables_identical_to_TT": false,
+  "simple_cells": {
+    "AND2x2_ASAP7_75t_R": {
+      "FF_over_TT": {
+        "cells_missing_or_mismatched": [],
+        "grids_identical": true,
+        "max": 0.8557,
+        "median": 0.8386,
+        "min": 0.799,
+        "n_samples": 12,
+        "n_tables": 4
+      },
+      "SS_over_TT": {
+        "cells_missing_or_mismatched": [],
+        "grids_identical": true,
+        "max": 1.5421,
+        "median": 1.4465,
+        "min": 1.3828,
+        "n_samples": 12,
+        "n_tables": 4
+      }
+    },
+    "MAJx2_ASAP7_75t_R": {
+      "FF_over_TT": {
+        "cells_missing_or_mismatched": [],
+        "grids_identical": true,
+        "max": 0.8632,
+        "median": 0.8419,
+        "min": 0.8021,
+        "n_samples": 54,
+        "n_tables": 18
+      },
+      "SS_over_TT": {
+        "cells_missing_or_mismatched": [],
+        "grids_identical": true,
+        "max": 1.5333,
+        "median": 1.4402,
+        "min": 1.3956,
+        "n_samples": 54,
+        "n_tables": 18
+      }
+    },
+    "NAND2xp5_ASAP7_75t_R": {
+      "FF_over_TT": {
+        "cells_missing_or_mismatched": [],
+        "grids_identical": true,
+        "max": 0.8713,
+        "median": 0.8663,
+        "min": 0.8481,
+        "n_samples": 12,
+        "n_tables": 4
+      },
+      "SS_over_TT": {
+        "cells_missing_or_mismatched": [],
+        "grids_identical": true,
+        "max": 1.3962,
+        "median": 1.3575,
+        "min": 1.3108,
+        "n_samples": 12,
+        "n_tables": 4
+      }
+    },
+    "NOR2xp33_ASAP7_75t_R": {
+      "FF_over_TT": {
+        "cells_missing_or_mismatched": [],
+        "grids_identical": true,
+        "max": 0.8573,
+        "median": 0.844,
+        "min": 0.8288,
+        "n_samples": 12,
+        "n_tables": 4
+      },
+      "SS_over_TT": {
+        "cells_missing_or_mismatched": [],
+        "grids_identical": true,
+        "max": 1.4903,
+        "median": 1.4081,
+        "min": 1.3486,
+        "n_samples": 12,
+        "n_tables": 4
+      }
+    },
+    "XOR2xp5_ASAP7_75t_R": {
+      "FF_over_TT": {
+        "cells_missing_or_mismatched": [],
+        "grids_identical": true,
+        "max": 0.8809,
+        "median": 0.8456,
+        "min": 0.8054,
+        "n_samples": 24,
+        "n_tables": 8
+      },
+      "SS_over_TT": {
+        "cells_missing_or_mismatched": [],
+        "grids_identical": true,
+        "max": 1.5616,
+        "median": 1.4186,
+        "min": 1.3092,
+        "n_samples": 24,
+        "n_tables": 8
+      }
+    }
+  },
+  "summary": {
+    "reading": "SIMPLE FF/TT is share_of_reference_ff_speedup of the way from TT (0) to the reference FF/TT (1). A share near 0 means TT data, near 1 means FF data; a value between them fits neither stated explanation and is reported as inconclusive (e.g. FF-process tables run at the TT voltage/temperature in the header would land here).",
+    "reference_FF_over_TT_median": 0.7504500000000001,
+    "reference_SS_over_TT_median": 1.4091,
+    "reference_groups": [
+      "INVBUF",
+      "AO"
+    ],
+    "simple_FF_over_TT_median": 0.8434,
+    "simple_SS_over_TT_median": 1.4366,
+    "simple_share_of_reference_ff_speedup": 0.628,
+    "verdict": "inconclusive"
+  },
+  "thresholds": {
+    "ff_like_band": 0.05,
+    "min_ref_gap": 0.05,
+    "rule": "TT-like if |r_simple-1|<=tt_like_band; FF-with-wrong-header if |r_simple-r_ref|<=ff_like_band; both need 1-r_ref>=min_ref_gap; else inconclusive",
+    "tt_like_band": 0.02
+  }
+}
