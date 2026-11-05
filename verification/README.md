@@ -95,6 +95,26 @@ uvx --python 3.12 --from "klayout-tools==0.8.0" klt signoff --attest 9 \
     --inventory attest/item9.json -o evidence/item9.json
 ```
 
+## klt functional-verification report (core, RTL)
+
+```sh
+verification/fv.sh [OUT_DIR]                     # exit 0 only if every program passes
+verification/fv.sh --negative-control [OUT_DIR]  # flipped signature word; exit 0 only if the run FAILS
+```
+
+Runs the same suite as core mode (same `setup.sh`, `build_tests.py`, sv2v conversion,
+`tb_core.v` and `test_archtest.py`) through `klt functional-verification` from the pinned
+`klayout-tools` release (`klayout_tools` in `tool-versions.txt`, fetched by `uvx`, with the
+pinned cocotb). One klt request per program is written to `OUT_DIR/requests/`; the program
+image and tohost address reach `tb_core.v` as `-D` macros because a klt request has no
+plusargs. `OUT_DIR/report.json` collects the per-program klt responses.
+
+Committed run: `records/2026-11-05/klt-fv-core-archtest.json` (72 programs, 0 failed;
+`C-cebreak-01` excluded per `core/excluded.json`) and
+`records/2026-11-05/klt-fv-core-archtest-negative-control.json` (1 program, signature
+mismatch reported). This is RTL evidence only and is **not** cited for T1 item 5 on its own:
+item 5 stays `unmet` until the multi-corner `klt sta` half lands (#32).
+
 ## Pinned versions
 
 | What | Pin | File |
@@ -103,6 +123,7 @@ uvx --python 3.12 --from "klayout-tools==0.8.0" klt signoff --attest 9 \
 | Verilator | 5.050 | `tool-versions.txt` |
 | Python | 3.12 | `tool-versions.txt` |
 | cocotb | 2.0.1 | `requirements.txt` |
+| klayout-tools (`fv.sh`) | 0.8.0 | `tool-versions.txt` |
 | riscv-arch-test, Sail, RISC-V GCC (core mode) | see file | `tool-versions.txt` |
 
 The harness only checks host tool versions; it never installs or upgrades

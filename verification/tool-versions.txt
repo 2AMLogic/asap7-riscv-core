@@ -23,3 +23,6 @@ riscv_gcc_sha256=aaaa8060c914851a3e5ee1ba82cc3d6f80972f90638a05c6e823a37557a3375
 # the pinned xPack GCC's ld.
 llvm_release=19.1.7
 llvm_sha256=4a5ec53951a584ed36f80240f6fbf8fdd46b4cf6c7ee87cc2d5018dc37caf679
+
+# Release of klayout-tools used by verification/fv.sh (spec/decisions/0008).
+klayout_tools=0.8.0

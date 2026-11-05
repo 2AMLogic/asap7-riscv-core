@@ -41,9 +41,17 @@ module tb_core;
   reg [1023:0] hexfile;
   initial begin
     for (k = 0; k < WORDS; k = k + 1) mem[k] = 32'h0;
+`ifdef HEX_FILE
+    // klt functional-verification requests carry no plusargs: verification/fv.sh
+    // passes the program image path and the tohost address (hex digits) as -D
+    // macros, which the runner renders as SV string literals.
+    if ($sscanf(`TOHOST_HEX, "%h", tohost_addr) != 1) begin $display("tb_core: bad TOHOST_HEX"); $finish; end
+    $readmemh(`HEX_FILE, mem);
+`else
     if (!$value$plusargs("HEX=%s", hexfile)) begin $display("tb_core: +HEX missing"); $finish; end
     if (!$value$plusargs("TOHOST=%h", tohost_addr)) begin $display("tb_core: +TOHOST missing"); $finish; end
     $readmemh(hexfile, mem);
+`endif
   end
 
   always @(posedge clk) begin

@@ -1,0 +1,2675 @@
+{
+  "suite": "riscv-arch-test",
+  "negative_control": false,
+  "tests_run": 72,
+  "tests_failed": 0,
+  "excluded": {
+    "C-cebreak-01": "diagnosed, not a bench-glue fault: the suite's trap prolog (riscv-arch-test README, target requirement 1) needs a fully writable mtvec. CVE2 forces mtvec = {base[31:8], 6'b0, MODE=2'b01}, so the prolog's read-back never equals its trampoline address and it falls back to copying the 16-word trampoline over the reset mtvec value, using that raw value (0x80000001, MODE bit included) as a word pointer. The copy lands one byte off, 0x80000000 holds 0x00006f00, and c.ebreak vectors into a fetch loop at 0x80000000..0x80000008 so tohost is never written. See spec/decisions/0011-c-cebreak-01-mtvec-not-writable.md."
+  },
+  "results": [
+    {
+      "test": "I-add-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 38130.0,
+            "real_time_s": 2.7721617221832275
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/I-add-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/I-add-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/I-add-01/build_icarus.log",
+          "random_seed": 1793855058,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "I-addi-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 27130.0,
+            "real_time_s": 1.9818627834320068
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/I-addi-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/I-addi-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/I-addi-01/build_icarus.log",
+          "random_seed": 1793855062,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "I-and-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 37840.0,
+            "real_time_s": 2.5480284690856934
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/I-and-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/I-and-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/I-and-01/build_icarus.log",
+          "random_seed": 1793855065,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "I-andi-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 27190.0,
+            "real_time_s": 2.118614435195923
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/I-andi-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/I-andi-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/I-andi-01/build_icarus.log",
+          "random_seed": 1793855069,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "I-auipc-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 4700.0,
+            "real_time_s": 0.6934971809387207
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/I-auipc-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/I-auipc-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/I-auipc-01/build_icarus.log",
+          "random_seed": 1793855072,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "I-beq-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 79120.0,
+            "real_time_s": 4.579898834228516
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/I-beq-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/I-beq-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/I-beq-01/build_icarus.log",
+          "random_seed": 1793855073,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "I-bge-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 85580.0,
+            "real_time_s": 5.391202688217163
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/I-bge-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/I-bge-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/I-bge-01/build_icarus.log",
+          "random_seed": 1793855078,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "I-bgeu-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 104350.0,
+            "real_time_s": 5.0227556228637695
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/I-bgeu-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/I-bgeu-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/I-bgeu-01/build_icarus.log",
+          "random_seed": 1793855084,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "I-blt-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 83670.0,
+            "real_time_s": 5.161693572998047
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/I-blt-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/I-blt-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/I-blt-01/build_icarus.log",
+          "random_seed": 1793855090,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "I-bltu-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 104250.0,
+            "real_time_s": 5.779315710067749
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/I-bltu-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/I-bltu-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/I-bltu-01/build_icarus.log",
+          "random_seed": 1793855096,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "I-bne-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 89670.0,
+            "real_time_s": 5.116000652313232
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/I-bne-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/I-bne-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/I-bne-01/build_icarus.log",
+          "random_seed": 1793855103,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "I-fence-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 930.0,
+            "real_time_s": 0.41222405433654785
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/I-fence-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/I-fence-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/I-fence-01/build_icarus.log",
+          "random_seed": 1793855108,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "I-jal-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 6840.0,
+            "real_time_s": 0.8267004489898682
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/I-jal-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/I-jal-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/I-jal-01/build_icarus.log",
+          "random_seed": 1793855110,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "I-jalr-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 6140.0,
+            "real_time_s": 0.8110182285308838
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/I-jalr-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/I-jalr-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/I-jalr-01/build_icarus.log",
+          "random_seed": 1793855111,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "I-lb-align-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 3490.0,
+            "real_time_s": 0.593463659286499
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/I-lb-align-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/I-lb-align-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/I-lb-align-01/build_icarus.log",
+          "random_seed": 1793855113,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "I-lbu-align-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 3390.0,
+            "real_time_s": 0.5325629711151123
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/I-lbu-align-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/I-lbu-align-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/I-lbu-align-01/build_icarus.log",
+          "random_seed": 1793855114,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "I-lh-align-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 3410.0,
+            "real_time_s": 0.511268138885498
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/I-lh-align-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/I-lh-align-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/I-lh-align-01/build_icarus.log",
+          "random_seed": 1793855115,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "I-lhu-align-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 3390.0,
+            "real_time_s": 0.5589778423309326
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/I-lhu-align-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/I-lhu-align-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/I-lhu-align-01/build_icarus.log",
+          "random_seed": 1793855116,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "I-lui-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 2740.0,
+            "real_time_s": 0.4852478504180908
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/I-lui-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/I-lui-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/I-lui-01/build_icarus.log",
+          "random_seed": 1793855118,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "I-lw-align-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 3410.0,
+            "real_time_s": 0.5999205112457275
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/I-lw-align-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/I-lw-align-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/I-lw-align-01/build_icarus.log",
+          "random_seed": 1793855119,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "I-or-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 38120.0,
+            "real_time_s": 1.7587335109710693
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/I-or-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/I-or-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/I-or-01/build_icarus.log",
+          "random_seed": 1793855120,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "I-ori-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 27080.0,
+            "real_time_s": 1.5951528549194336
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/I-ori-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/I-ori-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/I-ori-01/build_icarus.log",
+          "random_seed": 1793855123,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "I-sb-align-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 6680.0,
+            "real_time_s": 0.6034650802612305
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/I-sb-align-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/I-sb-align-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/I-sb-align-01/build_icarus.log",
+          "random_seed": 1793855125,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "I-sh-align-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 6760.0,
+            "real_time_s": 0.6551024913787842
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/I-sh-align-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/I-sh-align-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/I-sh-align-01/build_icarus.log",
+          "random_seed": 1793855126,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "I-sll-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 5710.0,
+            "real_time_s": 0.7771236896514893
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/I-sll-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/I-sll-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/I-sll-01/build_icarus.log",
+          "random_seed": 1793855128,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "I-slli-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 4740.0,
+            "real_time_s": 0.7885119915008545
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/I-slli-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/I-slli-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/I-slli-01/build_icarus.log",
+          "random_seed": 1793855129,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "I-slt-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 37890.0,
+            "real_time_s": 2.080333948135376
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/I-slt-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/I-slt-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/I-slt-01/build_icarus.log",
+          "random_seed": 1793855131,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "I-slti-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 27090.0,
+            "real_time_s": 1.533400535583496
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/I-slti-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/I-slti-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/I-slti-01/build_icarus.log",
+          "random_seed": 1793855134,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "I-sltiu-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 33320.0,
+            "real_time_s": 2.134312391281128
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/I-sltiu-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/I-sltiu-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/I-sltiu-01/build_icarus.log",
+          "random_seed": 1793855136,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "I-sltu-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 46160.0,
+            "real_time_s": 2.125833749771118
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/I-sltu-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/I-sltu-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/I-sltu-01/build_icarus.log",
+          "random_seed": 1793855139,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "I-sra-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 5750.0,
+            "real_time_s": 0.6748065948486328
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/I-sra-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/I-sra-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/I-sra-01/build_icarus.log",
+          "random_seed": 1793855141,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "I-srai-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 4730.0,
+            "real_time_s": 0.5885701179504395
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/I-srai-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/I-srai-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/I-srai-01/build_icarus.log",
+          "random_seed": 1793855143,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "I-srl-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 5890.0,
+            "real_time_s": 0.7022490501403809
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/I-srl-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/I-srl-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/I-srl-01/build_icarus.log",
+          "random_seed": 1793855144,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "I-srli-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 4840.0,
+            "real_time_s": 0.515110969543457
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/I-srli-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/I-srli-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/I-srli-01/build_icarus.log",
+          "random_seed": 1793855145,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "I-sub-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 38360.0,
+            "real_time_s": 1.8432369232177734
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/I-sub-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/I-sub-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/I-sub-01/build_icarus.log",
+          "random_seed": 1793855147,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "I-sw-align-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 6540.0,
+            "real_time_s": 0.5429415702819824
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/I-sw-align-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/I-sw-align-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/I-sw-align-01/build_icarus.log",
+          "random_seed": 1793855149,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "I-xor-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 38110.0,
+            "real_time_s": 1.9158241748809814
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/I-xor-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/I-xor-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/I-xor-01/build_icarus.log",
+          "random_seed": 1793855150,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "I-xori-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 27340.0,
+            "real_time_s": 1.7262201309204102
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/I-xori-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/I-xori-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/I-xori-01/build_icarus.log",
+          "random_seed": 1793855153,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "M-div-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 242510.0,
+            "real_time_s": 5.296037435531616
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/M-div-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/M-div-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/M-div-01/build_icarus.log",
+          "random_seed": 1793855155,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "M-divu-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 298260.0,
+            "real_time_s": 5.771047830581665
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/M-divu-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/M-divu-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/M-divu-01/build_icarus.log",
+          "random_seed": 1793855161,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "M-mul-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 49670.0,
+            "real_time_s": 2.17582368850708
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/M-mul-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/M-mul-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/M-mul-01/build_icarus.log",
+          "random_seed": 1793855167,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "M-mulh-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 55530.0,
+            "real_time_s": 2.0268115997314453
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/M-mulh-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/M-mulh-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/M-mulh-01/build_icarus.log",
+          "random_seed": 1793855170,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "M-mulhsu-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 61110.0,
+            "real_time_s": 2.331610918045044
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/M-mulhsu-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/M-mulhsu-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/M-mulhsu-01/build_icarus.log",
+          "random_seed": 1793855173,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "M-mulhu-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 68010.0,
+            "real_time_s": 2.7107768058776855
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/M-mulhu-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/M-mulhu-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/M-mulhu-01/build_icarus.log",
+          "random_seed": 1793855176,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "M-rem-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 240570.0,
+            "real_time_s": 4.942968130111694
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/M-rem-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/M-rem-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/M-rem-01/build_icarus.log",
+          "random_seed": 1793855179,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "M-remu-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 297480.0,
+            "real_time_s": 5.564298391342163
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/M-remu-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/M-remu-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/M-remu-01/build_icarus.log",
+          "random_seed": 1793855185,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "C-cadd-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 37850.0,
+            "real_time_s": 1.7159602642059326
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/C-cadd-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/C-cadd-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/C-cadd-01/build_icarus.log",
+          "random_seed": 1793855191,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "C-caddi-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 18310.0,
+            "real_time_s": 1.04787015914917
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/C-caddi-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/C-caddi-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/C-caddi-01/build_icarus.log",
+          "random_seed": 1793855194,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "C-caddi16sp-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 3850.0,
+            "real_time_s": 0.547614574432373
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/C-caddi16sp-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/C-caddi16sp-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/C-caddi16sp-01/build_icarus.log",
+          "random_seed": 1793855195,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "C-caddi4spn-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 1630.0,
+            "real_time_s": 0.39879798889160156
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/C-caddi4spn-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/C-caddi4spn-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/C-caddi4spn-01/build_icarus.log",
+          "random_seed": 1793855196,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "C-cand-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 37960.0,
+            "real_time_s": 2.0428028106689453
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/C-cand-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/C-cand-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/C-cand-01/build_icarus.log",
+          "random_seed": 1793855197,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "C-candi-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 18330.0,
+            "real_time_s": 1.0629723072052002
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/C-candi-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/C-candi-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/C-candi-01/build_icarus.log",
+          "random_seed": 1793855200,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "C-cbeqz-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 9220.0,
+            "real_time_s": 0.7407979965209961
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/C-cbeqz-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/C-cbeqz-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/C-cbeqz-01/build_icarus.log",
+          "random_seed": 1793855202,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "C-cbnez-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 10350.0,
+            "real_time_s": 0.7207779884338379
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/C-cbnez-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/C-cbnez-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/C-cbnez-01/build_icarus.log",
+          "random_seed": 1793855203,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "C-cj-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 2400.0,
+            "real_time_s": 0.40752124786376953
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/C-cj-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/C-cj-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/C-cj-01/build_icarus.log",
+          "random_seed": 1793855204,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "C-cjal-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 2980.0,
+            "real_time_s": 0.428330659866333
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/C-cjal-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/C-cjal-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/C-cjal-01/build_icarus.log",
+          "random_seed": 1793855205,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "C-cjalr-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 4430.0,
+            "real_time_s": 0.49580979347229004
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/C-cjalr-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/C-cjalr-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/C-cjalr-01/build_icarus.log",
+          "random_seed": 1793855206,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "C-cjr-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 4430.0,
+            "real_time_s": 0.48185133934020996
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/C-cjr-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/C-cjr-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/C-cjr-01/build_icarus.log",
+          "random_seed": 1793855207,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "C-cli-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 1810.0,
+            "real_time_s": 0.3876364231109619
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/C-cli-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/C-cli-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/C-cli-01/build_icarus.log",
+          "random_seed": 1793855208,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "C-clui-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 2140.0,
+            "real_time_s": 0.4047229290008545
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/C-clui-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/C-clui-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/C-clui-01/build_icarus.log",
+          "random_seed": 1793855209,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "C-clw-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 1940.0,
+            "real_time_s": 0.4447352886199951
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/C-clw-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/C-clw-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/C-clw-01/build_icarus.log",
+          "random_seed": 1793855210,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "C-clwsp-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 3340.0,
+            "real_time_s": 0.4336211681365967
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/C-clwsp-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/C-clwsp-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/C-clwsp-01/build_icarus.log",
+          "random_seed": 1793855211,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "C-cmv-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 4630.0,
+            "real_time_s": 0.4736661911010742
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/C-cmv-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/C-cmv-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/C-cmv-01/build_icarus.log",
+          "random_seed": 1793855212,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "C-cnop-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 1260.0,
+            "real_time_s": 0.35838937759399414
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/C-cnop-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/C-cnop-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/C-cnop-01/build_icarus.log",
+          "random_seed": 1793855213,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "C-cor-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 38100.0,
+            "real_time_s": 1.585204839706421
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/C-cor-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/C-cor-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/C-cor-01/build_icarus.log",
+          "random_seed": 1793855214,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "C-cslli-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 4660.0,
+            "real_time_s": 0.491973876953125
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/C-cslli-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/C-cslli-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/C-cslli-01/build_icarus.log",
+          "random_seed": 1793855216,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "C-csrai-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 4680.0,
+            "real_time_s": 0.4967310428619385
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/C-csrai-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/C-csrai-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/C-csrai-01/build_icarus.log",
+          "random_seed": 1793855217,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "C-csrli-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 4610.0,
+            "real_time_s": 0.47712159156799316
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/C-csrli-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/C-csrli-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/C-csrli-01/build_icarus.log",
+          "random_seed": 1793855218,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "C-csub-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 37650.0,
+            "real_time_s": 1.6317741870880127
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/C-csub-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/C-csub-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/C-csub-01/build_icarus.log",
+          "random_seed": 1793855220,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "C-csw-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 6690.0,
+            "real_time_s": 0.5419259071350098
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/C-csw-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/C-csw-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/C-csw-01/build_icarus.log",
+          "random_seed": 1793855222,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "C-cswsp-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 6630.0,
+            "real_time_s": 0.5126888751983643
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/C-cswsp-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/C-cswsp-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/C-cswsp-01/build_icarus.log",
+          "random_seed": 1793855223,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    },
+    {
+      "test": "C-cxor-01",
+      "exit_code": 0,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "pass",
+        "test_count": 1,
+        "passed_count": 1,
+        "failed_count": 0,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "passed",
+            "sim_time_ns": 37840.0,
+            "real_time_s": 1.6098289489746094
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-pos/artifacts/C-cxor-01/results_icarus.xml",
+          "test_log": "/tmp/fv-pos/artifacts/C-cxor-01/test_icarus.log",
+          "build_log": "/tmp/fv-pos/artifacts/C-cxor-01/build_icarus.log",
+          "random_seed": 1793855224,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    }
+  ]
+}
