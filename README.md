@@ -12,7 +12,7 @@ FinFET node for research and teaching; no fab manufactures it. This block is
 this repo is a tool result against a predictive model — there is no silicon,
 no shuttle and no measurement at the end of the ladder.
 
-**Status: specification ratified, core pin adopted** (see [`spec/core.md`](spec/core.md) and [decision 0007](spec/decisions/0007-adopt-core-pin.md)). An ASAP7 smoke flow exists, but place-and-route has not yet run end to end (`par.json` is `not_run`; tracked in #17). The core itself is not yet synthesized or placed.
+**Status: specification ratified, core pin adopted** (see [`spec/core.md`](spec/core.md) and [decision 0007](spec/decisions/0007-adopt-core-pin.md)). An ASAP7 smoke flow exists and place-and-route now runs end to end on the placeholder counter (`flow/smoke/records/2026-11-05/`, `par.json` `ok`); its DRC and LVS results on that layout are not clean yet (see decision 0012). The core itself is not yet synthesized or placed.
 
 **Built agent-native.** Every specification, decision record, testbench, and
 line of documentation here is produced by AI agents working from a ratified

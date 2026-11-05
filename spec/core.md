@@ -46,9 +46,9 @@ and Yosys with the same pinned `sv2v` as `sky130-riscv-soc`: `sv2v v0.0.13`
 - Upstream ASAP7 `d24f8b857ff74cf5b21ab18a7e1b11a3954c449b`; cell library
   `asap7sc7p5t_28` `f970bd3c3292b79ae4d022a3ec80533534614066`; PDK
   `asap7_pdk_r1p7` `58d72c9d291e186a77468586ab0c43d8a21eda6a`.
-- `klt`: release `klayout-tools==0.8.0` is the pinned release (decision 0008); the metal DRC
-  deck and FinFET LVS need the unreleased tree, pinned as
-  `git+https://github.com/2AMLogic/klayout-tools@7ee09483b748` (decision 0005).
+- `klt`: release `klayout-tools==0.9.0` is the pinned release for DRC, LVS and the smoke flow
+  (decision 0012, superseding the unreleased tree pin of decision 0005 and the 0.8.0 pin of
+  decision 0008 for these steps). `klt signoff` stays at `klayout-tools==0.8.0` (decision 0008).
 - `klt pdk` does not resolve ASAP7 yet; the repo's flow points at the pinned
   checkout by path until klayout-tools #3782 closes.
 
@@ -91,8 +91,8 @@ a claimed result.
   on the final GDS reports `status: clean` with zero violations, with
   `--expect-rule-categories` equal to the deck's declared count, and the
   report's `provenance.deck.content_hash` equal to the pinned hash:
-  `sha256:08dba3ee047a3ec68b3cd761f982809c62a0d128b8d34ef4e76a28f61221aa6a`
-  (263 categories). Clean against the released 0.7.0 deck
+  `sha256:14f146f02cd731de3e0b59452eadfdab9c2c947724a219a1002a31b5e0f12d13`
+  (267 categories; decision 0012, which replaces `sha256:08dba3ee…aa6a`, 263 categories, of decision 0005). Clean against the released 0.7.0 deck
   (`sha256:a14ce43a…dbd0`, 106 FEOL/MOL categories) does **not** imply metal
   is checked and may not be reported as DRC clean.
 - **Not checked yet** (from `pdk-bringup.md` §3): rules needing track, net,

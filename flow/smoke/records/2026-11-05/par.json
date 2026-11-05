@@ -1,0 +1,719 @@
+{
+  "antenna_violation_count": 0,
+  "applied": {
+    "placement_density": 0.6,
+    "route_allow_congestion": false,
+    "route_congestion_iterations": null,
+    "signal_layers": "M2-M7"
+  },
+  "clock_skew_ns": 0.01526,
+  "congestion": {
+    "completeness": {
+      "partially_routed_net_count": null,
+      "signal_net_count": 41,
+      "unrouted_net_count": 0
+    },
+    "detailed_route": {
+      "converged": true,
+      "drc_violations_per_iteration": [
+        7,
+        1,
+        1,
+        0
+      ],
+      "first_iteration_drc_violation_count": 7,
+      "iteration_count": 4
+    },
+    "global_route": {
+      "max_gcell_usage_pct": null,
+      "max_horizontal_overflow": 0,
+      "max_layer_usage_pct": 7.61,
+      "max_vertical_overflow": 0,
+      "overflow_per_layer": {
+        "M1": {
+          "demand": 0,
+          "max_horizontal_overflow": 0,
+          "max_vertical_overflow": 0,
+          "resource": 0,
+          "total_overflow": 0,
+          "usage_pct": 0.0
+        },
+        "M2": {
+          "demand": 74,
+          "max_horizontal_overflow": 0,
+          "max_vertical_overflow": 0,
+          "resource": 1014,
+          "total_overflow": 0,
+          "usage_pct": 7.3
+        },
+        "M3": {
+          "demand": 77,
+          "max_horizontal_overflow": 0,
+          "max_vertical_overflow": 0,
+          "resource": 1012,
+          "total_overflow": 0,
+          "usage_pct": 7.61
+        },
+        "M4": {
+          "demand": 23,
+          "max_horizontal_overflow": 0,
+          "max_vertical_overflow": 0,
+          "resource": 785,
+          "total_overflow": 0,
+          "usage_pct": 2.93
+        },
+        "M5": {
+          "demand": 0,
+          "max_horizontal_overflow": 0,
+          "max_vertical_overflow": 0,
+          "resource": 732,
+          "total_overflow": 0,
+          "usage_pct": 0.0
+        },
+        "M6": {
+          "demand": 0,
+          "max_horizontal_overflow": 0,
+          "max_vertical_overflow": 0,
+          "resource": 466,
+          "total_overflow": 0,
+          "usage_pct": 0.0
+        },
+        "M7": {
+          "demand": 0,
+          "max_horizontal_overflow": 0,
+          "max_vertical_overflow": 0,
+          "resource": 616,
+          "total_overflow": 0,
+          "usage_pct": 0.0
+        }
+      },
+      "routed_net_count": 45,
+      "total_overflow": 0,
+      "usage_pct": 3.76
+    },
+    "null_reasons": {
+      "completeness.partially_routed_net_count": "OpenROAD exposes no per-net connectivity check; only nets with no routed wire at all are counted",
+      "global_route.max_gcell_usage_pct": "OpenROAD's global router reports usage per routing layer, not per GCell"
+    },
+    "placement": {
+      "final_weighted_congestion": 0.3892,
+      "overflowed_tile_count": 0,
+      "total_routing_overflow": 0.0
+    }
+  },
+  "core_area_um2": 7.8732,
+  "corners": [],
+  "coverage": {
+    "density_compliance": {
+      "evaluated": false,
+      "reason": "metal density rules are not evaluated by place-and-route; a zero route_drc_violation_count does not imply density compliance",
+      "status": "unsupported"
+    },
+    "metal_density_fill": {
+      "inserted": false,
+      "reason": "no metal density fill is inserted at any stage; standard-cell gap fillers are not metal fill",
+      "status": "unsupported"
+    }
+  },
+  "def_net_names": {
+    "single_pin_markers": 0,
+    "unresolved_single_pin_nets": []
+  },
+  "def_path": "<scratch>/work/.klt/place-and-route/counter.def",
+  "die_area_um2": 24.4926,
+  "engine": "openroad",
+  "engine_logs": [
+    {
+      "directory": {
+        "path": null,
+        "scope": "external"
+      },
+      "invocation_id": "2f650ed9b9f74aaf9a814ca3ad5d2405",
+      "metadata_path": {
+        "path": null,
+        "scope": "external"
+      },
+      "metrics_path": {
+        "path": null,
+        "scope": "external"
+      },
+      "outcome": "exited",
+      "retention_errors": [],
+      "returncode": 0,
+      "script_name": "pnr_counter_floorplan.tcl",
+      "script_path": {
+        "path": null,
+        "scope": "external"
+      },
+      "script_sha256": "dd3a35daf816fa348ba210985463859b856046a0e3436d9cfe4c3cde40bab83b",
+      "stderr_path": {
+        "path": null,
+        "scope": "external"
+      },
+      "stdout_path": {
+        "path": null,
+        "scope": "external"
+      }
+    },
+    {
+      "directory": {
+        "path": null,
+        "scope": "external"
+      },
+      "invocation_id": "dea7c46e4b18443fbf5af6409972d774",
+      "metadata_path": {
+        "path": null,
+        "scope": "external"
+      },
+      "metrics_path": {
+        "path": null,
+        "scope": "external"
+      },
+      "outcome": "exited",
+      "retention_errors": [],
+      "returncode": 0,
+      "script_name": "pnr_counter_place.tcl",
+      "script_path": {
+        "path": null,
+        "scope": "external"
+      },
+      "script_sha256": "41f0132360e2c330ae077fdd3c21581d826eff18fb310733309ee2a9c78e4192",
+      "stderr_path": {
+        "path": null,
+        "scope": "external"
+      },
+      "stdout_path": {
+        "path": null,
+        "scope": "external"
+      }
+    },
+    {
+      "directory": {
+        "path": null,
+        "scope": "external"
+      },
+      "invocation_id": "81edc9c7bfad422486a127ed95502a20",
+      "metadata_path": {
+        "path": null,
+        "scope": "external"
+      },
+      "metrics_path": {
+        "path": null,
+        "scope": "external"
+      },
+      "outcome": "exited",
+      "retention_errors": [],
+      "returncode": 0,
+      "script_name": "pnr_counter_cts.tcl",
+      "script_path": {
+        "path": null,
+        "scope": "external"
+      },
+      "script_sha256": "e7ee8f66bc036715aa6805ad71b4a9f23c396833c81266fc44af1f698c023c16",
+      "stderr_path": {
+        "path": null,
+        "scope": "external"
+      },
+      "stdout_path": {
+        "path": null,
+        "scope": "external"
+      }
+    },
+    {
+      "directory": {
+        "path": null,
+        "scope": "external"
+      },
+      "invocation_id": "bd0bc98f64ee44999f89ceeb20b6838a",
+      "metadata_path": {
+        "path": null,
+        "scope": "external"
+      },
+      "metrics_path": {
+        "path": null,
+        "scope": "external"
+      },
+      "outcome": "exited",
+      "retention_errors": [],
+      "returncode": 0,
+      "script_name": "pnr_counter_route.tcl",
+      "script_path": {
+        "path": null,
+        "scope": "external"
+      },
+      "script_sha256": "bb6f74e15e2cddbea13b202f7813aa2543fe50807d2f197488338a773f3d035d",
+      "stderr_path": {
+        "path": null,
+        "scope": "external"
+      },
+      "stdout_path": {
+        "path": null,
+        "scope": "external"
+      }
+    }
+  ],
+  "engine_version": "26Q3-1510-g6cb3f2b704",
+  "estimated_power_mw": 0.0144,
+  "fmax_mhz": null,
+  "gds_dbu_um": 0.00025,
+  "gds_path": "<scratch>/work/.klt/place-and-route/counter.gds",
+  "hdl_toplevel": "counter",
+  "hold_violation_count": 0,
+  "instance_groups": [],
+  "interconnect_corner": "nom",
+  "layer_map": {
+    "path": "<scratch>/pdk/klayout/tech/asap7.map",
+    "resolution": "exact"
+  },
+  "macros": [],
+  "max_capacitance_violation_count": null,
+  "max_capacitance_violation_count_vs_library": null,
+  "max_transition_violation_count": null,
+  "max_transition_violation_count_vs_library": null,
+  "min_area_repair": {
+    "patches": 0,
+    "reason": "PDK variant 'asap7' resolves to no curated deck, so no minimum-area rule is available to floor routed metal against",
+    "remaining": 0,
+    "repaired": 0,
+    "rules": [],
+    "status": "skipped",
+    "unrepaired": []
+  },
+  "netlist": {
+    "path": null,
+    "scope": "external"
+  },
+  "nominal_hold_slack_ns": 1e+39,
+  "pin_abutment": [],
+  "pins": [
+    {
+      "edge": "north",
+      "layer": "M6",
+      "name": "VDD",
+      "x_um": 2.484,
+      "y_um": 3.213
+    },
+    {
+      "edge": "north",
+      "layer": "M6",
+      "name": "VSS",
+      "x_um": 2.484,
+      "y_um": 3.753
+    },
+    {
+      "edge": "west",
+      "layer": "M4",
+      "name": "clk",
+      "x_um": 0.042,
+      "y_um": 1.971
+    },
+    {
+      "edge": "west",
+      "layer": "M4",
+      "name": "count[0]",
+      "x_um": 0.042,
+      "y_um": 2.451
+    },
+    {
+      "edge": "west",
+      "layer": "M4",
+      "name": "count[1]",
+      "x_um": 0.042,
+      "y_um": 2.067
+    },
+    {
+      "edge": "west",
+      "layer": "M4",
+      "name": "count[2]",
+      "x_um": 0.042,
+      "y_um": 2.163
+    },
+    {
+      "edge": "west",
+      "layer": "M4",
+      "name": "count[3]",
+      "x_um": 0.042,
+      "y_um": 2.739
+    },
+    {
+      "edge": "west",
+      "layer": "M4",
+      "name": "count[4]",
+      "x_um": 0.042,
+      "y_um": 2.355
+    },
+    {
+      "edge": "west",
+      "layer": "M4",
+      "name": "count[5]",
+      "x_um": 0.042,
+      "y_um": 2.547
+    },
+    {
+      "edge": "west",
+      "layer": "M4",
+      "name": "count[6]",
+      "x_um": 0.042,
+      "y_um": 2.643
+    },
+    {
+      "edge": "west",
+      "layer": "M4",
+      "name": "count[7]",
+      "x_um": 0.042,
+      "y_um": 2.835
+    },
+    {
+      "edge": "west",
+      "layer": "M4",
+      "name": "en",
+      "x_um": 0.042,
+      "y_um": 2.259
+    },
+    {
+      "edge": "west",
+      "layer": "M4",
+      "name": "rst_n",
+      "x_um": 0.042,
+      "y_um": 2.931
+    }
+  ],
+  "power": {
+    "connects": [
+      {
+        "layers": [
+          "M1",
+          "M2"
+        ],
+        "max_columns": null,
+        "ongrid": null,
+        "split_cuts": null
+      },
+      {
+        "layers": [
+          "M2",
+          "M5"
+        ],
+        "max_columns": null,
+        "ongrid": null,
+        "split_cuts": null
+      },
+      {
+        "layers": [
+          "M5",
+          "M6"
+        ],
+        "max_columns": null,
+        "ongrid": null,
+        "split_cuts": null
+      }
+    ],
+    "connects_overridden": false,
+    "endcap_master": "TAPCELL_ASAP7_75t_R",
+    "filler_masters": [
+      "FILLERxp5_ASAP7_75t_R",
+      "FILLER_ASAP7_75t_R"
+    ],
+    "global_connect": true,
+    "ground_net": "VSS",
+    "pdn": true,
+    "placed": {
+      "components": 131,
+      "def_path": "<scratch>/work/.klt/place-and-route/counter.def",
+      "endcaps": 20,
+      "evidence": "def",
+      "fillers": 69,
+      "missing": [],
+      "special_nets": [
+        {
+          "followpin_segments": 15,
+          "name": "VDD",
+          "other_segments": 10,
+          "stripe_layers": [
+            "M6",
+            "M5",
+            "M4",
+            "M3",
+            "M2"
+          ],
+          "stripe_segments": 38,
+          "use": "POWER",
+          "vias": 39
+        },
+        {
+          "followpin_segments": 18,
+          "name": "VSS",
+          "other_segments": 18,
+          "stripe_layers": [
+            "M6",
+            "M5",
+            "M4",
+            "M3",
+            "M2"
+          ],
+          "stripe_segments": 69,
+          "use": "GROUND",
+          "vias": 69
+        }
+      ],
+      "status": "complete",
+      "tapcells": 20,
+      "unavailable_reason": null
+    },
+    "power_net": "VDD",
+    "preset": null,
+    "row_rail": {
+      "emitted": false,
+      "filler_masters": [],
+      "ground_net": null,
+      "layer": null,
+      "power_net": null
+    },
+    "straps": [
+      {
+        "layer": "M1",
+        "spacing_um": null
+      },
+      {
+        "layer": "M2",
+        "spacing_um": null
+      },
+      {
+        "layer": "M5",
+        "spacing_um": null
+      },
+      {
+        "layer": "M6",
+        "spacing_um": null
+      }
+    ],
+    "tapcell_distance_um": 25,
+    "tapcell_master": "TAPCELL_ASAP7_75t_R",
+    "tapless": false
+  },
+  "power_basis": {
+    "activity": null,
+    "activity_source": "engine_default",
+    "duty": null,
+    "parasitics": "estimate_only"
+  },
+  "provenance": {
+    "deck": {
+      "content_hash": "sha256:863a6d0202617cdf51cf5d4e132c7f908668d2d5201522aff362a6a8d31b0328",
+      "name": "asap7sc7p5t_28_R__SS",
+      "path": {
+        "path": null,
+        "scope": "external"
+      },
+      "released": false
+    },
+    "input": {
+      "content_hash": "sha256:9c43663a2062b77ba61b3ea3d9bfa48710b16a3187262b6f66d245865c2880f3",
+      "role": "netlist"
+    },
+    "klayout_version": "0.30.12",
+    "klt_git_commit": "5dbbad05ff42265c92a6f3d2f20d1bbcd2957d49",
+    "klt_reinstall_spec": "klayout-tools==0.9.0",
+    "klt_version": "0.9.0",
+    "pdk": {
+      "name": "asap7",
+      "source": "--pdk-root flag",
+      "version": null
+    }
+  },
+  "route_drc_violation_count": 0,
+  "schema_version": 1,
+  "seed": 1,
+  "setup_violation_count": 0,
+  "smoke": {
+    "exit_code": 0,
+    "input": "counter synthesized netlist; target_stage route with a power grid",
+    "klayout_tools_issues": [],
+    "klt_build": {
+      "ref": "klayout-tools==0.9.0",
+      "role": "pinned",
+      "version": "klt 0.9.0"
+    },
+    "note": "",
+    "run_state": "ran",
+    "step": "par"
+  },
+  "spef_sta": null,
+  "stage_reached": "route",
+  "stages": [
+    {
+      "core_area_um2": 7.8732,
+      "die_area_um2": 24.4926,
+      "name": "floorplan",
+      "timing_status": "unconstrained",
+      "total_negative_slack_ns": 0,
+      "utilization_pct": 73.7037,
+      "worst_slack_ns": 1e+39
+    },
+    {
+      "core_area_um2": 7.8732,
+      "die_area_um2": 24.4926,
+      "estimated_power_mw": 0.0095,
+      "fmax_mhz": null,
+      "hold_violation_count": 0,
+      "name": "place",
+      "nominal_hold_slack_ns": 1e+39,
+      "setup_violation_count": 0,
+      "timing_status": "unconstrained",
+      "total_negative_slack_ns": 0,
+      "utilization_pct": 73.7037,
+      "wirelength_um": 68.938,
+      "worst_slack_ns": 1e+39
+    },
+    {
+      "clock_skew_ns": 0.01453,
+      "core_area_um2": 7.8732,
+      "die_area_um2": 24.4926,
+      "estimated_power_mw": 0.0164,
+      "fmax_mhz": null,
+      "hold_violation_count": 0,
+      "name": "cts",
+      "nominal_hold_slack_ns": 1e+39,
+      "setup_violation_count": 0,
+      "timing_status": "unconstrained",
+      "total_negative_slack_ns": 0,
+      "utilization_pct": 77.5926,
+      "wirelength_um": 76.441,
+      "worst_slack_ns": 1e+39
+    },
+    {
+      "antenna_violation_count": 0,
+      "clock_skew_ns": 0.01526,
+      "congestion": {
+        "completeness": {
+          "partially_routed_net_count": null,
+          "signal_net_count": 41,
+          "unrouted_net_count": 0
+        },
+        "detailed_route": {
+          "converged": true,
+          "drc_violations_per_iteration": [
+            7,
+            1,
+            1,
+            0
+          ],
+          "first_iteration_drc_violation_count": 7,
+          "iteration_count": 4
+        },
+        "global_route": {
+          "max_gcell_usage_pct": null,
+          "max_horizontal_overflow": 0,
+          "max_layer_usage_pct": 7.61,
+          "max_vertical_overflow": 0,
+          "overflow_per_layer": {
+            "M1": {
+              "demand": 0,
+              "max_horizontal_overflow": 0,
+              "max_vertical_overflow": 0,
+              "resource": 0,
+              "total_overflow": 0,
+              "usage_pct": 0.0
+            },
+            "M2": {
+              "demand": 74,
+              "max_horizontal_overflow": 0,
+              "max_vertical_overflow": 0,
+              "resource": 1014,
+              "total_overflow": 0,
+              "usage_pct": 7.3
+            },
+            "M3": {
+              "demand": 77,
+              "max_horizontal_overflow": 0,
+              "max_vertical_overflow": 0,
+              "resource": 1012,
+              "total_overflow": 0,
+              "usage_pct": 7.61
+            },
+            "M4": {
+              "demand": 23,
+              "max_horizontal_overflow": 0,
+              "max_vertical_overflow": 0,
+              "resource": 785,
+              "total_overflow": 0,
+              "usage_pct": 2.93
+            },
+            "M5": {
+              "demand": 0,
+              "max_horizontal_overflow": 0,
+              "max_vertical_overflow": 0,
+              "resource": 732,
+              "total_overflow": 0,
+              "usage_pct": 0.0
+            },
+            "M6": {
+              "demand": 0,
+              "max_horizontal_overflow": 0,
+              "max_vertical_overflow": 0,
+              "resource": 466,
+              "total_overflow": 0,
+              "usage_pct": 0.0
+            },
+            "M7": {
+              "demand": 0,
+              "max_horizontal_overflow": 0,
+              "max_vertical_overflow": 0,
+              "resource": 616,
+              "total_overflow": 0,
+              "usage_pct": 0.0
+            }
+          },
+          "routed_net_count": 45,
+          "total_overflow": 0,
+          "usage_pct": 3.76
+        },
+        "null_reasons": {
+          "completeness.partially_routed_net_count": "OpenROAD exposes no per-net connectivity check; only nets with no routed wire at all are counted",
+          "global_route.max_gcell_usage_pct": "OpenROAD's global router reports usage per routing layer, not per GCell"
+        },
+        "placement": {
+          "final_weighted_congestion": 0.3892,
+          "overflowed_tile_count": 0,
+          "total_routing_overflow": 0.0
+        }
+      },
+      "core_area_um2": 7.8732,
+      "corners": [],
+      "die_area_um2": 24.4926,
+      "estimated_power_mw": 0.0144,
+      "fmax_mhz": null,
+      "hold_violation_count": 0,
+      "name": "route",
+      "nominal_hold_slack_ns": 1e+39,
+      "route_drc_violation_count": 0,
+      "setup_violation_count": 0,
+      "timing_status": "unconstrained",
+      "total_negative_slack_ns": 0,
+      "utilization_pct": 77.5926,
+      "wirelength_um": 85,
+      "worst_slack_ns": 1e+39
+    }
+  ],
+  "status": "ok",
+  "timing_status": "unconstrained",
+  "total_negative_slack_ns": 0,
+  "unrouted_def_path": null,
+  "utilization_pct": 77.5926,
+  "verilog_path": "<scratch>/work/.klt/place-and-route/counter.v",
+  "via_pad_trim": {
+    "cells_touched": 1,
+    "pads_left": 1,
+    "pads_shrunk": 0,
+    "pads_trimmed": 1,
+    "reason": null,
+    "status": "trimmed"
+  },
+  "warnings": [
+    "antenna repair did not run: request.library.antenna_diode is null (the library has no antenna diode), so repair_antennas was not called; the antenna check still ran"
+  ],
+  "wirelength_um": 85,
+  "worst_hold_slack_ns": null,
+  "worst_setup_slack_ns": null,
+  "worst_slack_ns": 1e+39
+}

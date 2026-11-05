@@ -1,0 +1,314 @@
+{
+  "clock_mode": "ideal",
+  "clock_targets": {
+    "clock_groups": [],
+    "clocks": [
+      {
+        "period_ns": 1.0,
+        "port": "clk"
+      }
+    ]
+  },
+  "clock_uncertainty": {
+    "applied": false
+  },
+  "corners": [
+    {
+      "clock_propagation": null,
+      "clock_skew_ns": 0,
+      "constraint_completeness": {
+        "sample_limit": 20,
+        "status": "incomplete",
+        "unclocked_registers": {
+          "count": 0,
+          "reason": null,
+          "sample": [],
+          "status": "ok",
+          "truncated": false
+        },
+        "unconstrained_endpoints": {
+          "count": 8,
+          "reason": null,
+          "sample": [
+            "count[0]",
+            "count[1]",
+            "count[2]",
+            "count[3]",
+            "count[4]",
+            "count[5]",
+            "count[6]",
+            "count[7]"
+          ],
+          "status": "ok",
+          "truncated": false
+        }
+      },
+      "corner": "SS",
+      "deck": {
+        "content_hash": "sha256:863a6d0202617cdf51cf5d4e132c7f908668d2d5201522aff362a6a8d31b0328",
+        "name": "asap7sc7p5t_28_R__SS",
+        "path": {
+          "path": null,
+          "scope": "external"
+        },
+        "released": false
+      },
+      "electrical_checks": null,
+      "engine_log": {
+        "directory": {
+          "path": null,
+          "scope": "external"
+        },
+        "invocation_id": "4d9fd9a95cdd4012a96ea5c5fb492143",
+        "metadata_path": {
+          "path": null,
+          "scope": "external"
+        },
+        "metrics_path": {
+          "path": null,
+          "scope": "external"
+        },
+        "outcome": "exited",
+        "retention_errors": [],
+        "returncode": 0,
+        "script_name": "sta_counter_synth__SS.tcl",
+        "script_path": {
+          "path": null,
+          "scope": "external"
+        },
+        "script_sha256": "5c7fef2e5e1881603919dcdc1b42dad0a9dfe7e013d5ce19575b4e46674bc23d",
+        "stderr_path": {
+          "path": null,
+          "scope": "external"
+        },
+        "stdout_path": {
+          "path": null,
+          "scope": "external"
+        }
+      },
+      "estimated_power_mw": 0.0084,
+      "fmax_mhz": 4721.05,
+      "hold_violation_count": 9,
+      "power_basis": {
+        "activity": null,
+        "activity_source": "engine_default",
+        "duty": null,
+        "parasitics": "estimate_only"
+      },
+      "sdf": null,
+      "setup_violation_count": 0,
+      "spef_annotation": null,
+      "timing_status": "constrained",
+      "total_negative_hold_slack_ns": -0.22944,
+      "total_negative_slack_ns": 0,
+      "worst_hold_path": {
+        "check_type": "removal",
+        "consistent_with_aggregate": true,
+        "endpoint": "_54_/RESETN",
+        "engine_check_role": "removal",
+        "reason": null,
+        "slack_ns": -0.02825,
+        "startpoint": "rst_n",
+        "status": "ok"
+      },
+      "worst_hold_slack_ns": -0.02825,
+      "worst_setup_path": {
+        "check_type": "setup",
+        "consistent_with_aggregate": true,
+        "endpoint": "_61_/D",
+        "engine_check_role": "setup",
+        "reason": null,
+        "slack_ns": 0.78818,
+        "startpoint": "en",
+        "status": "ok"
+      },
+      "worst_slack_ns": 0.78818
+    },
+    {
+      "clock_propagation": null,
+      "clock_skew_ns": 0,
+      "constraint_completeness": {
+        "sample_limit": 20,
+        "status": "incomplete",
+        "unclocked_registers": {
+          "count": 0,
+          "reason": null,
+          "sample": [],
+          "status": "ok",
+          "truncated": false
+        },
+        "unconstrained_endpoints": {
+          "count": 8,
+          "reason": null,
+          "sample": [
+            "count[0]",
+            "count[1]",
+            "count[2]",
+            "count[3]",
+            "count[4]",
+            "count[5]",
+            "count[6]",
+            "count[7]"
+          ],
+          "status": "ok",
+          "truncated": false
+        }
+      },
+      "corner": "TT",
+      "deck": {
+        "content_hash": "sha256:4a8159ea775e4dc754f9e78ef8151d9bee0cfce44ccaec4dc90d1543f9266b8c",
+        "name": "asap7sc7p5t_28_R__TT",
+        "path": {
+          "path": null,
+          "scope": "external"
+        },
+        "released": false
+      },
+      "electrical_checks": null,
+      "engine_log": {
+        "directory": {
+          "path": null,
+          "scope": "external"
+        },
+        "invocation_id": "d1c3b86ab3eb44d2aed7ac4c626e6a00",
+        "metadata_path": {
+          "path": null,
+          "scope": "external"
+        },
+        "metrics_path": {
+          "path": null,
+          "scope": "external"
+        },
+        "outcome": "exited",
+        "retention_errors": [],
+        "returncode": 0,
+        "script_name": "sta_counter_synth__TT.tcl",
+        "script_path": {
+          "path": null,
+          "scope": "external"
+        },
+        "script_sha256": "c4a030a5b2cd23fb8110275dc6dcd62a85b9bf76e63d63c1c84903812afa4341",
+        "stderr_path": {
+          "path": null,
+          "scope": "external"
+        },
+        "stdout_path": {
+          "path": null,
+          "scope": "external"
+        }
+      },
+      "estimated_power_mw": 0.0109,
+      "fmax_mhz": 6946.56,
+      "hold_violation_count": 9,
+      "power_basis": {
+        "activity": null,
+        "activity_source": "engine_default",
+        "duty": null,
+        "parasitics": "estimate_only"
+      },
+      "sdf": null,
+      "setup_violation_count": 0,
+      "spef_annotation": null,
+      "timing_status": "constrained",
+      "total_negative_hold_slack_ns": -0.1702,
+      "total_negative_slack_ns": 0,
+      "worst_hold_path": {
+        "check_type": "removal",
+        "consistent_with_aggregate": true,
+        "endpoint": "_54_/RESETN",
+        "engine_check_role": "removal",
+        "reason": null,
+        "slack_ns": -0.02116,
+        "startpoint": "rst_n",
+        "status": "ok"
+      },
+      "worst_hold_slack_ns": -0.02116,
+      "worst_setup_path": {
+        "check_type": "setup",
+        "consistent_with_aggregate": true,
+        "endpoint": "_61_/D",
+        "engine_check_role": "setup",
+        "reason": null,
+        "slack_ns": 0.85604,
+        "startpoint": "en",
+        "status": "ok"
+      },
+      "worst_slack_ns": 0.85604
+    }
+  ],
+  "def_path": null,
+  "engine": "openroad",
+  "engine_version": "26Q3-1510-g6cb3f2b704",
+  "geometry_source": "netlist_estimate",
+  "hdl_toplevel": "counter",
+  "macros": [],
+  "provenance": {
+    "deck": null,
+    "input": {
+      "content_hash": "sha256:9c43663a2062b77ba61b3ea3d9bfa48710b16a3187262b6f66d245865c2880f3",
+      "role": "netlist"
+    },
+    "klayout_version": "0.30.12",
+    "klt_git_commit": "5dbbad05ff42265c92a6f3d2f20d1bbcd2957d49",
+    "klt_reinstall_spec": "klayout-tools==0.9.0",
+    "klt_version": "0.9.0",
+    "pdk": {
+      "name": "asap7",
+      "source": "--pdk-root flag",
+      "version": null
+    }
+  },
+  "schema_version": 2,
+  "smoke": {
+    "corners": {
+      "SS": "setup corner, 0.63 V / 100 C",
+      "TT": "reference, 0.7 V / 25 C"
+    },
+    "exit_code": 0,
+    "geometry": "netlist_estimate: the synthesized netlist with an ideal clock and no placement, routing or wire load. This is NOT a post-route figure.",
+    "input": "counter synthesized netlist, RVT, SS and TT; predicted, not a design claim",
+    "klayout_tools_issues": [
+      "4089"
+    ],
+    "klt_build": {
+      "ref": "klayout-tools==0.9.0",
+      "role": "pinned",
+      "version": "klt 0.9.0"
+    },
+    "liberty": {
+      "SS": {
+        "merged_sha256": "sha256:863a6d0202617cdf51cf5d4e132c7f908668d2d5201522aff362a6a8d31b0328",
+        "source_files": [
+          "asap7sc7p5t_AO_RVT_SS_nldm_211120.lib",
+          "asap7sc7p5t_INVBUF_RVT_SS_nldm_220122.lib",
+          "asap7sc7p5t_OA_RVT_SS_nldm_211120.lib",
+          "asap7sc7p5t_SEQ_RVT_SS_nldm_220123.lib",
+          "asap7sc7p5t_SIMPLE_RVT_SS_nldm_211120.lib"
+        ]
+      },
+      "TT": {
+        "merged_sha256": "sha256:4a8159ea775e4dc754f9e78ef8151d9bee0cfce44ccaec4dc90d1543f9266b8c",
+        "source_files": [
+          "asap7sc7p5t_AO_RVT_TT_nldm_211120.lib",
+          "asap7sc7p5t_INVBUF_RVT_TT_nldm_220122.lib",
+          "asap7sc7p5t_OA_RVT_TT_nldm_211120.lib",
+          "asap7sc7p5t_SEQ_RVT_TT_nldm_220123.lib",
+          "asap7sc7p5t_SIMPLE_RVT_TT_nldm_211120.lib"
+        ]
+      }
+    },
+    "note": "Two corners from one request; the file lists name every Liberty source.",
+    "predicted": true,
+    "run_state": "ran",
+    "step": "sta",
+    "unit_caveat": "Liberty time_unit is 1ps: the aggregate worst_slack_ns, worst_hold_slack_ns and fmax_mhz fields are 1000x off from worst_setup_path.slack_ns (klayout-tools #4089). Read the worst-path slack. FF is not run (decision 0002)."
+  },
+  "spef_path": null,
+  "status": "ok",
+  "verilog_path": {
+    "path": null,
+    "scope": "external"
+  },
+  "wire_load_mode": null,
+  "wire_load_model": null
+}

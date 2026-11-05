@@ -1,0 +1,160 @@
+{
+  "abc_constr": {
+    "driving_cell": null,
+    "load_ff": null,
+    "source": null
+  },
+  "area_um2": 5.21964,
+  "arithmetic": null,
+  "baseline": null,
+  "blackbox_modules": [],
+  "cell_exclusions": {
+    "effective": [],
+    "engine_supports_dont_use": null,
+    "library_defaults": [],
+    "mode": "additive",
+    "requested": [],
+    "validated": null
+  },
+  "cells_without_area": [],
+  "clock_targets": {
+    "clocks": [],
+    "delay_target_basis": "clock_period_ns",
+    "delay_target_ps": 1000,
+    "per_clock_enforced": false
+  },
+  "defines": {},
+  "engine": "yosys",
+  "engine_version": "0.67+post",
+  "equivalence": null,
+  "hdl_toplevel": "counter",
+  "instance_count": 39,
+  "instance_counts_by_type": {
+    "AOI31xp33_ASAP7_75t_R": 1,
+    "DFFASRHQNx1_ASAP7_75t_R": 8,
+    "INVx1_ASAP7_75t_R": 8,
+    "NAND2xp33_ASAP7_75t_R": 1,
+    "NAND5xp2_ASAP7_75t_R": 1,
+    "NOR2xp33_ASAP7_75t_R": 2,
+    "NOR3xp33_ASAP7_75t_R": 2,
+    "NOR4xp25_ASAP7_75t_R": 1,
+    "OA21x2_ASAP7_75t_R": 1,
+    "TIEHIx1_ASAP7_75t_R": 8,
+    "XNOR2xp5_ASAP7_75t_R": 6
+  },
+  "leakage_by_type_nw": null,
+  "leakage_power_nw": null,
+  "macro_instance_count": 0,
+  "macro_instance_counts_by_type": {},
+  "macros": [],
+  "memory_mapping": {
+    "modules": [],
+    "reason": null,
+    "script_path": {
+      "path": null,
+      "scope": "external"
+    },
+    "status": "none_detected"
+  },
+  "netlist_path": {
+    "path": null,
+    "scope": "external"
+  },
+  "netlist_sha256": "9c43663a2062b77ba61b3ea3d9bfa48710b16a3187262b6f66d245865c2880f3",
+  "parameters": {},
+  "provenance": {
+    "deck": {
+      "content_hash": "sha256:863a6d0202617cdf51cf5d4e132c7f908668d2d5201522aff362a6a8d31b0328",
+      "name": "asap7sc7p5t_28_R__SS",
+      "released": false
+    },
+    "defines": {},
+    "input": {
+      "content_hash": "sha256:9a6d5c2255afe38be413a833c4f6582656b77de68304edfbd97858dba6a87210",
+      "role": "source"
+    },
+    "klayout_version": "0.30.12",
+    "klt_git_commit": "5dbbad05ff42265c92a6f3d2f20d1bbcd2957d49",
+    "klt_reinstall_spec": "klayout-tools==0.9.0",
+    "klt_version": "0.9.0",
+    "parameters": {},
+    "pdk": {
+      "name": "asap7",
+      "source": "--pdk-root flag",
+      "version": null
+    }
+  },
+  "restructuring": null,
+  "run_id": "run-65311937db674851b112885486af4055",
+  "run_script_path": {
+    "path": null,
+    "scope": "external"
+  },
+  "schema_version": 2,
+  "script_path": {
+    "path": null,
+    "scope": "external"
+  },
+  "sequential_area_um2": 3.03264,
+  "smoke": {
+    "exit_code": 0,
+    "input": "counter.sv (placeholder DUT), RVT, SS Liberty; not a design claim",
+    "klayout_tools_issues": [],
+    "klt_build": {
+      "ref": "klayout-tools==0.9.0",
+      "role": "pinned",
+      "version": "klt 0.9.0"
+    },
+    "liberty": {
+      "SS": {
+        "merged_sha256": "sha256:863a6d0202617cdf51cf5d4e132c7f908668d2d5201522aff362a6a8d31b0328",
+        "source_files": [
+          "asap7sc7p5t_AO_RVT_SS_nldm_211120.lib",
+          "asap7sc7p5t_INVBUF_RVT_SS_nldm_220122.lib",
+          "asap7sc7p5t_OA_RVT_SS_nldm_211120.lib",
+          "asap7sc7p5t_SEQ_RVT_SS_nldm_220123.lib",
+          "asap7sc7p5t_SIMPLE_RVT_SS_nldm_211120.lib"
+        ]
+      },
+      "TT": {
+        "merged_sha256": "sha256:4a8159ea775e4dc754f9e78ef8151d9bee0cfce44ccaec4dc90d1543f9266b8c",
+        "source_files": [
+          "asap7sc7p5t_AO_RVT_TT_nldm_211120.lib",
+          "asap7sc7p5t_INVBUF_RVT_TT_nldm_220122.lib",
+          "asap7sc7p5t_OA_RVT_TT_nldm_211120.lib",
+          "asap7sc7p5t_SEQ_RVT_TT_nldm_220123.lib",
+          "asap7sc7p5t_SIMPLE_RVT_TT_nldm_211120.lib"
+        ]
+      }
+    },
+    "note": "Synthesized against the merged RVT SS Liberty.",
+    "predicted": true,
+    "run_state": "ran",
+    "step": "synth"
+  },
+  "sta": null,
+  "sta_unavailable_reason": "the optional klt_statime_native extension is not installed (it is not shipped with the published klayout-tools package), so no gate-level static timing analysis was attempted -- from a repo checkout, run `uv sync --group statime` (or `maturin develop --release` inside native/statime/) and re-run to populate `sta`; from an installed package, `klt sta` with a `verilog` request gives a netlist-level timing estimate (needs OpenSTA)",
+  "status": "ok",
+  "structural": {
+    "comb_loops": 0,
+    "expected_latches": 0,
+    "has_critical": false,
+    "latches": 0,
+    "multi_driven": 0,
+    "unexpected_latches": 0
+  },
+  "timing": null,
+  "warnings": {
+    "by_category": {
+      "unsupported_cell_library": 1
+    },
+    "representatives": [
+      {
+        "category": "unsupported_cell_library",
+        "count": 1,
+        "text": "cell_library 'asap7sc7p5t_28_R' has no verified mapping for: ABC -constr (driving cell/output load), load-driven sizing/buffering and ABC timing (timing is null). These capabilities were skipped."
+      }
+    ],
+    "total": 1
+  }
+}
