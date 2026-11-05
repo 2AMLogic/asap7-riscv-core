@@ -1,0 +1,50 @@
+{
+  "suite": "riscv-arch-test",
+  "negative_control": true,
+  "tests_run": 1,
+  "tests_failed": 1,
+  "excluded": {
+    "C-cebreak-01": "diagnosed, not a bench-glue fault: the suite's trap prolog (riscv-arch-test README, target requirement 1) needs a fully writable mtvec. CVE2 forces mtvec = {base[31:8], 6'b0, MODE=2'b01}, so the prolog's read-back never equals its trampoline address and it falls back to copying the 16-word trampoline over the reset mtvec value, using that raw value (0x80000001, MODE bit included) as a word pointer. The copy lands one byte off, 0x80000000 holds 0x00006f00, and c.ebreak vectors into a fetch loop at 0x80000000..0x80000008 so tohost is never written. See spec/decisions/0011-c-cebreak-01-mtvec-not-writable.md."
+  },
+  "results": [
+    {
+      "test": "I-add-01",
+      "exit_code": 3,
+      "response": {
+        "schema_version": 1,
+        "engine": "icarus",
+        "hdl_toplevel": "tb_core",
+        "testbench": "test_archtest",
+        "status": "fail",
+        "test_count": 1,
+        "passed_count": 0,
+        "failed_count": 1,
+        "skipped_count": 0,
+        "tests": [
+          {
+            "name": "test_signature",
+            "status": "failed",
+            "sim_time_ns": 38130.0,
+            "real_time_s": 2.765674114227295,
+            "error_type": "AssertionError",
+            "error_message": "I-add-01: 1/588 signature words differ, first at word 294: dut=33333336 sail=33333337"
+          }
+        ],
+        "coverage": null,
+        "trace": null,
+        "environment": {
+          "engine": "icarus",
+          "engine_version": "13.0",
+          "cocotb_version": "2.0.1",
+          "results_xml": "/tmp/fv-neg/artifacts/I-add-01/results_icarus.xml",
+          "test_log": "/tmp/fv-neg/artifacts/I-add-01/test_icarus.log",
+          "build_log": "/tmp/fv-neg/artifacts/I-add-01/build_icarus.log",
+          "random_seed": 1793855036,
+          "source_defines": {},
+          "initial_state": null,
+          "sdf": null
+        }
+      }
+    }
+  ]
+}
