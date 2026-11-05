@@ -31,7 +31,7 @@ _None._
 
 Issues currently being built (`loom:building`).
 
-_None._
+- **#59**: Run the riscv-arch-test core suite through klt functional-verification and commit the report
 
 ## PRs Awaiting Review
 
@@ -51,6 +51,7 @@ Issues carrying `loom:curated`.
 
 - **#6**: Track the gap to T1 (klayout-tools design-evidence-tiers.md) *(curated)*
 - **#17**: Follow-on from PR #16: place-and-route on the counter smoke DUT (par.json is not_run) *(curated)*
+- **#59**: Run the riscv-arch-test core suite through klt functional-verification and commit the report *(curated)*
 
 ## Proposed (Architect / Hermit)
 
@@ -68,10 +69,10 @@ _None._
 | Very important | 0 |
 | Important | 1 |
 | Ready (`loom:issue`) | 0 |
-| In Progress (`loom:building`) | 0 |
+| In Progress (`loom:building`) | 1 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 0 |
-| Curated | 2 |
+| Curated | 3 |
 | Architect / Hermit proposals | 0 |
 | Active epics | 0 |
 <!-- guide:plan-body:end -->

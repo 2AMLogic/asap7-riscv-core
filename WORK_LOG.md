@@ -3,6 +3,11 @@
 Chronological record of merged PRs and closed issues, maintained by the Guide
 triage role. Newest first.
 
+### 2026-11-05
+
+- **PR #61**: feat: add SIMPLE RVT FF Liberty comparison script and record
+- **Issue #60** (closed): Gather evidence on whether the SIMPLE RVT FF Liberty is characterised at 0.77 V / 0 °C
+
 ### 2026-11-03
 
 - **PR #56**: refactor: share PDK pin and Liberty-merge helpers between flow scripts
