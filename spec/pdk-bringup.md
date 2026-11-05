@@ -171,6 +171,21 @@ characterised at FF conditions is not established here; until it is, the FF
 corner is **not** a ratified sign-off corner (see decision 0002). This is an
 upstream data question, not a klt gap.
 
+**Evidence, 2026-11-05 (predicted values; no ratification).**
+`flow/core/ff_simple_check.sh` over the pinned checkout wrote
+`flow/core/records/2026-11-05/ff-simple-check.json`. Median delay ratios at
+fixed table points: FF/TT is 0.84 for SIMPLE against 0.75 for the correctly
+labelled INVBUF and AO groups (SS/TT is 1.44 against 1.41, so SIMPLE TT and SS
+look normal). The SIMPLE FF tables are not identical to TT, but they carry only
+about 62% of the FF speed-up of the reference groups. Under the script's
+written thresholds the verdict is **inconclusive**: neither "FF tables with a
+wrong header" nor "TT-like tables". Upstream `asap7sc7p5t_28` has a later
+commit, `66eaebcda32195db3777da9ba3389fbe509cba76` (2025-04-30, "Corrected
+three wrongly extracted SIMPLE_RVT_FF Liberty files"), which adds a
+`asap7sc7p5t_SIMPLE_RVT_FF_nldm_250407.lib.7z`. That file is not pinned or
+checked here; pinning it is a separate decision, and decision 0002 is
+unchanged.
+
 ## 6. Reproducing
 
 ```
