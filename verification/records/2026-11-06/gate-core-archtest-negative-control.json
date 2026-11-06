@@ -1,0 +1,44 @@
+{
+  "suite": "riscv-arch-test",
+  "mode": "gate-level, zero-delay functional, pre-layout (no SDF, no timing)",
+  "negative_control": true,
+  "date_utc": "2026-11-06T18:07:41Z",
+  "tests_run": 1,
+  "tests_failed": 1,
+  "failures": [
+    {
+      "test": "I-add-01",
+      "message": ""
+    }
+  ],
+  "excluded": {
+    "C-cebreak-01": "diagnosed, not a bench-glue fault: the suite's trap prolog (riscv-arch-test README, target requirement 1) needs a fully writable mtvec. CVE2 forces mtvec = {base[31:8], 6'b0, MODE=2'b01}, so the prolog's read-back never equals its trampoline address and it falls back to copying the 16-word trampoline over the reset mtvec value, using that raw value (0x80000001, MODE bit included) as a word pointer. The copy lands one byte off, 0x80000000 holds 0x00006f00, and c.ebreak vectors into a fetch loop at 0x80000000..0x80000008 so tohost is never written. See spec/decisions/0011-c-cebreak-01-mtvec-not-writable.md."
+  },
+  "tools": {
+    "iverilog": "Icarus Verilog version 13.0 (stable) (v13_0)",
+    "iverilog_build_args": [
+      "-g2012",
+      "-gno-specify"
+    ],
+    "cocotb": "2.0.1",
+    "riscv_arch_test_commit": "331b0cd934eda5d0b177556669d56a9e34e0d030",
+    "sail_riscv_release": "2026-11-02-a83603b"
+  },
+  "netlist": {
+    "path": "flow/core/records/2026-11-03/netlist.v",
+    "sha256": "754ee8731dc0262696cd69044176b14b0c9376e9eecec3420f085802a6860809"
+  },
+  "cell_models": {
+    "asap7sc7p5t_28_commit": "f970bd3c3292b79ae4d022a3ec80533534614066",
+    "files": {
+      "asap7sc7p5t_AO_RVT_TT_201020.v": "fdaceb42503410b3d329b54443c4957bc4a6cafb2f84743c53a10c2055e87515",
+      "asap7sc7p5t_INVBUF_RVT_TT_201020.v": "8804a647af1e2161c13fffcaef9ec50786494534872ec50adaae593967a3b459",
+      "asap7sc7p5t_OA_RVT_TT_201020.v": "d98d028cdc47061912c4dffe12af420b65d3ce3f89f728c5a03d9819967b77b4",
+      "asap7sc7p5t_SIMPLE_RVT_TT_201020.v": "849946d9b648ef58f39a97027de5e7f24051f6ef4fded598dec861e3257ea4b6",
+      "asap7sc7p5t_SEQ_RVT_TT_220101.v": "6e63ff4b5587097a76bf395c6f2383035368d5c8d95dbf551ba324d3a9537fde"
+    }
+  },
+  "tests": [
+    "I-add-01"
+  ]
+}

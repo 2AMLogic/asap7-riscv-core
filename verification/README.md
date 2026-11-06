@@ -62,7 +62,7 @@ The negative control flips one expected word of the first program; the run must
 fail on exactly that.
 
 What it claims: RTL simulation of the converted source (not the gate-level
-netlist) matches Sail on the programs actually run, which are those listed in
+netlist; see "Gate-level mode" below) matches Sail on the programs actually run, which are those listed in
 `results.xml` (72 as of this writing). The target-specific glue is
 `core/model_test.h` and `core/link.ld` (program at `0x80000080` because CVE2
 boots at `boot_addr_i`; RAM at `0x80000000`).
@@ -94,6 +94,48 @@ not run by the attestation. Re-attest after editing any listed file:
 uvx --python 3.12 --from "klayout-tools==0.8.0" klt signoff --attest 9 \
     --inventory attest/item9.json -o evidence/item9.json
 ```
+
+## Gate-level mode (`--core --gate`)
+
+```sh
+verification/run.sh --core --gate                    # exit 0 only if every program passes
+verification/run.sh --core --gate --negative-control # flipped word; exit 0 only if the run FAILS
+```
+
+Same programs, Sail signatures, `tb_core.v`, `test_archtest.py` and
+`core/excluded.json` as core mode, but the DUT is the committed synthesized
+netlist `flow/core/records/2026-11-03/netlist.v` plus the ASAP7 7.5-track RVT
+functional cell Verilog (AO, OA, INVBUF, SIMPLE, SEQ groups) from
+`asap7sc7p5t_28` at the commit pinned in `spec/pdk-bringup.md`
+(`asap7_cells_*` in `tool-versions.txt`). `core/setup.sh` fetches the five files
+into `verification/build/asap7-cells/` and aborts on a sha256 mismatch; the
+vendor files are used unmodified. The runner writes `record.json` (program
+count, failures, tool versions, netlist and model hashes) into the run dir.
+
+Icarus is invoked with `-gno-specify`, so the models' timing arcs and
+`$setuphold` checks are ignored (that is what makes it zero-delay). Icarus 13
+still prints three `sorry: ifnone with an edge-sensitive path is not supported`
+notices for `asap7sc7p5t_SEQ_RVT_TT_220101.v`, all inside `specify` blocks; the
+models elaborate and simulate.
+
+What it claims: the synthesized gate netlist, simulated with zero-delay
+functional cell models, matches Sail on the programs actually run, before
+place-and-route.
+
+What it does **not** claim: anything about timing, SDF back-annotation,
+setup/hold, the post-route netlist, or power. It is pre-layout, functional only,
+and is not cited by `manifests/asap7-riscv-core.json`. It takes about 80 s per
+program (about 1.5 h for the full set).
+
+Committed records (separate from the RTL records):
+`records/2026-11-06/gate-core-archtest.json` and
+`records/2026-11-06/gate-core-archtest-negative-control.json`.
+
+Result (2026-11-06): 72 programs run, 0 failed, `C-cebreak-01` excluded as in the
+RTL record; every program matches Sail. The negative control fails as intended:
+`I-add-01` reports 1 of 588 signature words differing (word 294,
+dut=`33333336`, expected-after-flip=`33333337`), and the run exits as an
+expected failure.
 
 ## klt functional-verification report (core, RTL)
 

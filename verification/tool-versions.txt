@@ -24,5 +24,16 @@ riscv_gcc_sha256=aaaa8060c914851a3e5ee1ba82cc3d6f80972f90638a05c6e823a37557a3375
 llvm_release=19.1.7
 llvm_sha256=4a5ec53951a584ed36f80240f6fbf8fdd46b4cf6c7ee87cc2d5018dc37caf679
 
+# ASAP7 7.5-track RVT functional cell Verilog for the gate-level run
+# (verification/run.sh --core --gate): the asap7sc7p5t_28 submodule commit pinned
+# in spec/pdk-bringup.md, Verilog/ directory, the five groups the committed
+# netlist instantiates. setup.sh refuses a sha256 mismatch.
+asap7_cells_commit=f970bd3c3292b79ae4d022a3ec80533534614066
+asap7_cells_AO_RVT_TT_201020_sha256=fdaceb42503410b3d329b54443c4957bc4a6cafb2f84743c53a10c2055e87515
+asap7_cells_INVBUF_RVT_TT_201020_sha256=8804a647af1e2161c13fffcaef9ec50786494534872ec50adaae593967a3b459
+asap7_cells_OA_RVT_TT_201020_sha256=d98d028cdc47061912c4dffe12af420b65d3ce3f89f728c5a03d9819967b77b4
+asap7_cells_SIMPLE_RVT_TT_201020_sha256=849946d9b648ef58f39a97027de5e7f24051f6ef4fded598dec861e3257ea4b6
+asap7_cells_SEQ_RVT_TT_220101_sha256=6e63ff4b5587097a76bf395c6f2383035368d5c8d95dbf551ba324d3a9537fde
+
 # Release of klayout-tools used by verification/fv.sh (spec/decisions/0008).
 klayout_tools=0.8.0

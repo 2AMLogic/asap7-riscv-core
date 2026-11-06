@@ -9,6 +9,12 @@
 #   verification/run.sh --core --negative-control
 #                                          same with one expected signature word
 #                                          flipped; exit 0 only if the run FAILS
+#   verification/run.sh --core --gate      same programs on the committed synthesized
+#                                          netlist + pinned ASAP7 cell Verilog
+#                                          (zero-delay, pre-layout); writes record.json
+#   verification/run.sh --core --gate --negative-control
+#                                          same, one expected word flipped; exit 0
+#                                          only if the run FAILS
 #
 # Tool versions come from verification/tool-versions.txt and
 # verification/requirements.txt, never from whatever is on PATH.
@@ -18,13 +24,16 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 VENV="$HERE/.venv"
 NEGATIVE=0
 CORE=0
+GATE=0
 for arg in "$@"; do
   case "$arg" in
     --negative-control) NEGATIVE=1 ;;
     --core) CORE=1 ;;
-    *) echo "usage: run.sh [--core] [--negative-control]" >&2; exit 2 ;;
+    --gate) GATE=1 ;;
+    *) echo "usage: run.sh [--core [--gate]] [--negative-control]" >&2; exit 2 ;;
   esac
 done
+[ "$GATE" = 0 ] || [ "$CORE" = 1 ] || { echo "run.sh: --gate needs --core" >&2; exit 2; }
 
 die() { echo "run.sh: $*" >&2; exit 1; }
 
@@ -67,15 +76,21 @@ echo "run dir: $RUN_DIR"
 
 if [ "$CORE" = 1 ]; then
   "$HERE/core/setup.sh"
-  echo "== riscv-arch-test I/M/C on cve2_rv32imc_wrapper (cocotb + icarus) =="
+  ARGS=()
+  [ "$GATE" = 1 ] && ARGS+=(--gate)
+  if [ "$GATE" = 1 ]; then
+    echo "== riscv-arch-test I/M/C on the committed gate-level netlist + ASAP7 RVT cell models (zero-delay, pre-layout) =="
+  else
+    echo "== riscv-arch-test I/M/C on cve2_rv32imc_wrapper (cocotb + icarus) =="
+  fi
   if [ "$NEGATIVE" = 1 ]; then
-    if "$VENV/bin/python" "$HERE/core/runner.py" "$RUN_DIR" --negative-control; then
+    if "$VENV/bin/python" "$HERE/core/runner.py" "$RUN_DIR" --negative-control "${ARGS[@]}"; then
       die "negative control: run passed but was expected to fail"
     fi
     echo "negative control: run failed as expected"
     exit 0
   fi
-  "$VENV/bin/python" "$HERE/core/runner.py" "$RUN_DIR"
+  "$VENV/bin/python" "$HERE/core/runner.py" "$RUN_DIR" "${ARGS[@]}"
   echo "PASS: results in $RUN_DIR/results.xml"
   exit 0
 fi
