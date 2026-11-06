@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Fetch the pinned inputs of the core architectural-test run into
 # verification/build/ (gitignored): the riscv-arch-test sources, the Sail
-# golden model, the bare-metal RISC-V GCC, the pinned sv2v and the hash-checked
-# CVE2 closure. Nothing is installed on the host. Every download is verified
+# golden model, the bare-metal RISC-V GCC, the pinned sv2v, the hash-checked
+# CVE2 closure and the ASAP7 RVT cell Verilog (gate-level run). Nothing is installed on the host. Every download is verified
 # against a pin and a mismatch deletes it and exits 1. Re-running is a no-op
 # once everything is in place.
 #
@@ -94,6 +94,19 @@ if [ ! -f "$BUILD/cve2/upstream/rtl/cve2_top.sv" ]; then
   "$REPO/flow/core/fetch.sh" "$BUILD/cve2/upstream"
 fi
 
+# ---- ASAP7 RVT functional cell Verilog (gate-level run, run.sh --core --gate) ---
+CELLS_COMMIT="$(pin asap7_cells_commit)"
+CELLS_DIR="$BUILD/asap7-cells/$CELLS_COMMIT"
+mkdir -p "$CELLS_DIR"
+for grp in AO_RVT_TT_201020 INVBUF_RVT_TT_201020 OA_RVT_TT_201020 SIMPLE_RVT_TT_201020 SEQ_RVT_TT_220101; do
+  f="$CELLS_DIR/asap7sc7p5t_$grp.v"
+  want="$(pin "asap7_cells_${grp}_sha256")"
+  if [ ! -f "$f" ] || [ "$(sha256sum "$f" | cut -d' ' -f1)" != "$want" ]; then
+    fetch_checked "https://raw.githubusercontent.com/The-OpenROAD-Project/asap7sc7p5t_28/$CELLS_COMMIT/Verilog/asap7sc7p5t_$grp.v" \
+      "$f" "$want"
+  fi
+done
+
 # Paths for the other scripts.
 cat >"$BUILD/paths.env" <<EOF
 AT=$AT
@@ -102,5 +115,6 @@ GCC=$GCC_DIR/$GCC_NAME/bin/riscv-none-elf-gcc
 SV2V=$SV2V_DIR/sv2v-Linux/sv2v
 CLANG=$LLVM_DIR/$LLVM_NAME/bin/clang-$LLVM_MAJOR
 CVE2=$BUILD/cve2/upstream
+CELLS=$CELLS_DIR
 EOF
 echo "setup.sh: ok"
