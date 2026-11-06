@@ -36,7 +36,8 @@ CURRENT_PIN="klayout-tools==0.8.0"
 DUT=counter
 DUT_SRC="$REPO/verification/smoke/counter.sv"
 STANDIN_CELL=INVx1_ASAP7_75t_R
-CELL_LIB=asap7sc7p5t_28_RVT
+# The library key klt resolves tie cells under (klayout-tools #4273); the cells are the RVT flavour.
+CELL_LIB=asap7sc7p5t_28_R
 
 [[ $# -eq 1 ]] || die "usage: flow/smoke/run.sh <asap7-checkout>"
 [[ -d "$1" ]] || die "not a directory: $1"
@@ -46,7 +47,7 @@ ASAP7="$(cd "$1" && pwd)"
 PIN_UPSTREAM="$(spec_sha 'Upstream repo')"
 PIN_CELLS="$(spec_sha 'Cell library')"
 PIN_PDK="$(spec_sha 'PDK (DRM')"
-PIN_KLT="$(grep -o 'git+https://github.com/2AMLogic/klayout-tools@[0-9a-f]\{12\}' "$REPO/spec/core.md" | head -1)"
+PIN_KLT="$(grep -o 'klayout-tools==[0-9][0-9.]*' "$REPO/spec/core.md" | head -1)"
 PIN_DECK="$(grep -o 'sha256:[0-9a-f]\{64\}' "$REPO/spec/core.md" | head -1)"
 for v in PIN_UPSTREAM PIN_CELLS PIN_PDK PIN_KLT PIN_DECK; do
   [[ -n "${!v}" ]] || die "could not read $v from spec/" 1
@@ -173,12 +174,12 @@ not_run() {
 
 # ---- PDK overlay in scratch (the checkout is read only) ------------------
 LIBDIR="$ASAP7/asap7sc7p5t_28/LIB/NLDM"
-mkdir -p "$ROOT/libs/$CELL_LIB/lef" "$ROOT/libs/$CELL_LIB/techlef"
+mkdir -p "$ROOT/libs/$CELL_LIB/lef" "$ROOT/libs/$CELL_LIB/techlef" "$ROOT/libs/$CELL_LIB/gds"
 build_liberty_overlay "$ASAP7" "$ROOT" "$CELL_LIB" SS TT
 LIBJSON="$SCRATCH/liberty.json"
-python3 -I - "$ROOT/lib" "$LIBDIR" >"$LIBJSON" <<'PY2'
+python3 -I - "$ROOT/lib" "$LIBDIR" "$CELL_LIB" >"$LIBJSON" <<'PY2'
 import glob, hashlib, json, os, sys
-root, libdir = sys.argv[1:3]
+root, libdir, cell_lib = sys.argv[1:4]
 sha = lambda p: "sha256:" + hashlib.sha256(open(p, "rb").read()).hexdigest()
 out = {}
 for c in ("SS", "TT"):
@@ -186,15 +187,27 @@ for c in ("SS", "TT"):
     out[c] = {
         "source_files": [{"name": os.path.basename(f), "extracted_sha256": sha(f),
                           "archive_sha256": sha(f.replace(root + "/7z", libdir) + ".7z")} for f in files],
-        "merged_sha256": sha(f"{root}/asap7sc7p5t_28_RVT_{c}.lib"),
+        "merged_sha256": sha(f"{root}/{cell_lib}_{c}.lib"),
     }
 print(json.dumps(out, indent=1))
 PY2
-ln -s "$ASAP7/asap7sc7p5t_28/LEF/asap7sc7p5t_28_R_1x_220121a.lef" "$ROOT/libs/$CELL_LIB/lef/$CELL_LIB.lef"
-# Workaround for klayout-tools #4088: M2 declares OFFSET -0.27 and bare make_tracks aborts.
+# Copied, not symlinked: OpenROAD rejects a symlinked LEF (ORD-0001). The tech LEF is
+# used unmodified; klayout-tools #4088 (negative M2 OFFSET) is fixed in the pinned release.
+cp "$ASAP7/asap7sc7p5t_28/LEF/asap7sc7p5t_28_R_1x_220121a.lef" "$ROOT/libs/$CELL_LIB/lef/$CELL_LIB.lef"
+cp "$ASAP7/asap7sc7p5t_28/GDS/asap7sc7p5t_28_R_220121a.gds" "$ROOT/libs/$CELL_LIB/gds/$CELL_LIB.gds"
 TECH_SRC="$ASAP7/asap7sc7p5t_28/techlef_misc/asap7_tech_1x_201209.lef"
-sed 's/^ OFFSET -0\.27 ;/ OFFSET 0.0 ;/' "$TECH_SRC" >"$ROOT/libs/$CELL_LIB/techlef/${CELL_LIB}__nom.tlef"
-cmp -s "$TECH_SRC" "$ROOT/libs/$CELL_LIB/techlef/${CELL_LIB}__nom.tlef" && die "tech LEF patch did not apply" 1
+cp "$TECH_SRC" "$ROOT/libs/$CELL_LIB/techlef/${CELL_LIB}__nom.tlef"
+# KLayout LEF/DEF layer map for the DEF->GDS merge (klt looks for <assets.klayout>/tech/<variant>.map). Without
+# one, routing shapes land on KLayout's sequential default layers and overwrite device layers. The map is the
+# pinned PDK's own asap7_fromAPR.layermap, copied unmodified.
+LAYERMAP_SRC="$ASAP7/asap7_pdk_r1p7/cdslib/asap7_TechLib_10/asap7_fromAPR.layermap"
+mkdir -p "$ROOT/klayout/tech"
+cp "$LAYERMAP_SRC" "$ROOT/klayout/tech/asap7.map"
+python3 -I - "$ROOT/klt-pdk.json" <<'PY3'
+import json, sys
+d = json.load(open(sys.argv[1])); d["assets"]["klayout"] = "klayout"
+json.dump(d, open(sys.argv[1], "w"), indent=1); open(sys.argv[1], "a").write("\n")
+PY3
 PDKARGS=(--pdk asap7 --pdk-root "$ROOT")
 
 # ---- tool-versions.txt ----------------------------------------------------
@@ -212,7 +225,7 @@ PDKARGS=(--pdk asap7 --pdk-root "$ROOT")
   echo "asap7_pdk_r1p7: $PIN_PDK"
   echo "pinned_drc_deck: $PIN_DECK"
   echo "tech_lef_source:  sha256:$(sha256sum "$TECH_SRC" | cut -d' ' -f1)"
-  echo "tech_lef_patched: sha256:$(sha256sum "$ROOT/libs/$CELL_LIB/techlef/${CELL_LIB}__nom.tlef" | cut -d' ' -f1)  (OFFSET -0.27 -> 0.0 on M2; klayout-tools #4088)"
+  echo "layer_map:    sha256:$(sha256sum "$LAYERMAP_SRC" | cut -d' ' -f1)  (asap7_pdk_r1p7 cdslib/asap7_TechLib_10/asap7_fromAPR.layermap)"
   echo "cell_lef:     sha256:$(sha256sum "$ASAP7/asap7sc7p5t_28/LEF/asap7sc7p5t_28_R_1x_220121a.lef" | cut -d' ' -f1)"
   echo "cell_gds:     sha256:$(sha256sum "$ASAP7/asap7sc7p5t_28/GDS/asap7sc7p5t_28_R_220121a.gds" | cut -d' ' -f1)"
   echo "cell_cdl:     sha256:$(sha256sum "$ASAP7/asap7sc7p5t_28/CDL/LVS/asap7sc7p5t_28_R.cdl" | cut -d' ' -f1)"
@@ -237,19 +250,49 @@ if [[ $STEP_OK == 1 ]]; then
   [[ -n "$SYNTH_NETLIST" ]] && cp "$SYNTH_NETLIST" "$W/${DUT}_synth.v"
 fi
 
+# output_dbu_um 0.00025: the ASAP7 deck measures FinFET geometry at 0.25 nm; the merged GDS defaults to 1 nm and
+# klt lvs refuses it (klayout-tools #4482 added the knob).
 # ---- 2. par -----------------------------------------------------------------
+# request.library values (klayout-tools #4086). Sources: cell names and pins from the pinned cell LEF;
+# route layers M2-M7 and the signal wire RC from The-OpenROAD-Project/OpenROAD-flow-scripts
+# 11aa833a11488c3a540a1d8eb4caa23fd22df703 flow/platforms/asap7/{config.mk,setRC.tcl} (the pinned ASAP7
+# checkout carries no RC table). The RC is 0.0265684 kohm/um and 0.16579 fF/um in the Liberty units;
+# klt emits the numbers unconverted under set_cmd_units -capacitance pF, so capacitance is given in
+# pF/um (1.6579e-4) and resistance in the Liberty resistance unit (kohm), not ohm as the field is named.
+# ASAP7 ships no antenna diode cell, hence null. The power grid is the ORFS M1/M2 followpin plus
+# M5/M6 stripe scheme at a pitch that fits the counter's ~2.8 um core.
+# floorplan.tracks (klayout-tools #4088): the tech LEF gives M2 OFFSET -0.27, which OpenROAD's
+# automatic make_tracks rejects. Each entry is the LEF pitch and the LEF OFFSET reduced modulo that
+# pitch to be >= 0 (M2: x -0.27 mod 0.045 = 0.0, y -0.27 mod 0.036 = 0.018); the track grid is the same.
 PAR_ISSUES="4086,4087,4088"
 if [[ -n "$SYNTH_NETLIST" ]]; then
   cat >"$W/par.req.json" <<EOF
 {"schema":"klt.place_and_route.request/1","engine":"openroad","netlist":"${DUT}_synth.v","hdl_toplevel":"$DUT",
  "pdk":{"cell_library":"$CELL_LIB","corner":"SS"},
- "floorplan":{"method":"utilization","utilization_pct":60,"aspect_ratio":1.0,"core_margin_um":1.0,"site":"asap7sc7p5t"},
+ "floorplan":{"method":"utilization","utilization_pct":60,"aspect_ratio":1.0,"core_margin_um":1.0,"site":"asap7sc7p5t",
+   "tracks":[
+   {"layer":"M1","x_offset_um":0.0,"x_pitch_um":0.036,"y_offset_um":0.0,"y_pitch_um":0.036},
+   {"layer":"M2","x_offset_um":0.0,"x_pitch_um":0.045,"y_offset_um":0.018,"y_pitch_um":0.036},
+   {"layer":"M3","x_offset_um":0.0,"x_pitch_um":0.036,"y_offset_um":0.0,"y_pitch_um":0.036},
+   {"layer":"M4","x_offset_um":0.003,"x_pitch_um":0.048,"y_offset_um":0.003,"y_pitch_um":0.048},
+   {"layer":"M5","x_offset_um":0.0,"x_pitch_um":0.048,"y_offset_um":0.0,"y_pitch_um":0.048},
+   {"layer":"M6","x_offset_um":0.0,"x_pitch_um":0.064,"y_offset_um":0.0,"y_pitch_um":0.064},
+   {"layer":"M7","x_offset_um":0.0,"x_pitch_um":0.064,"y_offset_um":0.0,"y_pitch_um":0.064}]},
+ "library":{"cts_buffer":"BUFx4_ASAP7_75t_R",
+   "power_pins":[{"net_role":"power","pattern":"VDD","primary":true},{"net_role":"ground","pattern":"VSS","primary":true}],
+   "wire_rc":{"resistance_ohm_per_um":2.65684E-02,"capacitance_pf_per_um":1.65790E-04},
+   "route_layers":{"low":"M2","high":"M7"},
+   "antenna_diode":null,
+   "tapcell":{"master":"TAPCELL_ASAP7_75t_R","endcap":"TAPCELL_ASAP7_75t_R","distance_um":25},
+   "filler":["FILLERxp5_ASAP7_75t_R","FILLER_ASAP7_75t_R"]},
  "io":{"layer_h":"M4","layer_v":"M5"},
  "power":{"power_net":"VDD","ground_net":"VSS","straps":[
    {"layer":"M1","width_um":0.018,"pitch_um":0.54,"followpins":true},
-   {"layer":"M4","width_um":0.096,"pitch_um":1.152,"offset_um":0.288},
-   {"layer":"M5","width_um":0.096,"pitch_um":1.152,"offset_um":0.288}]},
+   {"layer":"M2","width_um":0.018,"pitch_um":0.54,"followpins":true},
+   {"layer":"M5","width_um":0.12,"pitch_um":1.08,"offset_um":0.3},
+   {"layer":"M6","width_um":0.288,"pitch_um":1.08,"offset_um":0.513}]},
  "constraints":{"clock_port":"clk","clock_period_ns":1.0},
+ "output_dbu_um":0.00025,
  "seed":1,"target_stage":"route"}
 EOF
   STEP_EXTRA="{}" step par "$DUT synthesized netlist; target_stage route with a power grid" \
@@ -280,16 +323,36 @@ else
   STEP_EXTRA="{}" not_run par "$DUT synthesized netlist" "" "[]" "no synthesized netlist: the synth step did not produce one"
 fi
 
-# ---- stand-in layout for drc / lvs / erc -------------------------------------
-# place-and-route produced no layout, so these steps run on one library cell.
-# That checks the tool chain and the pinned deck, and says nothing about the counter.
-STANDIN="$W/standin.gds"; STANDIN_OK=0
-CELL_GDS="$ASAP7/asap7sc7p5t_28/GDS/asap7sc7p5t_28_R_220121a.gds"
-if ( cd "$W" && "${KLT[@]}" clip --cell "$STANDIN_CELL" -o "$STANDIN" --format json "$CELL_GDS" ) >/dev/null 2>"$SCRATCH/clip.err"; then
-  STANDIN_OK=1
+# ---- layout for drc / lvs / erc ------------------------------------------------
+# When place-and-route ran, drc, lvs and erc run on the counter's own routed GDS, and the DEF, GDS and
+# as-built netlist are kept next to the records. When it did not, they fall back to one library cell
+# (a stand-in that checks the tool chain and the deck and says nothing about the counter).
+LAYOUT_OK=0; PAR_RAN=0
+if python3 -I -c 'import json,sys; sys.exit(0 if json.load(open(sys.argv[1]))["smoke"]["run_state"]=="ran" else 1)' "$OUT/par.json" 2>/dev/null; then
+  PR="$W/.klt/place-and-route"
+  if [[ -s "$PR/$DUT.gds" && -s "$PR/$DUT.def" && -s "$PR/$DUT.v" ]]; then
+    mkdir -p "$OUT/layout"
+    cp "$PR/$DUT.gds" "$PR/$DUT.def" "$OUT/layout/"
+    cp "$PR/$DUT.v" "$OUT/layout/${DUT}_asbuilt.v"
+    PAR_RAN=1; LAYOUT_OK=1; LAYOUT="$OUT/layout/$DUT.gds"
+    LAYOUT_LABEL="$DUT routed layout (layout/$DUT.gds from the par step of this run)"
+    LVS_TOP="$DUT"
+    LVS_REF="{\"netlist\":\"$OUT/layout/${DUT}_asbuilt.v\",\"form\":\"gate-level-verilog\",\"top\":\"$DUT\",\"pin_order_files\":[\"$ASAP7/asap7sc7p5t_28/CDL/LVS/asap7sc7p5t_28_R.cdl\"]}"
+    LVS_INPUT_NOTE="$LAYOUT_LABEL, against the as-built gate-level netlist written by place-and-route (cells expanded to the pinned cell CDL)"
+  fi
 fi
-STANDIN_LABEL="library cell $STANDIN_CELL clipped from the pinned cell GDS (stand-in: the counter has no layout because place-and-route is not_run)"
-standin_missing() { STEP_EXTRA="{}" not_run "$1" "$STANDIN_LABEL" "" "[]" "stand-in layout could not be produced: $(head -c 400 "$SCRATCH/clip.err")"; }
+if [[ $PAR_RAN == 0 ]]; then
+  LAYOUT="$W/standin.gds"
+  CELL_GDS="$ASAP7/asap7sc7p5t_28/GDS/asap7sc7p5t_28_R_220121a.gds"
+  if ( cd "$W" && "${KLT[@]}" clip --cell "$STANDIN_CELL" -o "$LAYOUT" --format json "$CELL_GDS" ) >/dev/null 2>"$SCRATCH/clip.err"; then
+    LAYOUT_OK=1
+  fi
+  LAYOUT_LABEL="library cell $STANDIN_CELL clipped from the pinned cell GDS (stand-in: the counter has no layout because place-and-route is not_run)"
+  LVS_TOP="$STANDIN_CELL"
+  LVS_REF="{\"netlist\":\"$ASAP7/asap7sc7p5t_28/CDL/LVS/asap7sc7p5t_28_R.cdl\",\"top\":\"$STANDIN_CELL\"}"
+  LVS_INPUT_NOTE="$LAYOUT_LABEL, against its subckt in the pinned cell CDL"
+fi
+standin_missing() { STEP_EXTRA="{}" not_run "$1" "$LAYOUT_LABEL" "" "[]" "layout could not be produced: $(head -c 400 "$SCRATCH/clip.err" 2>/dev/null)"; }
 
 # ---- 3. drc ------------------------------------------------------------------
 DECK_FILE="${KLT_DECK_FILE:-}"
@@ -298,29 +361,29 @@ if [[ -z "$DECK_FILE" && -z "${KLT_CMD:-}" ]]; then
 fi
 [[ -f "$DECK_FILE" ]] || die "cannot locate the pinned asap7.drc: set KLT_DECK_FILE" 1
 mkdir -p "$SCRATCH/deck"; cp "$DECK_FILE" "$SCRATCH/deck/asap7.drc"
-if [[ $STANDIN_OK == 1 ]]; then
+if [[ $LAYOUT_OK == 1 ]]; then
   STEP_EXTRA='{"unchecked":"Rules needing track/net/corner/grid predicates, FEOL/MOL increments and PAD are not checked (spec/pdk-bringup.md section 3; spec/core.md DRC acceptance)."}' \
-  step drc "$STANDIN_LABEL" \
-    "Pinned klt, --engine klayout with the packaged ASAP7 deck, --expect-rule-categories 263." "" 0 \
-    drc --engine klayout --deck-file "$SCRATCH/deck/asap7.drc" --expect-rule-categories 263 --format json "$STANDIN"
+  step drc "$LAYOUT_LABEL" \
+    "Pinned klt, --engine klayout with the packaged ASAP7 deck, --expect-rule-categories 267." "" 0 \
+    drc --engine klayout --deck-file "$SCRATCH/deck/asap7.drc" --expect-rule-categories 267 --format json "$LAYOUT"
 else standin_missing drc; fi
 
 # ---- 4. lvs ------------------------------------------------------------------
-if [[ $STANDIN_OK == 1 ]]; then
+if [[ $LAYOUT_OK == 1 ]]; then
   cat >"$W/lvs.req.json" <<EOF
 {"schema":"klt.lvs.request/1","engine":"klayout",
- "layout":{"file":"$STANDIN","deck":"asap7","top":"$STANDIN_CELL"},
- "reference":{"netlist":"$ASAP7/asap7sc7p5t_28/CDL/LVS/asap7sc7p5t_28_R.cdl","top":"$STANDIN_CELL"},
+ "layout":{"file":"$LAYOUT","deck":"asap7","top":"$LVS_TOP"},
+ "reference":$LVS_REF,
  "options":{"finfet_bulk":{"nmos":"VSS","pmos":"VDD"}}}
 EOF
   STEP_EXTRA='{"bulk_policy":"options.finfet_bulk nmos=VSS pmos=VDD (decision 0005); disclosed by the tool as device.finfet_bulk_tied"}' \
-  step lvs "$STANDIN_LABEL, against its subckt in the pinned cell CDL" \
+  step lvs "$LVS_INPUT_NOTE" \
     "Pinned klt; layout, reference and deck hashes are in environment and provenance." "" 0 \
     lvs "$W/lvs.req.json" --format json
 else standin_missing lvs; fi
 
 # ---- 5. erc ------------------------------------------------------------------
-if [[ $STANDIN_OK == 1 ]]; then
+if [[ $LAYOUT_OK == 1 ]]; then
   cat >"$W/erc.spec.json" <<'EOF'
 {"stackup":[
  {"name":"gate","layer":"7/0","role":"gate","active_layer":"11/0"},
@@ -333,9 +396,9 @@ if [[ $STANDIN_OK == 1 ]]; then
  {"name":"v1","layer":"21/0","between":["m1","m2"]}]}
 EOF
   RAN_ISSUES=4090 STEP_EXTRA='{"antenna":"No ASAP7 antenna-ratio table exists (klayout-tools #4090): every antenna level is skipped and the verdict is not_checked, never clean."}' \
-  step erc "$STANDIN_LABEL" \
+  step erc "$LAYOUT_LABEL" \
     "Pinned klt, --deck asap7, stackup spec generated by run.sh (gate 7/0 with active 11/0, LIG 16/0, M1 19/0, M2 20/0, V0 18/0, V1 21/0)." "4090" 0 \
-    erc --deck asap7 --format json "$STANDIN" "$W/erc.spec.json"
+    erc --deck asap7 --format json "$LAYOUT" "$W/erc.spec.json"
 else standin_missing erc; fi
 
 # ---- 6. sta ------------------------------------------------------------------

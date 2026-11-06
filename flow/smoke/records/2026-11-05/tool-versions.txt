@@ -1,0 +1,18 @@
+# Tool and input versions for flow/smoke/run.sh (predictive PDK; nothing here is fabricated)
+klt_pinned:   klt 0.9.0  (klayout-tools==0.9.0)
+klt_current:  klt 0.8.0  (klayout-tools==0.8.0)  [comparison build, not the pin]
+yosys:        Yosys 0.67+post (git sha1 b8e7da6f40ae8f552c116bf6c359b07c6533e159, Release, GNU /usr/bin/c++ 13.3.0)
+openroad:     26Q3-1510-g6cb3f2b704 
+python:       Python 3.12.3
+uv:           uvx 0.13.5 (x86_64-unknown-linux-gnu)
+py7zr:        1.1.4
+asap7:        d24f8b857ff74cf5b21ab18a7e1b11a3954c449b
+asap7sc7p5t_28: f970bd3c3292b79ae4d022a3ec80533534614066
+asap7_pdk_r1p7: 58d72c9d291e186a77468586ab0c43d8a21eda6a
+pinned_drc_deck: sha256:14f146f02cd731de3e0b59452eadfdab9c2c947724a219a1002a31b5e0f12d13
+tech_lef_source:  sha256:830a032810b054d0dc24601c3f57c86073469e6c9cfb0314b2c82eb335b021d2
+layer_map:    sha256:2ce51d6dae7ed4f7ca3298d7a99a4b0d3d2b956b24cc4e092db8c29dd204a647  (asap7_pdk_r1p7 cdslib/asap7_TechLib_10/asap7_fromAPR.layermap)
+cell_lef:     sha256:43b68456f51949b5aeb7295b7ab8444e8c36d25c600e9bc6c3ee9d9aeb13ca0b
+cell_gds:     sha256:f43d5b33df635cf9e66cbca66b6bdd05364f824d8040cd21528b9e12808b9263
+cell_cdl:     sha256:444a08c16f5a44b4ec6f64e5ad4112d0dd8ca5a3fe5da7a7644e63f538bf681e
+counter.sv:   sha256:9a6d5c2255afe38be413a833c4f6582656b77de68304edfbd97858dba6a87210
