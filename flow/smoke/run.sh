@@ -49,7 +49,8 @@ PIN_CELLS="$(spec_sha 'Cell library')"
 PIN_PDK="$(spec_sha 'PDK (DRM')"
 PIN_KLT="$(grep -o 'klayout-tools==[0-9][0-9.]*' "$REPO/spec/core.md" | head -1)"
 PIN_DECK="$(grep -o 'sha256:[0-9a-f]\{64\}' "$REPO/spec/core.md" | head -1)"
-for v in PIN_UPSTREAM PIN_CELLS PIN_PDK PIN_KLT PIN_DECK; do
+PIN_LVS_DECK="$(grep -A1 'pinned LVS deck hash' "$REPO/spec/core.md" | grep -o 'sha256:[0-9a-f]\{64\}' | head -1)"
+for v in PIN_UPSTREAM PIN_CELLS PIN_PDK PIN_KLT PIN_DECK PIN_LVS_DECK; do
   [[ -n "${!v}" ]] || die "could not read $v from spec/" 1
 done
 
@@ -431,6 +432,10 @@ fi
 if [[ -f "$OUT/drc.json" ]] && python3 -I -c 'import json,sys; sys.exit(0 if json.load(open(sys.argv[1]))["smoke"]["run_state"]=="ran" else 1)' "$OUT/drc.json"; then
   GOT="$(python3 -I -c 'import json,sys; print(json.load(open(sys.argv[1]))["provenance"]["deck"]["content_hash"])' "$OUT/drc.json")"
   [[ "$GOT" == "$PIN_DECK" ]] || die "drc.json deck hash $GOT is not the pin $PIN_DECK" 1
+fi
+if [[ -f "$OUT/lvs.json" ]] && python3 -I -c 'import json,sys; sys.exit(0 if json.load(open(sys.argv[1]))["smoke"]["run_state"]=="ran" else 1)' "$OUT/lvs.json"; then
+  GOT="$(python3 -I -c 'import json,sys; print(json.load(open(sys.argv[1]))["provenance"]["deck"]["content_hash"])' "$OUT/lvs.json")"
+  [[ "$GOT" == "$PIN_LVS_DECK" ]] || die "lvs.json deck hash $GOT is not the pin $PIN_LVS_DECK" 1
 fi
 echo "run.sh: records written to flow/smoke/records/$DATE:" >&2
 python3 -I - "$OUT" <<'PY' >&2
