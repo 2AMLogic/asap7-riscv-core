@@ -9,8 +9,6 @@ word deliberately flipped; the run is then expected to fail.
 """
 
 import json
-import os
-import subprocess
 import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
@@ -18,38 +16,13 @@ from pathlib import Path
 from cocotb_tools.runner import get_runner
 
 HERE = Path(__file__).resolve().parent
-REPO = HERE.parent.parent
-BUILD = REPO / "verification" / "build"
-TOP = "cve2_rv32imc_wrapper"
+sys.path.insert(0, str(HERE))  # fv.sh runs this with -I, which drops the script dir
 
-
-def paths():
-    return dict(l.split("=", 1) for l in (BUILD / "paths.env").read_text().split())
-
-
-def convert(p, out: Path) -> Path:
-    """Convert via flow/core/sv2v.sh, the same entry point flow/core/synth.sh sources."""
-    dest = out / f"{TOP}.v"
-    subprocess.run(
-        ["bash", str(REPO / "flow" / "core" / "sv2v.sh"), "convert", p["SV2V"], p["CVE2"],
-         str(REPO / "rtl" / f"{TOP}.sv"), TOP, str(dest)],
-        check=True)
-    return dest
+from archtest_common import prepare  # noqa: E402
 
 
 def main(run_dir: Path, negative: bool) -> int:
-    run_dir.mkdir(parents=True, exist_ok=True)
-    p = paths()
-    tests_dir = BUILD / "tests"
-    subprocess.run([sys.executable, "-I", str(HERE / "build_tests.py"), str(tests_dir)], check=True)
-    names = json.loads((tests_dir / "tests.json").read_text())
-    only = os.environ.get("ARCHTEST_ONLY")  # debugging: comma-separated test names
-    if only:
-        names = [n for n in names if n in only.split(",")]
-    if negative:
-        names = names[:1]
-
-    converted = convert(p, run_dir)
+    tests_dir, names, converted = prepare(run_dir, negative)
     build_dir = run_dir / "sim_build"
     runner = get_runner("icarus")
     runner.build(sources=[converted, HERE / "tb_core.v"], hdl_toplevel="tb_core",

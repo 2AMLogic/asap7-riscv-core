@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # The one place the pinned sv2v is read, fetched, verified, and the CVE2 closure
 # is converted. Shared by flow/core/synth.sh (synthesis), verification/core/setup.sh
-# (fetch) and verification/core/runner.py (architectural-test netlist), so the
+# (fetch) and verification/core/archtest_common.py (architectural-test netlist), so the
 # netlist that is verified is converted exactly as the netlist that is synthesized.
 #
 #   source flow/core/sv2v.sh; sv2v_ensure <build-dir>

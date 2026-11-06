@@ -1,6 +1,6 @@
 """cocotb test: run one riscv-arch-test program on cve2_rv32imc_wrapper.
 
-Environment (set by runner.py): ARCHTEST_JSON = the test's .json from
+Environment (set by runner.py and fv.py): ARCHTEST_JSON = the test's .json from
 build_tests.py. The DUT's signature region must equal the Sail golden model's.
 """
 
@@ -30,8 +30,6 @@ async def test_signature(dut):
 
     for cycle in range(MAX_CYCLES):
         await RisingEdge(dut.clk)
-        if os.environ.get("ARCHTEST_TRACE") and cycle < int(os.environ.get('ARCHTEST_TRACE_N','200')):
-            dut._log.info(f"c{cycle} ireq={dut.instr_req.value} ia={dut.instr_addr.value} dreq={dut.data_req.value} da={dut.data_addr.value}")
         if int(dut.done.value):
             break
     else:

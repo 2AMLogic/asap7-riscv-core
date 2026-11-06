@@ -85,7 +85,7 @@ source "$REPO/flow/core/sv2v.sh"
 sv2v_ensure "$BUILD"
 
 # ---- 3. SystemVerilog -> Verilog ------------------------------------------
-# One shared conversion (flow/core/sv2v.sh), also used by verification/core/runner.py.
+# One shared conversion (flow/core/sv2v.sh), also used by verification/core/archtest_common.py.
 W="$SCRATCH/work"; mkdir -p "$W"
 sv2v_convert "$SV2V" "$UP" "$WRAPPER" "$TOP" "$W/$TOP.v"
 iverilog -g2012 -s "$TOP" -o "$W/$TOP.vvp" "$W/$TOP.v"

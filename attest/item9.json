@@ -8,6 +8,7 @@
     "verification/core/setup.sh",
     "verification/core/build_tests.py",
     "verification/core/runner.py",
+    "verification/core/archtest_common.py",
     "verification/core/tb_core.v",
     "verification/core/test_archtest.py",
     "verification/core/model_test.h",
