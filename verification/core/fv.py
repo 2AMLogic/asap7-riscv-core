@@ -3,7 +3,7 @@
 Usage: python fv.py <out-dir> [--negative-control]
 
 Needs verification/core/setup.sh to have run. Converts the pinned CVE2 closure
-(same sv2v entry point as runner.py), builds tests/signatures with build_tests.py,
+(shared with runner.py via archtest_common.py), builds tests/signatures with build_tests.py,
 then for each program writes verification/core/fv-request.json-shaped request
 (<out-dir>/requests/<test>.json) and runs `klt functional-verification` on it.
 klt requests carry no plusargs, so the program image and tohost address are
@@ -20,24 +20,11 @@ import sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-REPO = HERE.parent.parent
-BUILD = REPO / "verification" / "build"
-TOP = "cve2_rv32imc_wrapper"
+sys.path.insert(0, str(HERE))  # fv.sh runs this with -I, which drops the script dir
+
+from archtest_common import prepare  # noqa: E402
 KLT = os.environ.get("KLT_CMD", "klt").split()
 
-
-def paths():
-    return dict(l.split("=", 1) for l in (BUILD / "paths.env").read_text().split())
-
-
-def convert(p, out: Path) -> Path:
-    """Convert via flow/core/sv2v.sh, the same entry point runner.py uses."""
-    dest = out / f"{TOP}.v"
-    subprocess.run(
-        ["bash", str(REPO / "flow" / "core" / "sv2v.sh"), "convert", p["SV2V"], p["CVE2"],
-         str(REPO / "rtl" / f"{TOP}.sv"), TOP, str(dest)],
-        check=True)
-    return dest
 
 
 def request(name, meta, tests_dir, converted):
@@ -55,14 +42,7 @@ def request(name, meta, tests_dir, converted):
 
 
 def main(out: Path, negative: bool) -> int:
-    out.mkdir(parents=True, exist_ok=True)
-    p = paths()
-    tests_dir = BUILD / "tests"
-    subprocess.run([sys.executable, "-I", str(HERE / "build_tests.py"), str(tests_dir)], check=True)
-    names = json.loads((tests_dir / "tests.json").read_text())
-    if negative:
-        names = names[:1]
-    converted = convert(p, out)
+    tests_dir, names, converted = prepare(out, negative)
     (out / "requests").mkdir(exist_ok=True)
 
     results, failed = [], 0

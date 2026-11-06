@@ -54,7 +54,7 @@ Sail RISC-V golden model, the xPack RISC-V GCC, sv2v (the `spec/core.md` pin)
 and the hash-locked CVE2 closure. Nothing is installed on the host; network is
 needed on a cold start. Then `core/build_tests.py` compiles each program and runs
 it on Sail to get the **expected signature** (the DUT never produces its own
-reference), and `core/runner.py` converts the RTL, builds it with Icarus and runs
+reference), and `core/runner.py` (helpers shared with `core/fv.py` in `core/archtest_common.py`) converts the RTL, builds it with Icarus and runs
 one cocotb test per program (`core/test_archtest.py`): reset, run until the program
 stores to `tohost`, compare the signature region word for word.
 

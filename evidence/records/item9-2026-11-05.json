@@ -1,0 +1,139 @@
+{
+  "schema_version": 1,
+  "kind": "generic",
+  "status": "pass",
+  "t1_item": 9,
+  "summary": "T1 item 9 (Testbenches shipped): 13/13 attestation checks passed (klt signoff --attest)",
+  "source": "attest/item9.json",
+  "attestation": {
+    "producer": "klt signoff --attest",
+    "inventory_schema_version": 1,
+    "hash_algorithm": "sha256-raw-bytes",
+    "check_count": 13,
+    "passed_count": 13,
+    "checks": [
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "flow/smoke/run.sh",
+        "passed": true,
+        "content_hash": "sha256:a37027e6a60b4834dd9d2a9090e1997d3025abfae95fc1e91518e9daa52c2462"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "verification/core/build_tests.py",
+        "passed": true,
+        "content_hash": "sha256:7f45dd28395b0cf60d8674617fe11aefb2c5578c48895a55f3290888c58841f4"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "verification/core/excluded.json",
+        "passed": true,
+        "content_hash": "sha256:123d19a459a8e7f4b8952711cf8a220388f1da48195c81f5af74cc81c49c6f68"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "verification/core/link.ld",
+        "passed": true,
+        "content_hash": "sha256:a583f045489b53964f2626990edd428cbac1aa86bb2bf20b2730cc987346b8dd"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "verification/core/model_test.h",
+        "passed": true,
+        "content_hash": "sha256:931ebab56d1e681b5ee3d336620c8e66bb2443968a0655494e2e94c39f14081f"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "verification/core/runner.py",
+        "passed": true,
+        "content_hash": "sha256:47803801df3c2e9b15810c1ed6590568213f388ed7477b5c148f84ea84c315e9"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "verification/core/setup.sh",
+        "passed": true,
+        "content_hash": "sha256:e3bb34f467cc022e24416aa2d362d4f02b22f9768cc2789daad830d85b82e727"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "verification/core/tb_core.v",
+        "passed": true,
+        "content_hash": "sha256:7638b5223f0f2ed7804c54b588fafd59c2ed5aa15d3f7588b1bfdabaca4aebc4"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "verification/core/test_archtest.py",
+        "passed": true,
+        "content_hash": "sha256:a2a98cf3fdf40535743f0a2b064f7b722f7c2eb370d0af33257fcc91097c95db"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "verification/run.sh",
+        "passed": true,
+        "content_hash": "sha256:199e7f5916b3713247a4db2c0332fbd2f0376bb392d24ee8e2ff8f28fada11c4"
+      },
+      {
+        "check": "command",
+        "role": "cold_start",
+        "argv": [
+          "verification/run.sh",
+          "--core"
+        ],
+        "cwd": ".",
+        "exit_status": 0,
+        "passed": true,
+        "local_only": true
+      },
+      {
+        "check": "pin",
+        "role": "pdk",
+        "passed": true,
+        "value": {
+          "name": "asap7",
+          "revision": "d24f8b857ff74cf5b21ab18a7e1b11a3954c449b"
+        }
+      },
+      {
+        "check": "pin",
+        "role": "tools",
+        "passed": true,
+        "value": {
+          "cocotb": "2.0.1",
+          "cve2": "d7f21568028a1114be663599bd42145dccf28928",
+          "iverilog": "13.0",
+          "klt": "0.8.0",
+          "llvm-clang": "19.1.7",
+          "python": "3.12",
+          "riscv-arch-test": "331b0cd934eda5d0b177556669d56a9e34e0d030",
+          "riscv-none-elf-gcc": "v15.2.0-1",
+          "sail-riscv": "2026-11-02-a83603b",
+          "sv2v": "v0.0.13",
+          "verilator": "5.050"
+        }
+      }
+    ]
+  },
+  "provenance": {
+    "klt_version": "0.8.0",
+    "klayout_version": null,
+    "pdk": null,
+    "deck": null,
+    "input": {
+      "path": {
+        "path": "attest/item9.json",
+        "scope": "repo"
+      },
+      "content_hash": "sha256:306dffb5b56954d9142b6b8f4256caa2a75c0c8bbf75e01b3970eefc90a9904d"
+    }
+  }
+}
