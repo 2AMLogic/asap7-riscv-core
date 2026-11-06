@@ -3,6 +3,11 @@
 Chronological record of merged PRs and closed issues, maintained by the Guide
 triage role. Newest first.
 
+### 2026-11-06
+
+- **PR #68**: refactor(verification): share arch-test driver setup and drop debug hooks
+- **Issue #65** (closed): Consolidate duplicate arch-test drivers: runner.py vs fv.py
+
 ### 2026-11-05
 
 - **PR #63**: feat: run core arch-test suite through klt functional-verification
