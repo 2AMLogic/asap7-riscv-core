@@ -5,6 +5,12 @@ triage role. Newest first.
 
 ### 2026-11-06
 
+- **PR #73**: feat(verification): run arch tests on the gate-level netlist (--core --gate)
+- **Issue #70** (closed): verification: run the riscv-arch-test suite on the committed ASAP7 gate-level netlist
+- **PR #72**: docs: record deck follow-ups and pin the LVS deck hash
+- **Issue #71** (closed): Decision 0012 follow-ups: DRC record released flag, stale dev-build line, PAD coverage claim, LVS deck pin
+- **PR #66**: feat(flow): re-run smoke flow on klt 0.9.0 with par ok and counter-layout checks
+- **Issue #17** (closed): Follow-on from PR #16: place-and-route on the counter smoke DUT (par.json is not_run)
 - **PR #68**: refactor(verification): share arch-test driver setup and drop debug hooks
 - **Issue #65** (closed): Consolidate duplicate arch-test drivers: runner.py vs fv.py
 
