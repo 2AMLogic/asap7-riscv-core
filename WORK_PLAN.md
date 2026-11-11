@@ -13,19 +13,19 @@ _None._
 
 `loom:very-important` (one counts per workspace); every stage takes these first.
 
-_None._
+- **#28**: T1 item 2 (layout): committed P&R flow and routed cve2_top GDS on ASAP7
 
 ## Important
 
 `loom:important`; taken before unlabelled work.
 
-- **#28**: T1 item 2 (layout): committed P&R flow and routed cve2_top GDS on ASAP7
+_None._
 
 ## Ready
 
 Human-approved issues ready for implementation (`loom:issue`).
 
-_None._
+- **#28**: T1 item 2 (layout): committed P&R flow and routed cve2_top GDS on ASAP7
 
 ## In Progress
 
@@ -65,9 +65,9 @@ _None._
 | Bucket | Count |
 |------|-------|
 | Operator merge-risk holds | 0 |
-| Very important | 0 |
-| Important | 1 |
-| Ready (`loom:issue`) | 0 |
+| Very important | 1 |
+| Important | 0 |
+| Ready (`loom:issue`) | 1 |
 | In Progress (`loom:building`) | 0 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 0 |
