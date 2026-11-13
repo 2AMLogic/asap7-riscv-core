@@ -25,7 +25,7 @@ _None._
 
 Human-approved issues ready for implementation (`loom:issue`).
 
-- **#28**: T1 item 2 (layout): committed P&R flow and routed cve2_top GDS on ASAP7
+_None._
 
 ## In Progress
 
@@ -67,7 +67,7 @@ _None._
 | Operator merge-risk holds | 0 |
 | Very important | 1 |
 | Important | 0 |
-| Ready (`loom:issue`) | 1 |
+| Ready (`loom:issue`) | 0 |
 | In Progress (`loom:building`) | 0 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 0 |
