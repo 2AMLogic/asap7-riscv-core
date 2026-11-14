@@ -34,7 +34,7 @@ REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 source "$REPO/flow/lib.sh"
 TOP=cve2_rv32imc_wrapper
 WRAPPER="$REPO/rtl/$TOP.sv"
-CELL_LIB=asap7sc7p5t_28_RVT
+CELL_LIB=asap7sc7p5t_28_R
 CORNER=SS
 
 CHECK=0
