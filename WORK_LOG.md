@@ -3,6 +3,13 @@
 Chronological record of merged PRs and closed issues, maintained by the Guide
 triage role. Newest first.
 
+### 2026-11-14
+
+- **PR #87**: refactor(smoke): drop the 0.8.0 comparison-build fallback from the smoke flow
+- **Issue #85** (closed): Remove the 0.8.0 comparison-build fallback from flow/smoke/run.sh: the pin now does every step
+- **PR #86**: refactor(verification): one sourced lib for die/pin/check_version
+- **Issue #84** (closed): Consolidate duplicated verification/ shell helpers and drop a dead function in flow/smoke/run.sh
+
 ### 2026-11-12
 
 - **PR #78**: Bump Repo Skills 0.25.10 -> 0.26.1
