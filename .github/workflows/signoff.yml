@@ -70,9 +70,34 @@ jobs:
       # any change is drift. The harness commands in attest/item10.json are
       # local_only (they need iverilog/verilator), so they are skipped here and
       # listed as [SKIP]; the harness runs in ci.yml instead. After editing
-      # README.md, LICENSE or either workflow, re-attest and commit:
-      #   klt signoff --attest 10 --inventory attest/item10.json -o evidence/item10.json
+      # README.md, LICENSE or either workflow, re-attest and commit, pinned to
+      # the same klt version this job installs:
+      #   uvx --python 3.12 --from "klayout-tools==0.8.0" klt signoff \
+      #       --attest 10 --inventory attest/item10.json -o evidence/item10.json
       - name: Re-check the item 10 attestation envelope
         run: |
+          set -uo pipefail
+          rc=0
           klt signoff --attest 10 --inventory attest/item10.json \
-                      --check evidence/item10.json
+                      --check evidence/item10.json || rc=$?
+          # Exit 0 = the committed envelope still reproduces and still passes.
+          # 3 = it drifted: an attested hygiene file changed and the envelope
+          # was not re-attested in the same PR. Anything else is a hard error
+          # (inventory or envelope missing or unparseable) - a broken
+          # attestation, which must not be reported as drift.
+          if [ "$rc" -eq 0 ]; then
+            echo "Committed item 10 attestation envelope is fresh: it still reproduces."
+            exit 0
+          fi
+          if [ "$rc" -ne 3 ]; then
+            echo "::error::klt signoff --attest 10 --check exited $rc (expected 0 or 3): attest/item10.json or evidence/item10.json is missing or unparseable - this is a broken attestation, not drift"
+            exit 1
+          fi
+          echo "::error::The committed envelope evidence/item10.json is stale - an attested hygiene file changed without being re-attested in this PR."
+          echo "Re-attest and commit evidence/item10.json in this same PR, pinned to the klt version this job installs:"
+          echo "  uvx --python 3.12 --from \"klayout-tools==0.8.0\" klt signoff \\"
+          echo "      --attest 10 --inventory attest/item10.json -o evidence/item10.json"
+          echo "The drift above is keyed on attestation.checks.<index>; those indices map to:"
+          jq -r '.attestation.checks | to_entries[] | "  attestation.checks.\(.key)  ->  \(.value.path // ("command " + .value.name))"' \
+             evidence/item10.json || true
+          exit 1
