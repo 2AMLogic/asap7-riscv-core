@@ -15,6 +15,8 @@
 #       -DSYNTHESIS drops the simulation-only DPI export block in cve2_if_stage.sv.
 #       Same command as sky130-riscv-soc scripts/convert-cve2.sh, plus the wrapper.
 _SV2V_REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+# shellcheck source=fetch_checked.sh
+. "$_SV2V_REPO/fetch_checked.sh"
 
 sv2v_ensure() {
   local build="$1" zip
@@ -26,10 +28,8 @@ sv2v_ensure() {
     if [[ ! -x "$SV2V" ]]; then
       mkdir -p "$build/sv2v/$PIN_SV2V"
       zip="$build/sv2v/$PIN_SV2V/sv2v-Linux.zip"
-      curl -fsSL --retry 2 -o "$zip" "https://github.com/zachjs/sv2v/releases/download/$PIN_SV2V/sv2v-Linux.zip" \
-        || { rm -f "$zip"; echo "sv2v.sh: sv2v download failed" >&2; exit 1; }
-      [[ "$(sha256sum "$zip" | cut -d' ' -f1)" == "$PIN_SV2V_SHA" ]] \
-        || { rm -f "$zip"; echo "sv2v.sh: sv2v-Linux.zip sha256 does not match the pin" >&2; exit 1; }
+      fetch_checked "https://github.com/zachjs/sv2v/releases/download/$PIN_SV2V/sv2v-Linux.zip" \
+        "$zip" "$PIN_SV2V_SHA" || exit 1
       python3 -I -c 'import sys, zipfile; zipfile.ZipFile(sys.argv[1]).extractall(sys.argv[2])' "$zip" "$build/sv2v/$PIN_SV2V"
       chmod +x "$SV2V"
     fi

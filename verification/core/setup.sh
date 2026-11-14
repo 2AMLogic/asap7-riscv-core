@@ -16,17 +16,9 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO="$(cd "$HERE/../.." && pwd)"
 # shellcheck source=verification/lib.sh
 . "$REPO/verification/lib.sh"
+# shellcheck source=fetch_checked.sh
+. "$REPO/fetch_checked.sh"
 BUILD="$REPO/verification/build"
-
-fetch_checked() { # url dest sha256
-  local url="$1" dest="$2" want="$3" tmp
-  tmp="$dest.part"
-  curl -fsSL --retry 2 -o "$tmp" "$url" || { rm -f "$tmp"; die "download failed: $url"; }
-  if [ "$(sha256sum "$tmp" | cut -d' ' -f1)" != "$want" ]; then
-    rm -f "$tmp"; die "sha256 mismatch for $url (pinned $want)"
-  fi
-  mv "$tmp" "$dest"
-}
 
 mkdir -p "$BUILD"
 
@@ -48,7 +40,7 @@ SAIL_DIR="$BUILD/sail-riscv/$SAIL_REL"
 if [ ! -x "$SAIL_DIR/sail-riscv-Linux-x86_64/bin/sail_riscv_sim" ]; then
   mkdir -p "$SAIL_DIR"
   fetch_checked "https://github.com/riscv/sail-riscv/releases/download/$SAIL_REL/sail-riscv-Linux-x86_64.tar.gz" \
-    "$SAIL_DIR/sail.tar.gz" "$(pin sail_riscv_sha256)"
+    "$SAIL_DIR/sail.tar.gz" "$(pin sail_riscv_sha256)" || exit 1
   tar xzf "$SAIL_DIR/sail.tar.gz" -C "$SAIL_DIR"
 fi
 
@@ -59,7 +51,7 @@ GCC_NAME="xpack-riscv-none-elf-gcc-${GCC_REL#v}"
 if [ ! -x "$GCC_DIR/$GCC_NAME/bin/riscv-none-elf-gcc" ]; then
   mkdir -p "$GCC_DIR"
   fetch_checked "https://github.com/xpack-dev-tools/riscv-none-elf-gcc-xpack/releases/download/$GCC_REL/$GCC_NAME-linux-x64.tar.gz" \
-    "$GCC_DIR/gcc.tar.gz" "$(pin riscv_gcc_sha256)"
+    "$GCC_DIR/gcc.tar.gz" "$(pin riscv_gcc_sha256)" || exit 1
   tar xzf "$GCC_DIR/gcc.tar.gz" -C "$GCC_DIR"
 fi
 
@@ -74,7 +66,7 @@ LLVM_MAJOR="${LLVM_REL%%.*}"
 if [ ! -x "$LLVM_DIR/$LLVM_NAME/bin/clang-$LLVM_MAJOR" ]; then
   mkdir -p "$LLVM_DIR"
   fetch_checked "https://github.com/llvm/llvm-project/releases/download/llvmorg-$LLVM_REL/$LLVM_NAME.tar.xz" \
-    "$LLVM_DIR/llvm.tar.xz" "$(pin llvm_sha256)"
+    "$LLVM_DIR/llvm.tar.xz" "$(pin llvm_sha256)" || exit 1
   tar xJf "$LLVM_DIR/llvm.tar.xz" -C "$LLVM_DIR" "$LLVM_NAME/bin/clang-$LLVM_MAJOR"
   rm -f "$LLVM_DIR/llvm.tar.xz"
 fi
@@ -101,7 +93,7 @@ for grp in AO_RVT_TT_201020 INVBUF_RVT_TT_201020 OA_RVT_TT_201020 SIMPLE_RVT_TT_
   want="$(pin "asap7_cells_${grp}_sha256")"
   if [ ! -f "$f" ] || [ "$(sha256sum "$f" | cut -d' ' -f1)" != "$want" ]; then
     fetch_checked "https://raw.githubusercontent.com/The-OpenROAD-Project/asap7sc7p5t_28/$CELLS_COMMIT/Verilog/asap7sc7p5t_$grp.v" \
-      "$f" "$want"
+      "$f" "$want" || exit 1
   fi
 done
 
