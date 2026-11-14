@@ -12,7 +12,7 @@ FinFET node for research and teaching; no fab manufactures it. This block is
 this repo is a tool result against a predictive model — there is no silicon,
 no shuttle and no measurement at the end of the ladder.
 
-**Status: specification ratified, core pin adopted** (see [`spec/core.md`](spec/core.md) and [decision 0007](spec/decisions/0007-adopt-core-pin.md)). An ASAP7 smoke flow exists and place-and-route now runs end to end on the placeholder counter (`flow/smoke/records/2026-11-05/`, `par.json` `ok`); its DRC and LVS results on that layout are not clean yet (see decision 0012). The core itself is not yet synthesized or placed.
+**Status: core synthesized to an ASAP7 gate-level netlist; P&R blocked upstream** (see [`spec/core.md`](spec/core.md) and [decision 0007](spec/decisions/0007-adopt-core-pin.md)). An ASAP7 smoke flow exists and place-and-route now runs end to end on the placeholder counter (`flow/smoke/records/2026-11-05/`, `par.json` `ok`); its DRC and LVS results on that layout are not clean yet (see decision 0012). The core is synthesized: a committed ASAP7 gate-level netlist of `cve2_rv32imc_wrapper` exists (`flow/core/records/2026-11-03/`, Yosys, `status: ok`), and the `riscv-arch-test` suite runs against it zero-delay with 72 of 72 tests passing and one test excluded by [decision 0011](spec/decisions/0011-c-cebreak-01-mtvec-not-writable.md) (`verification/records/2026-11-06/`). The core is not yet placed or routed — `layout/` holds no core GDS.
 
 **Built agent-native.** Every specification, decision record, testbench, and
 line of documentation here is produced by AI agents working from a ratified
@@ -64,7 +64,12 @@ Maturity ladder: ASAP7 brought up under `klt` → spec ratified → core RTL
 passing the architectural tests in simulation → synthesized → placed and
 routed → DRC/LVS-clean → post-route multi-corner STA closed at the target.
 **That is the end of the ladder; there is no fabrication step.** **Current
-position: spec ratified; PDK brought up under `klt` (see `spec/pdk-bringup.md`).**
+position: synthesized** — PDK brought up under `klt` (see
+`spec/pdk-bringup.md`), spec ratified, the architectural tests passing on the
+core in simulation and at gate level, and a committed ASAP7 gate-level
+netlist. The next rung, placed and routed, is not reached: P&R of the core is
+blocked upstream on
+[klayout-tools#5074](https://github.com/2AMLogic/klayout-tools/issues/5074).
 
 ## Repo layout
 
