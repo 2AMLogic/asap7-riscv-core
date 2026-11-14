@@ -3,7 +3,7 @@
 Place-and-route of an unmodified RV32IMC CVE2 core on ASAP7 (a predictive PDK;
 nothing here is fabricated), used to exercise `klt` on FinFET-era rules.
 
-**Status as of 2026-11-13, `main` @ `bf23a58`.** Every result below is a tool
+**Status as of 2026-11-14, `main` @ `f0cbc2f`.** Every result below is a tool
 result against a predictive model; every timing figure is predicted. The label
 queue is in [`WORK_PLAN.md`](WORK_PLAN.md), merge history in
 [`WORK_LOG.md`](WORK_LOG.md), and the item-by-item tracker is issue #6.
@@ -35,12 +35,21 @@ the pinned `klayout-tools==0.9.0` (`flow/smoke/records/2026-11-05/`, PR #66).
 `par` is `ok` with DEF and GDS; on that layout DRC reports 549 violations in
 seven rule ids, LVS is `mismatch` (19 topology errors) and ERC is
 `not_checked`. The DRC deck (267 categories) and the LVS deck are pinned by
-content hash in `spec/core.md` (decisions 0012 and 0013).
+content hash in `spec/core.md` (decisions
+`0012-pin-klt-0-9-0-and-ratify-asap7-drc-deck` and 0013 — two records share the
+number 0012, which #90 tracks).
+
+Landed since the 2026-11-13 snapshot: the item-10 attestation gate now names
+the attested paths and the re-attest command (#83, PR #92), and both shell
+clean-ups merged (#84, PR #86; #85, PR #87).
 
 Three facts in the committed core synthesis record shape what follows:
 
 1. It was produced by `klt 0.8.0` (`flow/core/records/2026-11-03/tool-versions.txt`);
-   `spec/core.md` has since moved the flow pin to `0.9.0`.
+   `spec/core.md` has since moved the pin to `0.9.0` for DRC, LVS and the smoke
+   flow only — `klt signoff` stays at `0.8.0` (decision 0008) and no pin is
+   named for core synthesis, so re-running synthesis on `0.9.0` may itself need
+   a decision record.
 2. `synth.json` warns that `cell_library 'asap7sc7p5t_28_RVT'` has no verified
    mapping for `setundef -zero/hilomap`, and `netlist.v` contains 14 x-valued
    constant assigns. The pinned `klt place-and-route` refuses those, which is
@@ -52,33 +61,26 @@ Three facts in the committed core synthesis record shape what follows:
 
 ## Now
 
-Each can start today and is one pull request.
+Each is filed and is one pull request; #97 is already claimed and in build.
 
 1. **Re-run core synthesis on the pinned release with a `cell_library` key it
    recognises.** Done when a new dated directory under `flow/core/records/`
    holds a `synth.json` from `klayout-tools==0.9.0` without the
    `setundef -zero/hilomap` warning and a netlist with no x-valued constant
    assigns, or the record showing why the pinned release cannot reach that.
-   No issue yet (draft 1). Unblocks #28.
+   #95. Unblocks #28.
 2. **Account for the unmapped `$_DLATCH_N_`.** Done when a committed note
    names the source construct and either the netlist maps it to an ASAP7
    library cell without editing the pinned core, or a generic klayout-tools
-   issue is linked. No issue yet (draft 2).
+   issue is linked. #96.
 3. **Classify the 549 DRC violations on the counter layout.** Done when a
    committed table gives each of the seven rule ids in
    `flow/smoke/records/2026-11-05/drc.json` a count, an example location and a
    cause (flow setting, deck or tool), with a klayout-tools issue linked per
-   tool or deck cause. No issue yet (draft 3). Clears the way for #29.
+   tool or deck cause. #97 (claimed, in build). Clears the way for #29.
 4. **Classify the LVS mismatch on the counter layout.** Done when a committed
    note explains the 19 topology errors in `lvs.json` of the same record by
-   cause, with upstream issues linked likewise. No issue yet (draft 4). Clears
-   the way for #30.
-5. **Make the item-10 attestation gate say what to do** (#83, ready). Done
-   when `CLAUDE.md` names the four attested paths and the re-attest command,
-   and the `klt signoff` workflow step prints both on drift.
-6. **Shell clean-ups, already claimed:** #84 (one sourced helper library for
-   `verification/`, PR #86 in review) and #85 (drop the unused 0.8.0
-   comparison-build fallback from `flow/smoke/run.sh`).
+   cause, with upstream issues linked likewise. #98. Clears the way for #30.
 
 ## Next
 
@@ -100,8 +102,12 @@ Each can start today and is one pull request.
 - **Timing closure at the 1 GHz predicted target.** First: what does post-route
   SS-corner STA report on the ratified floorplan (decision 0004)? Moving to the
   500 MHz fallback needs a decision record.
-- **ERC with an antenna table.** `erc.json` is `not_checked` (klayout-tools
-  #4090). First: can a table be derived from the pinned PDK files?
+- **ERC with an antenna table.** `erc.json` is `not_checked`, with
+  `coverage.nothing_checked_reasons` `gate_reference_level` and
+  `missing_antenna_pdk`. klayout-tools #4090, which reported this, closed
+  2026-10-24 while the gap persists in the 2026-11-05 record, so the friction
+  protocol owes a fresh klayout-tools issue. First: can a table be derived from
+  the pinned PDK files?
 - **Resolving ASAP7 through `klt pdk`.** `spec/core.md` points the flow at the
   checkout by path "until klayout-tools #3782 closes"; that issue is now
   closed. First: does the pinned release resolve ASAP7?
@@ -115,13 +121,13 @@ Each can start today and is one pull request.
   `flow/core/records/2026-11-05/ff-simple-check.json` (PR #61) notes an
   upstream commit after the pin correcting three SIMPLE RVT FF Liberty files.
   Ratifying FF or re-pinning the library is a spec decision, not yet recorded.
-- **Decisions 0012 and 0013 still read "proposed"**, though `spec/core.md`
-  already carries their pins.
-- **PR #82** (README status refresh) is in review; the README on `main` still
-  says the core is not synthesized.
+- **Decisions `0012-pin-klt-0-9-0-and-ratify-asap7-drc-deck` and 0013 still
+  read "proposed"**, though `spec/core.md` already carries their pins. The
+  other 0012 (`0012-shared-archtest-module-and-item9-reattestation`) is
+  adopted; #90 tracks the duplicate number.
 
-**Dispatchable today:** #83, plus #84 and #85 already claimed; the four drafts
-once filed. The layout path (#28 to #35) waits on Now 1 or the upstream fix.
+**Dispatchable today:** #95, #96 and #98; #97 is already claimed and in build.
+The layout path (#28 to #35) waits on Now 1 or the upstream fix.
 
 ## Not planned
 
@@ -129,4 +135,5 @@ once filed. The layout path (#28 to #35) waits on Now 1 or the upstream fix.
 - Changes to the core RTL; SRAM, caches or an SoC around the core.
 - LVT or SLVT cells: only RVT has an SS corner (decision 0002).
 - Local patches to the tech LEF or the CTS buffer to get a clean result
-  (rejected in decision 0012); tool gaps go to klayout-tools.
+  (rejected in decision `0012-pin-klt-0-9-0-and-ratify-asap7-drc-deck`); tool
+  gaps go to klayout-tools.
