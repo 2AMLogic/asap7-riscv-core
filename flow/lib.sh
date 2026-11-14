@@ -11,6 +11,8 @@
 #   setup_scratch <name>                 sets SCRATCH (mktemp) and removes it on exit unless KEEP_SCRATCH=1
 #   new_record_dir <subdir>              sets DATE and OUT=flow/<subdir>/records/<date>; refuses an
 #                                        existing record set (records are append-only evidence)
+#   record_subs <dest> <path>=<tag>...   write the host-path substitution list every record is
+#                                        redacted with, for flow/record_lib.py
 #   build_liberty_overlay <asap7> <root> <cell-lib> <corner>...
 #                                        extract and merge the RVT Liberty for each corner under
 #                                        <root>/lib and write <root>/klt-pdk.json
@@ -39,6 +41,18 @@ new_record_dir() {  # subdir (smoke|core)
     die "records already exist in flow/$1/records/$DATE; set RECORD_DATE to a new label (records are append-only evidence)"
   fi
   mkdir -p "$OUT"
+}
+
+record_subs() {  # dest path=tag...
+  # The one convention for naming the host paths a record may not contain: a
+  # JSON array of "<path>=<tag>" strings, applied by flow/record_lib.py in the
+  # order given, so a path that is a prefix of another is listed first.
+  local dest="$1" sep="" p; shift
+  {
+    printf '['
+    for p in "$@"; do printf '%s"%s"' "$sep" "$p"; sep=","; done
+    printf ']'
+  } >"$dest"
 }
 
 build_liberty_overlay() {  # asap7 root cell_lib corner...

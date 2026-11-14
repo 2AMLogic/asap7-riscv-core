@@ -102,7 +102,7 @@ cat >"$W/synth.req.json" <<JSON
 JSON
 rc=0
 ( cd "$W" && "${KLT[@]}" synthesize synth.req.json --pdk asap7 --pdk-root "$PDK" --format json ) >"$SCRATCH/synth.out" 2>"$SCRATCH/synth.err" || rc=$?
-python3 -I -c 'import json,sys; d=json.load(open(sys.argv[1])); sys.exit(0 if isinstance(d,dict) and "error" not in d else 1)' "$SCRATCH/synth.out" \
+python3 -I "$REPO/flow/record_lib.py" usable "$SCRATCH/synth.out" \
   || { echo "synth.sh: klt synthesize failed (exit $rc)" >&2; head -c 2000 "$SCRATCH/synth.out" "$SCRATCH/synth.err" >&2; exit 1; }
 NETLIST="$(ls -t "$W"/.klt/synthesize/*/"${TOP}"_synth.v 2>/dev/null | head -1 || true)"
 [[ -n "$NETLIST" ]] || die "klt synthesize produced no ${TOP}_synth.v" 1
@@ -127,26 +127,17 @@ fi
 
 cp "$NETLIST" "$OUT/netlist.v"
 
-python3 -I - "$SCRATCH/synth.out" "$OUT/synth.json" "$(sha256sum "$NETLIST" | cut -d" " -f1)" "$SCRATCH" "$REPO" "$HOME" <<'PY'
+# The record is assembled here and redacted and written by flow/record_lib.py,
+# the one path to flow/*/records/ (shared with flow/smoke/run.sh).
+record_subs "$SCRATCH/subs.json" "$SCRATCH=<scratch>" "$REPO=<repo>" "$HOME=<home>"
+python3 -I - "$SCRATCH/synth.out" "$(sha256sum "$NETLIST" | cut -d" " -f1)" <<'PY' | python3 -I "$REPO/flow/record_lib.py" write "$OUT/synth.json" "$SCRATCH/subs.json"
 import json, sys
-src, dest, netlist_sha, *subs = sys.argv[1:]
-tags = ["<scratch>", "<repo>", "<home>"]
-def scrub(o):
-    if isinstance(o, str):
-        for s, t in zip(subs, tags):
-            o = o.replace(s, t)
-        return o
-    if isinstance(o, list):
-        return [scrub(x) for x in o]
-    if isinstance(o, dict):
-        return {k: scrub(v) for k, v in o.items()}
-    return o
+src, netlist_sha = sys.argv[1:3]
 d = json.load(open(src))
 d["netlist_sha256_as_emitted_by_klt"] = d.get("netlist_sha256")
 d["netlist_sha256"] = netlist_sha
 d["core_flow"] = {"note": "Synthesis of the RV32IMC wrapper around unmodified CVE2; predicted PDK, no timing claimed.", "predicted": True}
-json.dump(scrub(d), open(dest, "w"), indent=2, sort_keys=True)
-open(dest, "a").write("\n")
+print(json.dumps(d))
 PY
 
 sha() { sha256sum "$1" | cut -d' ' -f1; }
