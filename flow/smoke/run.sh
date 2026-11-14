@@ -66,25 +66,14 @@ W="$SCRATCH/work"; ROOT="$SCRATCH/pdk"; mkdir -p "$W" "$ROOT"
 echo "run.sh: records -> flow/smoke/records/$DATE" >&2
 
 # ---- helper: assemble a record ------------------------------------------
+# Assembles one record on stdout only. flow/record_lib.py redacts it and writes
+# the file, so every record under flow/*/records/ leaves through one redactor
+# (shared with flow/core/synth.sh).
 cat >"$SCRATCH/mkrecord.py" <<'PY'
 import json, sys
 
-dest, step, run_state, role, version, ref, note, issues, input_kind, rc_out = sys.argv[1:11]
-extras = json.loads(sys.argv[11]) if len(sys.argv) > 11 else {}
-subs = [tuple(p.split("=", 1)) for p in json.loads(open(extras.pop("_subs")).read())]
-
-
-def scrub(o):
-    if isinstance(o, str):
-        for src, dst in subs:
-            o = o.replace(src, dst)
-        return o
-    if isinstance(o, list):
-        return [scrub(x) for x in o]
-    if isinstance(o, dict):
-        return {k: scrub(v) for k, v in o.items()}
-    return o
-
+step, run_state, role, version, ref, note, issues, input_kind, rc_out = sys.argv[1:10]
+extras = json.loads(sys.argv[10]) if len(sys.argv) > 10 else {}
 
 report = {}
 if rc_out != "-":
@@ -101,16 +90,15 @@ rec["smoke"] = {
     "klayout_tools_issues": [i for i in issues.split(",") if i],
     **extras,
 }
-json.dump(scrub(rec), open(dest, "w"), indent=2, sort_keys=True)
-open(dest, "a").write("\n")
+print(json.dumps(rec))
 PY
-printf '%s' "[\"$SCRATCH=<scratch>\",\"$ASAP7=<asap7-checkout>\",\"$REPO=<repo>\",\"$HOME=<home>\"]" >"$SCRATCH/subs.json"
+record_subs "$SCRATCH/subs.json" "$SCRATCH=<scratch>" "$ASAP7=<asap7-checkout>" "$REPO=<repo>" "$HOME=<home>"
 
 V_PIN="$("${KLT[@]}" version 2>&1 | head -1 || true)"
 
-# A klt run "worked" when stdout is a JSON object without a top-level "error"
-# (drc/lvs/erc/sta exit non-zero for violations or not_checked and still report).
-usable() { python3 -I -c 'import json,sys; d=json.load(open(sys.argv[1])); sys.exit(0 if isinstance(d,dict) and "error" not in d else 1)' "$1" 2>/dev/null; }
+# A klt run "worked" when stdout is a JSON object without a top-level "error";
+# flow/record_lib.py owns that definition and the probe is silent by contract.
+usable() { python3 -I "$REPO/flow/record_lib.py" usable "$1"; }
 errmsg() {  # first error message from stdout JSON, else stderr, else rc
   python3 -I - "$1" "$2" "$3" <<'PY'
 import json, sys
@@ -133,8 +121,9 @@ step() {
   ( cd "$W" && "${KLT[@]}" "$@" ) >"$out" 2>"$err" || rc=$?
   if usable "$out"; then
     STEP_OK=1
-    extra="$(python3 -I -c 'import json,sys; print(json.dumps({"exit_code":int(sys.argv[1]),"_subs":sys.argv[2],**json.loads(sys.argv[3])}))' "$rc" "$SCRATCH/subs.json" "${STEP_EXTRA:-{\}}")"
-    python3 -I "$SCRATCH/mkrecord.py" "$OUT/$name.json" "$name" ran pinned "$V_PIN" "$PIN_KLT" "$note" "${RAN_ISSUES:-}" "$input" "$out" "$extra"
+    extra="$(python3 -I -c 'import json,sys; print(json.dumps({"exit_code":int(sys.argv[1]),**json.loads(sys.argv[2])}))' "$rc" "${STEP_EXTRA:-{\}}")"
+    python3 -I "$SCRATCH/mkrecord.py" "$name" ran pinned "$V_PIN" "$PIN_KLT" "$note" "${RAN_ISSUES:-}" "$input" "$out" "$extra" \
+      | python3 -I "$REPO/flow/record_lib.py" write "$OUT/$name.json" "$SCRATCH/subs.json"
     return
   fi
   local pin_err; pin_err="$(errmsg "$out" "$err" "$rc")"
@@ -145,8 +134,9 @@ step() {
 # not_run <name> <input> <issues> <attempts-json> <why>
 not_run() {
   local extra
-  extra="$(python3 -I -c 'import json,sys; print(json.dumps({"_subs":sys.argv[1],"failed_attempts":json.loads(sys.argv[2]),**json.loads(sys.argv[3])}))' "$SCRATCH/subs.json" "$4" "${STEP_EXTRA:-{\}}")"
-  python3 -I "$SCRATCH/mkrecord.py" "$OUT/$1.json" "$1" not_run none "" "" "$5" "$3" "$2" - "$extra"
+  extra="$(python3 -I -c 'import json,sys; print(json.dumps({"failed_attempts":json.loads(sys.argv[1]),**json.loads(sys.argv[2])}))' "$4" "${STEP_EXTRA:-{\}}")"
+  python3 -I "$SCRATCH/mkrecord.py" "$1" not_run none "" "" "$5" "$3" "$2" - "$extra" \
+    | python3 -I "$REPO/flow/record_lib.py" write "$OUT/$1.json" "$SCRATCH/subs.json"
   STEP_OK=0
   if [[ -z "$3" ]]; then
     echo "run.sh: WARNING: $1 is not_run with no klayout-tools issue recorded: file one for this gap" >&2
