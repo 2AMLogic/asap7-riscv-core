@@ -1,0 +1,14 @@
+# Tool and input versions for flow/core/synth.sh (predictive PDK; nothing here is fabricated)
+klt:          klt 0.9.0  (klayout-tools==0.9.0)
+yosys:        Yosys 0.67+post (git sha1 b8e7da6f40ae8f552c116bf6c359b07c6533e159, Release, GNU /usr/bin/c++ 13.3.0)
+sv2v:         sv2v v0.0.13  (release asset sha256 552799a1d76cd177b9b4cc63a3e77823a3d2a6eb4ec006569288abeff28e1ff8; binary sha256 b80a8ac6212aa72a196d9d6129cda35f16dbfa799ec61848c46321f845b6b635)
+iverilog:     Icarus Verilog version 13.0 (stable) (v13_0)
+py7zr:        1.1.4
+cve2:         d7f21568028a1114be663599bd42145dccf28928
+reuse.lock.json: sha256:1b3d9128005cacd7d9fbb1034a2ebf2b20bf7d91ca32d14c47335376a615d99e
+wrapper:      sha256:c18a094c2bdb647e153996d3937c19004bef5767f5256eca83a99a610bafcd65
+converted_verilog: sha256:442c836867cbab82ca113c008655a9fcef4775e7baffc2ad50640c774d7a28e4
+asap7:        d24f8b857ff74cf5b21ab18a7e1b11a3954c449b
+asap7sc7p5t_28: f970bd3c3292b79ae4d022a3ec80533534614066
+liberty_corner: RVT SS (merged)  sha256:863a6d0202617cdf51cf5d4e132c7f908668d2d5201522aff362a6a8d31b0328
+netlist:      sha256:e559a5923d6be0a79645ad32bb7c64e82b5c54c3bcf144bb769a7827e5ee22ad
