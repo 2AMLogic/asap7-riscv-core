@@ -12,6 +12,8 @@
 set -euo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=verification/lib.sh
+. "$HERE/lib.sh"
 NEGATIVE=0
 OUT=""
 for arg in "$@"; do
@@ -21,20 +23,18 @@ for arg in "$@"; do
     *) OUT="$arg" ;;
   esac
 done
-die() { echo "fv.sh: $*" >&2; exit 1; }
-pinned() { sed -n "s/^$1=//p" "$HERE/tool-versions.txt"; }
-
-KLT_VER="$(pinned klayout_tools)"; [ -n "$KLT_VER" ] || die "no klayout_tools pin in verification/tool-versions.txt"
+KLT_VER="$(pin klayout_tools)"
+PY_VER="$(pin python)"
 COCOTB="$(sed -n 's/^\(cocotb==[^ ]*\).*/\1/p' "$HERE/requirements.txt")"; [ -n "$COCOTB" ] || die "no cocotb pin"
-IV="$(iverilog -V 2>/dev/null | sed -n '1s/.*version \([0-9][0-9.]*\).*/\1/p')"
-case "$IV" in "$(pinned iverilog)"|"$(pinned iverilog)".*) ;; *) die "iverilog $IV != pinned $(pinned iverilog)" ;; esac
+check_version iverilog \
+  "$(iverilog -V 2>/dev/null | sed -n '1s/.*version \([0-9][0-9.]*\).*/\1/p')"
 command -v uvx >/dev/null || die "uvx not found on PATH"
 
 OUT="${OUT:-$HERE/runs/fv-$(date -u +%Y%m%dT%H%M%SZ)-$$}"
 mkdir -p "$OUT"
 "$HERE/core/setup.sh"
 
-export KLT_CMD="uvx --python $(pinned python) --from klayout-tools==$KLT_VER --with $COCOTB klt"
+export KLT_CMD="uvx --python $PY_VER --from klayout-tools==$KLT_VER --with $COCOTB klt"
 cd "$HERE/core"
 if [ "$NEGATIVE" = 1 ]; then
   rc=0; python3 -I fv.py "$OUT" --negative-control || rc=$?

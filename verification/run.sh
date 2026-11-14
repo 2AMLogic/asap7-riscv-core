@@ -21,6 +21,8 @@
 set -euo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=verification/lib.sh
+. "$HERE/lib.sh"
 VENV="$HERE/.venv"
 NEGATIVE=0
 CORE=0
@@ -35,28 +37,15 @@ for arg in "$@"; do
 done
 [ "$GATE" = 0 ] || [ "$CORE" = 1 ] || { echo "run.sh: --gate needs --core" >&2; exit 2; }
 
-die() { echo "run.sh: $*" >&2; exit 1; }
-
-pinned() { sed -n "s/^$1=//p" "$HERE/tool-versions.txt"; }
-
-check_version() { # name pinned installed
-  [ -n "$2" ] || die "no pin for $1 in verification/tool-versions.txt"
-  [ -n "$3" ] || die "$1 not found on PATH (pinned: $2)"
-  case "$3" in
-    "$2"|"$2".*) ;;
-    *) die "$1 version mismatch: installed $3, pinned $2 (verification/tool-versions.txt)" ;;
-  esac
-}
-
 command -v iverilog >/dev/null || die "iverilog not found on PATH"
 command -v verilator >/dev/null || die "verilator not found on PATH"
 command -v python3 >/dev/null || die "python3 not found on PATH"
 
-check_version iverilog "$(pinned iverilog)" \
+check_version iverilog \
   "$(iverilog -V 2>/dev/null | sed -n '1s/.*version \([0-9][0-9.]*\).*/\1/p')"
-check_version verilator "$(pinned verilator)" \
+check_version verilator \
   "$(verilator --version | sed -n '1s/^Verilator \([0-9][0-9.]*\).*/\1/p')"
-check_version python "$(pinned python)" \
+check_version python \
   "$(python3 -c 'import platform; print(platform.python_version())')"
 
 # Venv inside the checkout (gitignored); reinstall when the pin file changes.

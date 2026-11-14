@@ -10,10 +10,16 @@
 # so a failure never leaves a partial tree behind. The upstream files are
 # never edited. Exit 1 on any mismatch, missing file or download failure.
 #
+# Each file is downloaded by the shared fetch_checked (fetch_checked.sh), the
+# one download-and-verify contract in the repo; the staging and the
+# all-or-nothing move below are this script's own and stay here.
+#
 # Overrides (used by tests): CVE2_LOCK, CVE2_BASE_URL.
 set -euo pipefail
 
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+# shellcheck source=fetch_checked.sh
+. "$REPO/fetch_checked.sh"
 LOCK="${CVE2_LOCK:-$REPO/reuse.lock.json}"
 OUT="${1:-$REPO/flow/build/cve2/upstream}"
 
@@ -37,15 +43,7 @@ for entry in "${ENTRIES[@]:1}"; do
     want="${entry%% *}"
     path="${entry#* }"
     mkdir -p "$STAGE/$(dirname "$path")"
-    if ! curl -fsS --retry 2 -o "$STAGE/$path" "$BASE/$path"; then
-        echo "FAIL  $path: download failed ($BASE/$path)" >&2
-        exit 1
-    fi
-    got="$(sha256sum "$STAGE/$path" | cut -d' ' -f1)"
-    if [[ "$got" != "$want" ]]; then
-        echo "FAIL  $path: sha256 $got, lock says $want" >&2
-        exit 1
-    fi
+    fetch_checked "$BASE/$path" "$STAGE/$path" "$want" || exit 1
 done
 
 rm -rf "$OUT"
