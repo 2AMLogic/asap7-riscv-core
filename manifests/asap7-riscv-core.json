@@ -9,7 +9,7 @@
         "statement": {"file": "spec/statistical-rows.json", "content_hash": "sha256:6d72ca002e0cf60237cf4be7745b7980e6e5f8ff5f8f10744969ab25326a256f"}
       }
     },
-    "9": {"file": "evidence/item9.json", "content_hash": "sha256:9fa1f66263a6562bf0554bc43548cc439d7efdf390d946e658f25cb6173e5086"},
+    "9": {"file": "evidence/item9.json", "content_hash": "sha256:6b1dbf958b857cb75bb99463483ce3ce4983d41bbcb90815ddad1f5debd1e586"},
     "10": {"file": "evidence/item10.json", "content_hash": "sha256:ecb04175c5b0d15f388a4a146f1ff6571d2cc7cc311d95a54c7cad7768e2ad2d"}
   }
 }

@@ -101,3 +101,53 @@ jobs:
           jq -r '.attestation.checks | to_entries[] | "  attestation.checks.\(.key)  ->  \(.value.path // ("command " + .value.name))"' \
              evidence/item10.json || true
           exit 1
+
+      # Item 9 (testbenches shipped) is attested the same way. --check re-hashes
+      # every file in attest/item9.json and reports any change as drift; it is
+      # the gate whose absence let evidence/item9.json rot through three merged
+      # PRs with CI green (issue #88). The cold start in attest/item9.json
+      # (verification/run.sh --core) is local_only, so it is skipped here and
+      # listed as [SKIP] — only a real run on a host with iverilog, verilator
+      # and network egress can refresh it.
+      #
+      # Re-attesting item 9 is a TWO-step change, and both steps belong in the
+      # same commit (spec/decisions/0012-shared-archtest-module-and-item9-reattestation.md
+      # and spec/decisions/0014-item-9-check-gate-and-lib-sh-attestation.md):
+      #   1. RETAIN the envelope being superseded first — copy the committed
+      #      evidence/item9.json to evidence/records/item9-<the date IT was
+      #      produced>.json. Attestations are append-only: never overwrite one
+      #      without keeping the version it replaces.
+      #   2. Then regenerate, pinned to the klt version this job installs, on a
+      #      host that can run the cold start:
+      #        uvx --python 3.12 --from "klayout-tools==0.8.0" klt signoff \
+      #            --attest 9 --inventory attest/item9.json -o evidence/item9.json
+      - name: Re-check the item 9 attestation envelope
+        run: |
+          set -uo pipefail
+          rc=0
+          klt signoff --attest 9 --inventory attest/item9.json \
+                      --check evidence/item9.json || rc=$?
+          # Exit 0 = the committed envelope still reproduces and still passes.
+          # 3 = it drifted: an attested testbench changed and the envelope was
+          # not re-attested in the same PR. Anything else is a hard error
+          # (inventory or envelope missing or unparseable) - a broken
+          # attestation, which must not be reported as drift.
+          if [ "$rc" -eq 0 ]; then
+            echo "Committed item 9 attestation envelope is fresh: it still reproduces."
+            exit 0
+          fi
+          if [ "$rc" -ne 3 ]; then
+            echo "::error::klt signoff --attest 9 --check exited $rc (expected 0 or 3): attest/item9.json or evidence/item9.json is missing or unparseable - this is a broken attestation, not drift"
+            exit 1
+          fi
+          echo "::error::The committed envelope evidence/item9.json is stale - an attested testbench changed without being re-attested in this PR."
+          echo "Retain the superseded envelope FIRST, then re-attest; commit both in this same PR:"
+          echo "  cp evidence/item9.json evidence/records/item9-<date-the-committed-envelope-was-produced>.json"
+          echo "  uvx --python 3.12 --from \"klayout-tools==0.8.0\" klt signoff \\"
+          echo "      --attest 9 --inventory attest/item9.json -o evidence/item9.json"
+          echo "The re-attest runs attest/item9.json's local_only cold start (verification/run.sh --core),"
+          echo "so it needs a host with iverilog, verilator 5.050, python 3.12 and network egress."
+          echo "The drift above is keyed on attestation.checks.<index>; those indices map to:"
+          jq -r '.attestation.checks | to_entries[] | "  attestation.checks.\(.key)  ->  \(.value.path // ("command " + .value.name))"' \
+             evidence/item9.json || true
+          exit 1
