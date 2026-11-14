@@ -14,11 +14,9 @@ set -euo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO="$(cd "$HERE/../.." && pwd)"
-PINS="$REPO/verification/tool-versions.txt"
+# shellcheck source=verification/lib.sh
+. "$REPO/verification/lib.sh"
 BUILD="$REPO/verification/build"
-
-die() { echo "setup.sh: $*" >&2; exit 1; }
-pin() { local v; v="$(sed -n "s/^$1=//p" "$PINS")"; [ -n "$v" ] || die "no pin for $1 in verification/tool-versions.txt"; echo "$v"; }
 
 fetch_checked() { # url dest sha256
   local url="$1" dest="$2" want="$3" tmp

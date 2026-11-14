@@ -111,7 +111,6 @@ open(dest, "a").write("\n")
 PY
 printf '%s' "[\"$SCRATCH=<scratch>\",\"$ASAP7=<asap7-checkout>\",\"$REPO=<repo>\",\"$HOME=<home>\"]" >"$SCRATCH/subs.json"
 
-klt_version() { "$@" version 2>/dev/null | head -1; }
 V_PIN="$("${KLT[@]}" version 2>&1 | head -1 || true)"
 V_CUR="$("${KLT_CUR[@]}" version 2>&1 | head -1 || true)"
 
