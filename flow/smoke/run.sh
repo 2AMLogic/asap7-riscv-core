@@ -18,9 +18,6 @@
 #   KLT_CMD          pinned klt (default: the pin read from spec/core.md, via uvx)
 #   KLT_DECK_FILE    asap7.drc of the pinned build (default: looked up through
 #                    the pinned build's own Python; required if KLT_CMD is set)
-#   KLT_CURRENT_CMD  comparison klt for steps the pin cannot perform (default:
-#                    the comparison build below (release 0.8.0), via uvx). Its results are labelled
-#                    "current", never presented as the pin.
 #   KEEP_SCRATCH=1   keep the scratch directory (extracted Liberty, run trees)
 #
 # Exit status: 0 when every step has a record (a step klt cannot perform gets
@@ -32,7 +29,6 @@ set -euo pipefail
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 # shellcheck source=flow/lib.sh
 source "$REPO/flow/lib.sh"
-CURRENT_PIN="klayout-tools==0.8.0"
 DUT=counter
 DUT_SRC="$REPO/verification/smoke/counter.sv"
 STANDIN_CELL=INVx1_ASAP7_75t_R
@@ -64,7 +60,6 @@ new_record_dir smoke
 
 # ---- klt commands --------------------------------------------------------
 read -r -a KLT <<<"${KLT_CMD:-uvx --from $PIN_KLT klt}"
-read -r -a KLT_CUR <<<"${KLT_CURRENT_CMD:-uvx --from $CURRENT_PIN klt}"
 
 setup_scratch smoke
 W="$SCRATCH/work"; ROOT="$SCRATCH/pdk"; mkdir -p "$W" "$ROOT"
@@ -113,7 +108,6 @@ printf '%s' "[\"$SCRATCH=<scratch>\",\"$ASAP7=<asap7-checkout>\",\"$REPO=<repo>\
 
 klt_version() { "$@" version 2>/dev/null | head -1; }
 V_PIN="$("${KLT[@]}" version 2>&1 | head -1 || true)"
-V_CUR="$("${KLT_CUR[@]}" version 2>&1 | head -1 || true)"
 
 # A klt run "worked" when stdout is a JSON object without a top-level "error"
 # (drc/lvs/erc/sta exit non-zero for violations or not_checked and still report).
@@ -130,11 +124,11 @@ except Exception:
 PY
 }
 
-# step <name> <input-label> <note-on-success> <issues-on-gap> <fallback:0|1> <klt args...>
-# Runs the pinned klt; when fallback=1 and the pin cannot, runs the current comparison
-# build and says so. Sets STEP_OK=1 when a report exists.
+# step <name> <input-label> <note-on-success> <issues-on-gap> <klt args...>
+# Runs the pinned klt. Sets STEP_OK=1 when a report exists; a step the pinned build
+# cannot perform gets a not_run record carrying that build's error in failed_attempts.
 step() {
-  local name="$1" input="$2" note="$3" issues="$4" fallback="$5"; shift 5
+  local name="$1" input="$2" note="$3" issues="$4"; shift 4
   local out="$SCRATCH/$name.out" err="$SCRATCH/$name.err" rc=0 attempts="[]" extra
   STEP_OK=0
   ( cd "$W" && "${KLT[@]}" "$@" ) >"$out" 2>"$err" || rc=$?
@@ -146,19 +140,7 @@ step() {
   fi
   local pin_err; pin_err="$(errmsg "$out" "$err" "$rc")"
   attempts="$(python3 -I -c 'import json,sys; print(json.dumps([{"build":"pinned","version":sys.argv[1],"error":sys.argv[2]}]))' "$V_PIN" "$pin_err")"
-  if [[ "$fallback" == 1 ]]; then
-    rc=0
-    ( cd "$W" && "${KLT_CUR[@]}" "$@" ) >"$out" 2>"$err" || rc=$?
-    if usable "$out"; then
-      STEP_OK=1
-      extra="$(python3 -I -c 'import json,sys; print(json.dumps({"exit_code":int(sys.argv[1]),"_subs":sys.argv[2],"failed_attempts":json.loads(sys.argv[3]),**json.loads(sys.argv[4])}))' "$rc" "$SCRATCH/subs.json" "$attempts" "${STEP_EXTRA:-{\}}")"
-      python3 -I "$SCRATCH/mkrecord.py" "$OUT/$name.json" "$name" ran current "$V_CUR" "$CURRENT_PIN" \
-        "Not performed by the pinned build (see failed_attempts); performed by the comparison build (klayout-tools release 0.8.0), which is not the pin. $note" "${RAN_ISSUES:-}" "$input" "$out" "$extra"
-      return
-    fi
-    attempts="$(python3 -I -c 'import json,sys; a=json.loads(sys.argv[1]); a.append({"build":"current","version":sys.argv[2],"error":sys.argv[3]}); print(json.dumps(a))' "$attempts" "$V_CUR" "$(errmsg "$out" "$err" "$rc")")"
-  fi
-  not_run "$name" "$input" "$issues" "$attempts" "Step failed on every build tried."
+  not_run "$name" "$input" "$issues" "$attempts" "Step failed on the pinned build."
 }
 
 # not_run <name> <input> <issues> <attempts-json> <why>
@@ -215,7 +197,6 @@ PDKARGS=(--pdk asap7 --pdk-root "$ROOT")
 {
   echo "# Tool and input versions for flow/smoke/run.sh (predictive PDK; nothing here is fabricated)"
   echo "klt_pinned:   $V_PIN  ($PIN_KLT)"
-  echo "klt_current:  $V_CUR  ($CURRENT_PIN)  [comparison build, not the pin]"
   echo "yosys:        $(yosys -V 2>&1 | head -1)"
   echo "openroad:     $(openroad -version 2>&1 | head -1)"
   echo "python:       $(python3 --version 2>&1)"
@@ -243,7 +224,7 @@ cat >"$W/synth.req.json" <<EOF
 EOF
 STEP_EXTRA="{\"liberty\":$LIB_SUMMARY,\"predicted\":true}" \
 step synth "counter.sv (placeholder DUT), RVT, SS Liberty; not a design claim" \
-  "Synthesized against the merged RVT SS Liberty." "" 1 \
+  "Synthesized against the merged RVT SS Liberty." "" \
   synthesize "$W/synth.req.json" "${PDKARGS[@]}" --format json
 SYNTH_NETLIST=""
 if [[ $STEP_OK == 1 ]]; then
@@ -297,29 +278,7 @@ if [[ -n "$SYNTH_NETLIST" ]]; then
  "seed":1,"target_stage":"route"}
 EOF
   STEP_EXTRA="{}" step par "$DUT synthesized netlist; target_stage route with a power grid" \
-    "" "$PAR_ISSUES" 1 place-and-route "$W/par.req.json" "${PDKARGS[@]}" --format json
-  if [[ $STEP_OK == 0 ]]; then
-    # Record how far the current build gets, so the gap is measured and not assumed.
-    python3 -I - "$W/par.req.json" "$W/par_fp.req.json" <<'PY'
-import json, sys
-d = json.load(open(sys.argv[1])); d.pop("power"); d["target_stage"] = "floorplan"
-json.dump(d, open(sys.argv[2], "w"))
-PY
-    FP_RC=0
-    ( cd "$W" && "${KLT_CUR[@]}" place-and-route par_fp.req.json "${PDKARGS[@]}" --format json ) >"$SCRATCH/par_fp.out" 2>"$SCRATCH/par_fp.err" || FP_RC=$?
-    if usable "$SCRATCH/par_fp.out"; then
-      FP_NOTE="With request.power removed and target_stage floorplan, the comparison build (release 0.8.0) reaches stage floorplan (using the scratch tech-LEF OFFSET workaround, klayout-tools #4088). Placement, CTS and routing were not reached; no DEF or GDS was produced."
-    else
-      FP_NOTE="floorplan-only probe also failed: $(errmsg "$SCRATCH/par_fp.out" "$SCRATCH/par_fp.err" "$FP_RC")"
-    fi
-    python3 -I - "$OUT/par.json" "$FP_NOTE" "$SCRATCH/subs.json" <<'PY'
-import json, sys
-p, note, subs = sys.argv[1:4]
-d = json.load(open(p))
-d["smoke"]["note"] += " " + note
-json.dump(d, open(p, "w"), indent=2, sort_keys=True); open(p, "a").write("\n")
-PY
-  fi
+    "" "$PAR_ISSUES" place-and-route "$W/par.req.json" "${PDKARGS[@]}" --format json
 else
   STEP_EXTRA="{}" not_run par "$DUT synthesized netlist" "" "[]" "no synthesized netlist: the synth step did not produce one"
 fi
@@ -365,7 +324,7 @@ mkdir -p "$SCRATCH/deck"; cp "$DECK_FILE" "$SCRATCH/deck/asap7.drc"
 if [[ $LAYOUT_OK == 1 ]]; then
   STEP_EXTRA='{"unchecked":"Rules needing track/net/corner/grid predicates, FEOL/MOL increments and PAD are not checked (spec/pdk-bringup.md section 3; spec/core.md DRC acceptance)."}' \
   step drc "$LAYOUT_LABEL" \
-    "Pinned klt, --engine klayout with the packaged ASAP7 deck, --expect-rule-categories 267." "" 0 \
+    "Pinned klt, --engine klayout with the packaged ASAP7 deck, --expect-rule-categories 267." "" \
     drc --engine klayout --deck-file "$SCRATCH/deck/asap7.drc" --expect-rule-categories 267 --format json "$LAYOUT"
 else standin_missing drc; fi
 
@@ -379,7 +338,7 @@ if [[ $LAYOUT_OK == 1 ]]; then
 EOF
   STEP_EXTRA='{"bulk_policy":"options.finfet_bulk nmos=VSS pmos=VDD (decision 0005); disclosed by the tool as device.finfet_bulk_tied"}' \
   step lvs "$LVS_INPUT_NOTE" \
-    "Pinned klt; layout, reference and deck hashes are in environment and provenance." "" 0 \
+    "Pinned klt; layout, reference and deck hashes are in environment and provenance." "" \
     lvs "$W/lvs.req.json" --format json
 else standin_missing lvs; fi
 
@@ -398,7 +357,7 @@ if [[ $LAYOUT_OK == 1 ]]; then
 EOF
   RAN_ISSUES=4090 STEP_EXTRA='{"antenna":"No ASAP7 antenna-ratio table exists (klayout-tools #4090): every antenna level is skipped and the verdict is not_checked, never clean."}' \
   step erc "$LAYOUT_LABEL" \
-    "Pinned klt, --deck asap7, stackup spec generated by run.sh (gate 7/0 with active 11/0, LIG 16/0, M1 19/0, M2 20/0, V0 18/0, V1 21/0)." "4090" 0 \
+    "Pinned klt, --deck asap7, stackup spec generated by run.sh (gate 7/0 with active 11/0, LIG 16/0, M1 19/0, M2 20/0, V0 18/0, V1 21/0)." "4090" \
     erc --deck asap7 --format json "$LAYOUT" "$W/erc.spec.json"
 else standin_missing erc; fi
 
@@ -411,7 +370,7 @@ if [[ -n "$SYNTH_NETLIST" ]]; then
 EOF
   RAN_ISSUES=4089 STEP_EXTRA="{\"predicted\":true,\"corners\":{\"SS\":\"setup corner, 0.63 V / 100 C\",\"TT\":\"reference, 0.7 V / 25 C\"},\"liberty\":$LIB_SUMMARY,\"geometry\":\"netlist_estimate: the synthesized netlist with an ideal clock and no placement, routing or wire load. This is NOT a post-route figure.\",\"unit_caveat\":\"Liberty time_unit is 1ps: the aggregate worst_slack_ns, worst_hold_slack_ns and fmax_mhz fields are 1000x off from worst_setup_path.slack_ns (klayout-tools #4089). Read the worst-path slack. FF is not run (decision 0002).\"}" \
   step sta "$DUT synthesized netlist, RVT, SS and TT; predicted, not a design claim" \
-    "Two corners from one request; the file lists name every Liberty source." "4089" 1 \
+    "Two corners from one request; the file lists name every Liberty source." "4089" \
     sta "$W/sta.req.json" "${PDKARGS[@]}" --format json
 else
   STEP_EXTRA="{}" not_run sta "$DUT synthesized netlist" "" "[]" "no synthesized netlist: the synth step did not produce one"
