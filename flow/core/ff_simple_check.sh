@@ -24,9 +24,8 @@ ASAP7_ARG="${1:-${ASAP7_DIR:-}}"
 ASAP7="$(cd "$ASAP7_ARG" && pwd)"
 CELLS="$ASAP7/asap7sc7p5t_28"
 
-PIN_UPSTREAM="$(spec_sha 'Upstream repo')"
-PIN_CELLS="$(spec_sha 'Cell library')"
-[[ -n "$PIN_UPSTREAM" && -n "$PIN_CELLS" ]] || die "could not read pins from spec/pdk-bringup.md" 1
+PIN_UPSTREAM="$(spec_sha 'Upstream repo')" || exit 1
+PIN_CELLS="$(spec_sha 'Cell library')" || exit 1
 check_pin "$ASAP7" "$PIN_UPSTREAM" "upstream asap7"
 check_pin "$CELLS" "$PIN_CELLS" "submodule asap7sc7p5t_28"
 
