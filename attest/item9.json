@@ -2,9 +2,10 @@
   "schema_version": 1,
   "kind": "t1-attestation-inventory",
   "t1_item": 9,
-  "description": "Testbenches backing the core-functional claim only: the riscv-arch-test I/M/C subset (72 programs; C-cebreak-01 is excluded with its diagnosed reason in verification/core/excluded.json and spec/decisions/0011-c-cebreak-01-mtvec-not-writable.md) run on cve2_rv32imc_wrapper under cocotb + Icarus, signatures compared with the Sail golden model; plus the negative control. flow/smoke/run.sh drives the ASAP7 smoke flow on the placeholder counter DUT only; it is listed as a driver, backs no core claim, and its cold start (needs an ASAP7 checkout and writes a dated record) is not run by this attestation. No bench exists yet for the standard-cells, predicted-clock, drc or lvs rows (owners: #28 standard-cells, #6 predicted-clock, #29 drc, #30 lvs). RTL simulation of the converted CVE2 closure, not the gate-level netlist. ASAP7 is a predictive PDK; nothing here is fabricated or measured.",
+  "description": "Testbenches backing the core-functional claim only: the riscv-arch-test I/M/C subset (72 programs; C-cebreak-01 is excluded with its diagnosed reason in verification/core/excluded.json and spec/decisions/0011-c-cebreak-01-mtvec-not-writable.md) run on cve2_rv32imc_wrapper under cocotb + Icarus, signatures compared with the Sail golden model; plus the negative control. verification/lib.sh is the shared shell library that verification/run.sh and verification/core/setup.sh both source and cannot run without; it is listed because the harness does not execute without it, not because it is itself a bench. flow/smoke/run.sh drives the ASAP7 smoke flow on the placeholder counter DUT only; it is listed as a driver, backs no core claim, and its cold start (needs an ASAP7 checkout and writes a dated record) is not run by this attestation. No bench exists yet for the standard-cells, predicted-clock, drc or lvs rows (owners: #28 standard-cells, #6 predicted-clock, #29 drc, #30 lvs). RTL simulation of the converted CVE2 closure, not the gate-level netlist. ASAP7 is a predictive PDK; nothing here is fabricated or measured.",
   "testbenches": [
     "verification/run.sh",
+    "verification/lib.sh",
     "verification/core/setup.sh",
     "verification/core/build_tests.py",
     "verification/core/runner.py",
