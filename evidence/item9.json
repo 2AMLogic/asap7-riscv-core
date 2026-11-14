@@ -3,28 +3,28 @@
   "kind": "generic",
   "status": "pass",
   "t1_item": 9,
-  "summary": "T1 item 9 (Testbenches shipped): 14/14 attestation checks passed (klt signoff --attest)",
+  "summary": "T1 item 9 (Testbenches shipped): 15/15 attestation checks passed (klt signoff --attest)",
   "source": "attest/item9.json",
   "attestation": {
     "producer": "klt signoff --attest",
     "inventory_schema_version": 1,
     "hash_algorithm": "sha256-raw-bytes",
-    "check_count": 14,
-    "passed_count": 14,
+    "check_count": 15,
+    "passed_count": 15,
     "checks": [
       {
         "check": "present",
         "role": "testbench",
         "path": "flow/smoke/run.sh",
         "passed": true,
-        "content_hash": "sha256:a37027e6a60b4834dd9d2a9090e1997d3025abfae95fc1e91518e9daa52c2462"
+        "content_hash": "sha256:1f6c548df6b754aeaaf930726f116121eab2818fc4104dd699b75ef857780c91"
       },
       {
         "check": "present",
         "role": "testbench",
         "path": "verification/core/archtest_common.py",
         "passed": true,
-        "content_hash": "sha256:bd87f49a033c3c67e0c450abce96aae0dc58fe78e73ecfef5c1551ca420a22b7"
+        "content_hash": "sha256:acf5d21cfe0a17bf4b7a0ac16b83a1a9270b2dafd4732017c0df003263add508"
       },
       {
         "check": "present",
@@ -59,14 +59,14 @@
         "role": "testbench",
         "path": "verification/core/runner.py",
         "passed": true,
-        "content_hash": "sha256:be3f73092e4ac99316c8e18081b51409b99986e3605a79a395e4bcb17ec522a1"
+        "content_hash": "sha256:e51339b80d79c7fd936e8ebe57706f369e3d1b2c242f064a51eb14e99ba91db6"
       },
       {
         "check": "present",
         "role": "testbench",
         "path": "verification/core/setup.sh",
         "passed": true,
-        "content_hash": "sha256:e3bb34f467cc022e24416aa2d362d4f02b22f9768cc2789daad830d85b82e727"
+        "content_hash": "sha256:6f01a22812604b9e1a66b18a96c8a187b7b6e7951c8ed3bee0192a8b2a2b4599"
       },
       {
         "check": "present",
@@ -85,9 +85,16 @@
       {
         "check": "present",
         "role": "testbench",
+        "path": "verification/lib.sh",
+        "passed": true,
+        "content_hash": "sha256:3bfb9b3c421e5c1b9089663b6b39821bdd96e39e12bb3f8b018d2804dff15219"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
         "path": "verification/run.sh",
         "passed": true,
-        "content_hash": "sha256:199e7f5916b3713247a4db2c0332fbd2f0376bb392d24ee8e2ff8f28fada11c4"
+        "content_hash": "sha256:029fc7f2845e4ff225cd84bfb55b6f7402e4cb0ee78e35115249c67b7382cd0f"
       },
       {
         "check": "command",
@@ -140,7 +147,7 @@
         "path": "attest/item9.json",
         "scope": "repo"
       },
-      "content_hash": "sha256:9fa1f66263a6562bf0554bc43548cc439d7efdf390d946e658f25cb6173e5086"
+      "content_hash": "sha256:6b1dbf958b857cb75bb99463483ce3ce4983d41bbcb90815ddad1f5debd1e586"
     }
   }
 }
