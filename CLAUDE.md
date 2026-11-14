@@ -36,6 +36,31 @@ on ASAP7, designed and verified by AI agents. **Digital.**
   at stated corners. Recorded results are append-only evidence.
 - Spec changes go through `spec/` with a decision record; agents do not relax
   the ratified spec to make results pass.
+- **Attested hygiene paths: re-attest in the same PR.** `README.md`,
+  `LICENSE`, `.github/workflows/ci.yml` and `.github/workflows/signoff.yml`
+  are attested files — `attest/item10.json` lists them and
+  `evidence/item10.json` pins each one's sha256. **Any** diff that touches one
+  of those four must also commit a re-attested `evidence/item10.json`, or the
+  `klt signoff` workflow's "Re-check the item 10 attestation envelope" step
+  reds the pull request. This applies to documentation-only passes: a one-word
+  `README.md` edit is drift. Regenerate the envelope with the klt version CI
+  pins, in a throwaway environment — never install a different klt onto the
+  host:
+
+  ```bash
+  uvx --python 3.12 --from "klayout-tools==0.8.0" klt signoff \
+      --attest 10 --inventory attest/item10.json -o evidence/item10.json
+  ```
+
+  `--python 3.12` is load-bearing: `uvx` puts its own environment first on
+  `PATH`, and the envelope's two harness checks run `verification/run.sh`,
+  which refuses any `python3` that does not match `verification/tool-versions.txt`
+  (`python=3.12`). Without it the re-attest fails with both harness checks at
+  exit 1 and writes nothing.
+
+  Never hand-edit `evidence/item10.json`, and never drop a path from
+  `attest/item10.json` to dodge the gate — that weakens the attestation and
+  needs a `spec/` decision record.
 - **1 GHz predicted post-route at the slow corner is the target.** 500 MHz is
   the fallback and 1.5 GHz is a stretch.
 
