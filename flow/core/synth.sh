@@ -53,17 +53,16 @@ ASAP7_ARG="${ARGS[0]:-${ASAP7_DIR:-}}"
 ASAP7="$(cd "$ASAP7_ARG" && pwd)"
 
 # ---- pins, read from the spec -------------------------------------------
-PIN_UPSTREAM="$(spec_sha 'Upstream repo')"
-PIN_CELLS="$(spec_sha 'Cell library')"
-PIN_KLT="$(grep -o 'klayout-tools==[0-9][0-9.]*' "$REPO/spec/core.md" | head -1)"
-for v in PIN_UPSTREAM PIN_CELLS PIN_KLT; do
-  [[ -n "${!v}" ]] || die "could not read $v from spec/" 1
-done
+# Label-anchored and fail-closed (flow/lib.sh); PIN_KLT is the same read the
+# smoke flow makes, so the two scripts cannot drift onto different releases.
+PIN_UPSTREAM="$(spec_sha 'Upstream repo')" || exit 1
+PIN_CELLS="$(spec_sha 'Cell library')" || exit 1
+PIN_KLT="$(spec_klt_pin)" || exit 1
 
 check_pin "$ASAP7" "$PIN_UPSTREAM" "upstream asap7"
 check_pin "$ASAP7/asap7sc7p5t_28" "$PIN_CELLS" "submodule asap7sc7p5t_28"
 
-read -r -a KLT <<<"${KLT_CMD:-uvx --quiet --from $PIN_KLT klt}"
+klt_cmd "$PIN_KLT"
 BUILD="$REPO/flow/build"
 setup_scratch core
 

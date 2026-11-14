@@ -40,15 +40,15 @@ CELL_LIB=asap7sc7p5t_28_R
 ASAP7="$(cd "$1" && pwd)"
 
 # ---- pins, read from the spec -------------------------------------------
-PIN_UPSTREAM="$(spec_sha 'Upstream repo')"
-PIN_CELLS="$(spec_sha 'Cell library')"
-PIN_PDK="$(spec_sha 'PDK (DRM')"
-PIN_KLT="$(grep -o 'klayout-tools==[0-9][0-9.]*' "$REPO/spec/core.md" | head -1)"
-PIN_DECK="$(grep -o 'sha256:[0-9a-f]\{64\}' "$REPO/spec/core.md" | head -1)"
-PIN_LVS_DECK="$(grep -A1 'pinned LVS deck hash' "$REPO/spec/core.md" | grep -o 'sha256:[0-9a-f]\{64\}' | head -1)"
-for v in PIN_UPSTREAM PIN_CELLS PIN_PDK PIN_KLT PIN_DECK PIN_LVS_DECK; do
-  [[ -n "${!v}" ]] || die "could not read $v from spec/" 1
-done
+# Every read is label-anchored and fails closed (flow/lib.sh): it dies rather
+# than yielding an empty or position-dependent pin, so no pin here depends on
+# where its line happens to sit in the spec.
+PIN_UPSTREAM="$(spec_sha 'Upstream repo')" || exit 1
+PIN_CELLS="$(spec_sha 'Cell library')" || exit 1
+PIN_PDK="$(spec_sha 'PDK (DRM')" || exit 1
+PIN_KLT="$(spec_klt_pin)" || exit 1
+PIN_DECK="$(spec_pin 'equal to the pinned hash' 'sha256:[0-9a-f]\{64\}' 1)" || exit 1
+PIN_LVS_DECK="$(spec_pin 'pinned LVS deck hash' 'sha256:[0-9a-f]\{64\}' 1)" || exit 1
 
 # ---- the checkout must be at the pins -----------------------------------
 check_pin "$ASAP7" "$PIN_UPSTREAM" "upstream asap7"
@@ -59,7 +59,7 @@ check_pin "$ASAP7/asap7_pdk_r1p7" "$PIN_PDK" "submodule asap7_pdk_r1p7"
 new_record_dir smoke
 
 # ---- klt commands --------------------------------------------------------
-read -r -a KLT <<<"${KLT_CMD:-uvx --from $PIN_KLT klt}"
+klt_cmd "$PIN_KLT"
 
 setup_scratch smoke
 W="$SCRATCH/work"; ROOT="$SCRATCH/pdk"; mkdir -p "$W" "$ROOT"
