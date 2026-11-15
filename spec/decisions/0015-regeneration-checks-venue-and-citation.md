@@ -142,8 +142,8 @@ Measured 2026-11-15 against `origin/main` @ `314c493`:
      Checkout paths are host residue and are deliberately not recorded here —
      a run states where its checkout lived instead.
    - Criterion 2 writes into a fresh record set: `new_record_dir` refuses an
-     existing record set (documented `flow/lib.sh:27-28`; the function is
-     defined at `flow/lib.sh:87` with the refusal at `flow/lib.sh:90`), so the
+     existing record set (documented `flow/lib.sh:29-30`; the function is
+     defined at `flow/lib.sh:94` with the refusal at `flow/lib.sh:98`), so the
      run sets `RECORD_DATE` to a new date and diffs the six step records
      against `flow/smoke/records/2026-11-05/`.
 
