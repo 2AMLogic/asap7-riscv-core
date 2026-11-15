@@ -27,6 +27,71 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # The flow scripts' shell self-tests (*_test.sh) need no PDK, no klt, no
+      # simulator and no network, and they guard a silent regression: a pin
+      # read that falls back to a position-dependent `head -1` still returns a
+      # plausible value, so nothing else in CI would notice. Discovery is
+      # `git ls-files`, so the set is identical locally and in CI and the next
+      # *_test.sh needs no edit here; the empty-match guard keeps a broken
+      # glob from looking like a pass. Runs before the toolchain build: it is
+      # sub-second, and a failure here means the flow scripts' pin reads are
+      # broken anyway.
+      - name: Shell self-tests
+        run: |
+          set -uo pipefail
+          mapfile -t tests < <(git ls-files '*_test.sh')
+          [ "${#tests[@]}" -gt 0 ] \
+            || { echo "::error::no *_test.sh matched - the glob or the naming convention broke"; exit 1; }
+          rc=0
+          for t in "${tests[@]}"; do
+            echo "== $t"
+            bash "$t" || { echo "::error file=$t::$t failed"; rc=1; }
+          done
+          exit $rc
+
+      # Decision records are cited as authority in this repo, so a number that
+      # names two records makes every bare "decision NNNN" citation of it
+      # unresolvable. spec/decisions/ holds exactly one deliberate, recorded
+      # collision - two records share 0012, documented in spec/README.md
+      # ("Recorded collision: two records share 0012") and deliberately not
+      # renumbered, because a committed record is not rewritten. That pair is
+      # allowlisted by its two exact filenames, so a third 0012, or a collision
+      # on any other number, still fails. Runs before the toolchain build so a
+      # docs-only mistake does not cost a 40-minute Verilator compile.
+      - name: Decision record numbers are unique
+        run: |
+          set -euo pipefail
+          allowed_number='0012'
+          allowed_files='0012-pin-klt-0-9-0-and-ratify-asap7-drc-deck.md 0012-shared-archtest-module-and-item9-reattestation.md'
+          shopt -s nullglob
+          declare -A records=()
+          for f in spec/decisions/[0-9][0-9][0-9][0-9]-*.md; do
+            base="${f##*/}"
+            n="${base:0:4}"
+            records[$n]="${records[$n]:+${records[$n]} }$base"
+          done
+          [ "${#records[@]}" -gt 0 ] || { echo "::error::no NNNN-*.md records found under spec/decisions/"; exit 1; }
+          rc=0
+          while read -r n; do
+            files="${records[$n]}"
+            case "$files" in *' '*) ;; *) continue ;; esac
+            if [ "$n" = "$allowed_number" ] && [ "$files" = "$allowed_files" ]; then
+              echo "decision number $n: the recorded collision, allowlisted ($files) - see spec/README.md"
+              continue
+            fi
+            echo "::error file=spec/README.md::decision number $n names more than one record: $files"
+            rc=1
+          done < <(printf '%s\n' "${!records[@]}" | sort)
+          if [ "$rc" -ne 0 ]; then
+            echo 'A decision number must name exactly one record: a bare "decision NNNN" citation'
+            echo 'cannot resolve against a collision. Give the new record the lowest unused number'
+            echo '(spec/README.md, "Decision record numbering", has the one-liner), or cite by path link.'
+            echo "The only allowlisted collision is $allowed_number ($allowed_files),"
+            echo 'recorded in spec/README.md. Adding to that allowlist needs a decision record.'
+            exit 1
+          fi
+          echo "Decision record numbers are unique (the recorded $allowed_number collision aside)."
+
       - name: Read pinned tool versions
         id: pins
         run: |
