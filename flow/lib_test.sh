@@ -82,9 +82,9 @@ echo "# 2. a label that does not match fails closed (never an empty pin)"
 # renamed or missing helper used to read as a pass (#149). Capture the
 # combined output and grep for the helper's die text -- the idiom
 # expect_counted_die already uses for extract_rvt_liberty below.
-expect_refusal() {  # label expr die-text
-  local label="$1" expr="$2" want="$3" got rc
-  got="$(read_pin "$SELF_REPO" "$expr" 2>&1)"; rc=$?
+expect_refusal() {  # label expr die-text [repo]
+  local label="$1" expr="$2" want="$3" repo="${4:-$SELF_REPO}" got rc
+  got="$(read_pin "$repo" "$expr" 2>&1)"; rc=$?
   if [[ $rc -ne 0 ]] && grep -qF -- "$want" <<<"$got"; then
     ok "$label"
   else
@@ -215,12 +215,10 @@ EX="$(fake_repo '# pins
 not read here')"
 mkdir -p "$EX/flow/core/records/2026-11-03"
 printf '{}\n' >"$EX/flow/core/records/2026-11-03/synth.json"
-got="$(read_pin "$EX" 'RECORD_DATE=2026-11-03; new_record_dir core' 2>/dev/null)"; rc=$?
-if [[ $rc -ne 0 && -z "$got" ]]; then
-  ok "new_record_dir refuses an existing record set (exit $rc)"
-else
-  no "new_record_dir wrote into an existing record set: rc=$rc"
-fi
+expect_refusal "new_record_dir refuses an existing record set" \
+  'RECORD_DATE=2026-11-03; new_record_dir core' \
+  'records already exist in flow/core/records/2026-11-03' \
+  "$EX"
 
 FREE="$(fake_repo '# pins
 not read here')"
