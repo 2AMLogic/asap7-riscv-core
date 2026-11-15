@@ -149,7 +149,10 @@ Runs the same suite as core mode (same `setup.sh`, `build_tests.py`, sv2v conver
 `klayout-tools` release (`klayout_tools` in `tool-versions.txt`, fetched by `uvx`, with the
 pinned cocotb). One klt request per program is written to `OUT_DIR/requests/`; the program
 image and tohost address reach `tb_core.v` as `-D` macros because a klt request has no
-plusargs. `OUT_DIR/report.json` collects the per-program klt responses.
+plusargs. `OUT_DIR/report.json` collects the per-program klt responses, with
+host paths replaced by `<scratch>`/`<repo>` tags; after the run a leak-guard
+scan (`leak_guard` in `lib.sh`, self-tested by `lib_test.sh`) fails the script
+if report.json still names a host path.
 
 Committed run: `records/2026-11-05/klt-fv-core-archtest.json` (72 programs, 0 failed;
 `C-cebreak-01` excluded per `core/excluded.json`) and
