@@ -16,7 +16,7 @@ BUILD = REPO / "verification" / "build"
 TOP = "cve2_rv32imc_wrapper"
 # The committed synthesized netlist the gate-level run simulates (#25), and the
 # cell-library Verilog groups it instantiates (pins in tool-versions.txt).
-NETLIST = REPO / "flow" / "core" / "records" / "2026-11-03" / "netlist.v"
+NETLIST = REPO / "flow" / "core" / "records" / "2026-11-14" / "netlist.v"
 CELL_GROUPS = ["AO_RVT_TT_201020", "INVBUF_RVT_TT_201020", "OA_RVT_TT_201020",
                "SIMPLE_RVT_TT_201020", "SEQ_RVT_TT_220101"]
 # Zero-delay functional run: ignore the models' specify blocks (timing arcs and
