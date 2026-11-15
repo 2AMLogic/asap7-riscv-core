@@ -16,7 +16,10 @@ import sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-BUILD = HERE.parent / "build"
+sys.path.insert(0, str(HERE))  # archtest_common runs this with -I, which drops the script dir
+
+from archtest_common import paths  # noqa: E402
+
 BASE = 0x80000000
 MEM_WORDS = 1 << 19  # 2 MiB
 
@@ -28,10 +31,6 @@ EXCLUDE = json.loads((HERE / "excluded.json").read_text())
 # source uses `la x0,<label>`, which GNU as rejects ("illegal operands"). The
 # source is unmodified; clang emits `auipc zero`, and the pinned GNU ld links it.
 CLANG_ASSEMBLED = {"I-jalr-01"}
-
-
-def paths():
-    return dict(l.split("=", 1) for l in (BUILD / "paths.env").read_text().split())
 
 
 def select(at):

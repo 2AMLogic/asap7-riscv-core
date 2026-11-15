@@ -36,8 +36,7 @@ def sha256(path: Path) -> str:
 
 
 def write_record(run_dir, negative, names, failed, failures, srcs):
-    pins = dict(l.split("=", 1) for l in (REPO / "verification" / "tool-versions.txt").read_text().splitlines()
-                if "=" in l and not l.startswith("#"))
+    p = paths()
     iv = subprocess.run(["iverilog", "-V"], capture_output=True, text=True).stdout.splitlines()[0]
     import cocotb
     record = {
@@ -50,10 +49,11 @@ def write_record(run_dir, negative, names, failed, failures, srcs):
         "failures": failures,
         "excluded": json.loads((HERE / "excluded.json").read_text()),
         "tools": {"iverilog": iv, "iverilog_build_args": GATE_BUILD_ARGS,
-                  "cocotb": cocotb.__version__, "riscv_arch_test_commit": pins["riscv_arch_test_commit"],
-                  "sail_riscv_release": pins["sail_riscv_release"]},
+                  "cocotb": cocotb.__version__,
+                  "riscv_arch_test_commit": p["RISCV_ARCH_TEST_COMMIT"],
+                  "sail_riscv_release": p["SAIL_RISCV_RELEASE"]},
         "netlist": {"path": str(NETLIST.relative_to(REPO)), "sha256": sha256(NETLIST)},
-        "cell_models": {"asap7sc7p5t_28_commit": pins["asap7_cells_commit"],
+        "cell_models": {"asap7sc7p5t_28_commit": p["ASAP7_CELLS_COMMIT"],
                         "files": {s.name: sha256(s) for s in srcs if s != NETLIST}},
         "tests": names,
     }

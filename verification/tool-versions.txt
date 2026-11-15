@@ -26,8 +26,14 @@ llvm_sha256=4a5ec53951a584ed36f80240f6fbf8fdd46b4cf6c7ee87cc2d5018dc37caf679
 
 # ASAP7 7.5-track RVT functional cell Verilog for the gate-level run
 # (verification/run.sh --core --gate): the asap7sc7p5t_28 submodule commit pinned
-# in spec/pdk-bringup.md, Verilog/ directory, the five groups the committed
+# in spec/pdk-bringup.md, Verilog/ directory, one key per group the committed
 # netlist instantiates. setup.sh refuses a sha256 mismatch.
+#
+# These key names are the single source of truth for the group set: setup.sh
+# derives its download list from them and publishes that list to
+# archtest_common.gate_sources() through paths.env, so neither restates it. The
+# set is a function of the committed netlist, so a netlist instantiating a new
+# group is one added key here and no code change.
 asap7_cells_commit=f970bd3c3292b79ae4d022a3ec80533534614066
 asap7_cells_AO_RVT_TT_201020_sha256=fdaceb42503410b3d329b54443c4957bc4a6cafb2f84743c53a10c2055e87515
 asap7_cells_INVBUF_RVT_TT_201020_sha256=8804a647af1e2161c13fffcaef9ec50786494534872ec50adaae593967a3b459
