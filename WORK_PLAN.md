@@ -19,31 +19,35 @@ _None._
 
 `loom:important`; taken before unlabelled work.
 
-_None._
+- **#88**: evidence/item9.json records stale content hashes for 5 of 11 attested testbenches, and nothing re-checks it
+- **#95**: Re-run core synthesis on the pinned klt 0.9.0 with a cell_library key that gets tie cells
+- **#97**: Classify the 549 DRC violations on the counter smoke layout by rule and cause
+- **#98**: Explain the LVS mismatch on the counter smoke layout (19 topology errors)
 
 ## Ready
 
 Human-approved issues ready for implementation (`loom:issue`).
 
-_None._
+- **#88**: evidence/item9.json records stale content hashes for 5 of 11 attested testbenches, and nothing re-checks it
+- **#97**: Classify the 549 DRC violations on the counter smoke layout by rule and cause
 
 ## In Progress
 
 Issues currently being built (`loom:building`).
 
-_None._
+- **#83**: Guide docs pass reds the item-10 signoff gate whenever it edits README.md
 
 ## PRs Awaiting Review
 
 PRs waiting on Judge (`loom:review-requested`).
 
-_None._
+- **#94**: docs: roadmap as of 2026-11-13
 
 ## Approved (Awaiting Merge)
 
 PRs that passed review and are queued for Champion auto-merge (`loom:pr`).
 
-_None._
+- **#92**: ci: make item-10 attestation drift self-explanatory and state the rule
 
 ## Proposed
 
@@ -51,10 +55,19 @@ Issues carrying `loom:curated`.
 
 - **#6**: Track the gap to T1 (klayout-tools design-evidence-tiers.md) *(curated)*
 - **#28**: T1 item 2 (layout): committed P&R flow and routed cve2_top GDS on ASAP7 *(curated)*
+- **#83**: Guide docs pass reds the item-10 signoff gate whenever it edits README.md *(curated)*
+- **#88**: evidence/item9.json records stale content hashes for 5 of 11 attested testbenches, and nothing re-checks it *(curated)*
+- **#90**: Two decision records share number 0012, making bare "decision 0012" citations ambiguous *(curated)*
+- **#96**: Account for the one unmapped $_DLATCH_N_ instance in the core netlist *(curated)*
+- **#97**: Classify the 549 DRC violations on the counter smoke layout by rule and cause *(curated)*
 
 ## Proposed (Architect / Hermit)
 
-_None._
+- **#91**: Narrow the mkrecord.py interface in flow/smoke/run.sh: single-build residue from #87 *(hermit)*
+- **#93**: Three hash-checked downloaders with three contracts: consolidate fetch_checked, fetch.sh and sv2v.sh *(hermit)*
+- **#99**: Consolidate the duplicated record host-path redactor in flow/smoke/run.sh and flow/core/synth.sh *(hermit)*
+- **#100**: One source of truth for the ASAP7 cell-group set: it is restated in setup.sh and archtest_common.py *(hermit)*
+- **#101**: One flow-lib home for the klt pin read and the report-usability check, and two spec reads that depend on document position *(hermit)*
 
 ## Epics
 
@@ -66,12 +79,12 @@ _None._
 |------|-------|
 | Operator merge-risk holds | 0 |
 | Very important | 1 |
-| Important | 0 |
-| Ready (`loom:issue`) | 0 |
-| In Progress (`loom:building`) | 0 |
-| PRs awaiting review | 0 |
-| Approved PRs awaiting merge | 0 |
-| Curated | 2 |
-| Architect / Hermit proposals | 0 |
+| Important | 4 |
+| Ready (`loom:issue`) | 2 |
+| In Progress (`loom:building`) | 1 |
+| PRs awaiting review | 1 |
+| Approved PRs awaiting merge | 1 |
+| Curated | 7 |
+| Architect / Hermit proposals | 5 |
 | Active epics | 0 |
 <!-- guide:plan-body:end -->
