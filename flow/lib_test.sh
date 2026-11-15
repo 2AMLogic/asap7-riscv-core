@@ -1,11 +1,14 @@
 #!/usr/bin/env bash
-# Self-test for the label-anchored, fail-closed pin reads in flow/lib.sh.
+# Self-test for the shared flow/lib.sh helpers: the label-anchored, fail-closed
+# pin reads and the record-selection rule behind synth.sh --check.
 #
 # Needs no PDK checkout, no klt and no network: every case is either a read of
-# this repo's own spec/ or a read of a crafted spec/ in a scratch tree.
+# this repo's own spec/ or a read of a crafted spec/ or records/ tree in a
+# scratch directory.
 #
 # ASAP7 is a predictive PDK; nothing here is fabricated or measured, and this
-# script makes no claim about any design -- it only checks how a pin is read.
+# script makes no claim about any design -- it only checks how a pin is read
+# and how a record directory is selected.
 #
 # usage: flow/lib_test.sh
 # Exit status: 0 every case passed; 1 a case failed.
@@ -126,6 +129,135 @@ eq "KLT_CMD overrides the whole command" \
   "$(KLT_CMD='my-klt --flag' bash -c 'set -euo pipefail; source "$REPO_LIB"
                                       klt_cmd klayout-tools==0.9.0
                                       IFS="|"; printf "%s\n" "${KLT[*]}"')"
+
+echo
+echo "# 5. newest_record_with selects the newest record directory holding the file"
+# The issue #105 shape: flow/core/records/ is written by two flows and only
+# synth.sh's directories hold a netlist.v, so selection must follow the
+# content, not the directory sort order.
+R="$(mktemp -d "${TMPDIR:-/tmp}/asap7-libtest.XXXXXX")"; FAKES+=("$R")
+mkdir -p "$R/records/2026-11-03" "$R/records/2026-11-05"
+printf 'old\n' >"$R/records/2026-11-03/netlist.v"
+printf '{}\n' >"$R/records/2026-11-05/ff-simple-check.json"
+eq "the #105 shape: the older synthesis record is selected past a netlist-less dir" \
+  "$R/records/2026-11-03/" \
+  "$(read_pin "$SELF_REPO" "newest_record_with '$R/records' netlist.v")"
+
+mkdir -p "$R/records/2026-11-14"
+printf 'new\n' >"$R/records/2026-11-14/netlist.v"
+eq "the newest directory holding the file is selected" "$R/records/2026-11-14/" \
+  "$(read_pin "$SELF_REPO" "newest_record_with '$R/records' netlist.v")"
+
+mkdir -p "$R/records/2026-11-20"
+printf '{}\n' >"$R/records/2026-11-20/ff-simple-check.json"
+eq "a newer netlist-less directory still does not take over selection" \
+  "$R/records/2026-11-14/" \
+  "$(read_pin "$SELF_REPO" "newest_record_with '$R/records' netlist.v")"
+
+got="$(read_pin "$SELF_REPO" "newest_record_with '$R/no-file-anywhere' netlist.v" 2>/dev/null)"; rc=$?
+if [[ $rc -ne 0 && -z "$got" ]]; then
+  ok "no directory holds the file: exits $rc with no value"
+else
+  no "no directory holds the file: fell through with rc=$rc, value '$got'"
+fi
+
+got="$(read_pin "$SELF_REPO" "newest_record_with '$R/no-such-root' netlist.v" 2>/dev/null)"; rc=$?
+if [[ $rc -ne 0 && -z "$got" ]]; then
+  ok "records root absent entirely: exits $rc with no value"
+else
+  no "records root absent: fell through with rc=$rc, value '$got'"
+fi
+
+S="$(mktemp -d "${TMPDIR:-/tmp}/asap7-libtest.XXXXXX")"; FAKES+=("$S")
+mkdir -p "$S/records/2026-11-03"
+printf 'only\n' >"$S/records/2026-11-03/netlist.v"
+eq "a single directory holding the file is selected" "$S/records/2026-11-03/" \
+  "$(read_pin "$SELF_REPO" "newest_record_with '$S/records' netlist.v")"
+
+E="$(mktemp -d "${TMPDIR:-/tmp}/asap7-libtest.XXXXXX")"; FAKES+=("$E")
+mkdir -p "$E/records/2026-11-03"
+got="$(read_pin "$SELF_REPO" "newest_record_with '$E/records' netlist.v" 2>/dev/null)"; rc=$?
+if [[ $rc -ne 0 && -z "$got" ]]; then
+  ok "an existing but empty record directory is skipped, not selected: exits $rc"
+else
+  no "empty record directory: fell through with rc=$rc, value '$got'"
+fi
+
+D="$(mktemp -d "${TMPDIR:-/tmp}/asap7-libtest.XXXXXX")"; FAKES+=("$D")
+mkdir -p "$D/records/2026-11-03/netlist.v"
+got="$(read_pin "$SELF_REPO" "newest_record_with '$D/records' netlist.v" 2>/dev/null)"; rc=$?
+if [[ $rc -ne 0 && -z "$got" ]]; then
+  ok "a netlist.v that is a directory rather than a file does not qualify: exits $rc"
+else
+  no "directory-shaped netlist.v: fell through with rc=$rc, value '$got'"
+fi
+
+echo
+echo "# 6. the record-writing path still refuses an existing record set"
+EX="$(fake_repo '# pins
+not read here')"
+mkdir -p "$EX/flow/core/records/2026-11-03"
+printf '{}\n' >"$EX/flow/core/records/2026-11-03/synth.json"
+got="$(read_pin "$EX" 'RECORD_DATE=2026-11-03; new_record_dir core' 2>/dev/null)"; rc=$?
+if [[ $rc -ne 0 && -z "$got" ]]; then
+  ok "new_record_dir refuses an existing record set (exit $rc)"
+else
+  no "new_record_dir wrote into an existing record set: rc=$rc"
+fi
+
+FREE="$(fake_repo '# pins
+not read here')"
+eq "new_record_dir on a free date still sets OUT" \
+  "$FREE/flow/core/records/2026-12-25" \
+  "$(read_pin "$FREE" 'RECORD_DATE=2026-12-25; new_record_dir core; printf "%s" "$OUT"')"
+
+echo
+echo "# 7. extract_rvt_liberty fails closed on a wrong archive count"
+# The counted guard is the point of the helper: a requested corner without
+# exactly its five group archives must die before the py7zr env is built --
+# the empty-glob fall-through that used to hand merge_lib.py a literal
+# `*_RVT_<c>_nldm_*.lib` filename. The expectation is 5 per corner asked for,
+# so a single-corner caller is not wrong by construction (contrast the
+# literal 15 the all-corners copy asserted). These cases die before uvx runs,
+# so they need no py7zr, no network and no PDK checkout.
+fake_libdir() {  # corner n-groups -> a fake asap7 checkout whose NLDM holds
+  # the first <n-groups> of the five group archives for <corner>
+  local d; d="$(mktemp -d "${TMPDIR:-/tmp}/asap7-libtest.XXXXXX")"
+  mkdir -p "$d/asap7sc7p5t_28/LIB/NLDM"
+  local corner="$1" n="$2" g
+  for g in AO INVBUF OA SEQ SIMPLE; do
+    [[ "$n" -gt 0 ]] || break
+    : >"$d/asap7sc7p5t_28/LIB/NLDM/asap7sc7p5t_${g}_RVT_${corner}_nldm_g0.lib.7z"
+    n=$((n - 1))
+  done
+  printf '%s\n' "$d"
+}
+run_extract() {  # dir corner... -> the extractor's combined output
+  local dir="$1"; shift
+  bash -c 'set -euo pipefail
+           REPO="$1" DEST="$2" ASAP7="$3"; shift 3
+           source "$REPO/flow/lib.sh"
+           extract_rvt_liberty "$ASAP7" "$DEST" "$@"' \
+    _ "$SELF_REPO" "$dir/dest" "$dir" "$@" 2>&1
+}
+expect_counted_die() {  # label want-found want-corner dir corner...
+  local label="$1" want_found="$2" want_corner="$3" dir="$4"; shift 4
+  local got rc
+  got="$(run_extract "$dir" "$@")"; rc=$?
+  if [[ $rc -eq 0 ]]; then no "$label: exited 0, expected a counted die"; return; fi
+  if grep -q "expected 5 RVT Liberty archives for corner $want_corner" <<<"$got" \
+     && grep -q "found $want_found" <<<"$got"; then
+    ok "$label"
+  else
+    no "$label: rc=$rc, output '$got'"
+  fi
+}
+expect_counted_die "corner with no archive dies counted (found 0)" \
+  0 FF "$(fake_libdir FF 0)" FF
+expect_counted_die "partial corner dies counted (found 2)" \
+  2 SS "$(fake_libdir SS 2)" SS
+expect_counted_die "a good first corner does not excuse the next (TT found 0)" \
+  0 TT "$(fake_libdir FF 5)" FF TT
 
 echo
 echo "flow/lib_test.sh: $PASS passed, $FAIL failed"
