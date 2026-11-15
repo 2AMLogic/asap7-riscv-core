@@ -28,6 +28,9 @@
 #   setup_scratch <name>                 sets SCRATCH (mktemp) and removes it on exit unless KEEP_SCRATCH=1
 #   new_record_dir <subdir>              sets DATE and OUT=flow/<subdir>/records/<date>; refuses an
 #                                        existing record set (records are append-only evidence)
+#   newest_record_with <root> <file>     newest directory under <root> holding <file> as a regular
+#                                        file (trailing slash included); empty output, non-zero,
+#                                        when none does
 #   record_subs <dest> <path>=<tag>...   write the host-path substitution list every record is
 #                                        redacted with, for flow/record_lib.py
 #   extract_rvt_liberty <asap7> <dest> <corner>...
@@ -98,6 +101,29 @@ new_record_dir() {  # subdir (smoke|core)
     die "records already exist in flow/$1/records/$DATE; set RECORD_DATE to a new label (records are append-only evidence)"
   fi
   mkdir -p "$OUT"
+}
+
+newest_record_with() {  # records-root filename -- print the newest directory holding filename
+  # Record roots are heterogeneous: flow/core/records/ is written by both
+  # synth.sh (netlist.v, synth.json, tool-versions.txt) and ff_simple_check.sh
+  # (ff-simple-check.json alone), so "newest directory" is not the same
+  # question as "newest record of the kind being looked for". Walk the
+  # date-named directories newest-first and print the first holding <filename>
+  # as a regular file, trailing slash included -- the form synth.sh's
+  # ${LATEST#"$REPO"/} messages concatenate into. Empty output and a non-zero
+  # status when nothing qualifies (or the root does not exist), so a caller can
+  # refuse "nothing to compare against" distinctly from a failed comparison.
+  local root="$1" want="$2" d
+  [[ -d "$root" ]] || return 1
+  local -a dirs=()
+  readarray -t dirs < <(ls -d "$root"/*/ 2>/dev/null | sort -r)
+  for d in "${dirs[@]}"; do
+    if [[ -f "$d$want" ]]; then
+      printf '%s\n' "$d"
+      return 0
+    fi
+  done
+  return 1
 }
 
 record_subs() {  # dest path=tag...
