@@ -137,7 +137,7 @@ RTL record; every program matches Sail. The negative control fails as intended:
 dut=`33333336`, expected-after-flip=`33333337`), and the run exits as an
 expected failure.
 
-Committed records for the superseding netlist (decision 0015, the DUT re-pointed
+Committed records for the superseding netlist (decision 0017, the DUT re-pointed
 to the tie-cell netlist `flow/core/records/2026-11-14/netlist.v`):
 `records/2026-11-15/gate-core-archtest.json` and
 `records/2026-11-15/gate-core-archtest-negative-control.json`.
