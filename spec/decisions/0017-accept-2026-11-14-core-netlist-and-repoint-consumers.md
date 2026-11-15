@@ -1,4 +1,4 @@
-# 0015 — The 2026-11-14 core netlist is the verification DUT; gate-level evidence regenerated; item 9 re-attested
+# 0017 — The 2026-11-14 core netlist is the verification DUT; gate-level evidence regenerated; item 9 re-attested
 
 **Status:** adopted 2026-11-15. Closes the verification half of issue #122; the
 attestation half (item 1) is measured and **deferred with cause** — see
