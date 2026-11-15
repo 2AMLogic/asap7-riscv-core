@@ -97,7 +97,8 @@ build_liberty_overlay "$ASAP7" "$PDK" "$CELL_LIB" "$CORNER"
 # ---- 5. klt synthesize ------------------------------------------------------
 cat >"$W/synth.req.json" <<JSON
 {"schema":"klt.synthesize.request/1","engine":"yosys","sources":["$TOP.v"],"hdl_toplevel":"$TOP",
- "pdk":{"cell_library":"$CELL_LIB","corner":"$CORNER"},"constraints":{"clock_period_ns":1.0}}
+ "pdk":{"cell_library":"$CELL_LIB","corner":"$CORNER"},"constraints":{"clock_period_ns":1.0},
+ "latch_map":{"negative":{"cell":"DLLx1_ASAP7_75t_R","enable":"CLK","data":"D","q":"Q"}}}
 JSON
 rc=0
 ( cd "$W" && "${KLT[@]}" synthesize synth.req.json --pdk asap7 --pdk-root "$PDK" --format json ) >"$SCRATCH/synth.out" 2>"$SCRATCH/synth.err" || rc=$?
