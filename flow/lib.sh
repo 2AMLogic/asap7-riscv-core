@@ -13,7 +13,10 @@
 #
 # flow/lib_test.sh checks those reads: the pins of record, that an unmatched
 # label exits non-zero instead of yielding an empty pin, and that a reordered
-# spec paragraph does not move a pin. It needs no PDK checkout and no klt.
+# spec paragraph does not move a pin; that synth_netlist picks the newest
+# synthesized netlist or nothing; and that provenance_rows writes one klt row,
+# keyed `klt:`, carrying the value of the `klt version` ask (tool asks stubbed).
+# It needs no PDK checkout and no klt.
 #
 # Provides:
 #   die <msg> [rc]                       message prefixed with the script name, exit rc (default 2)
@@ -28,6 +31,13 @@
 #                                        existing record set (records are append-only evidence)
 #   record_subs <dest> <path>=<tag>...   write the host-path substitution list every record is
 #                                        redacted with, for flow/record_lib.py
+#   sha <file>                           first hex field of the file's sha256sum
+#   synth_netlist <workdir> <toplevel>   newest <toplevel>_synth.v under <workdir>/.klt/synthesize,
+#                                        or nothing
+#   provenance_rows <script> <klt-ver>   the shared head rows of every flow/*/records
+#                                        tool-versions.txt, on stdout (one klt row, keyed
+#                                        `klt:`, value from `klt version`); a driver appends
+#                                        its own rows after this block
 #   build_liberty_overlay <asap7> <root> <cell-lib> <corner>...
 #                                        extract and merge the RVT Liberty for each corner under
 #                                        <root>/lib and write <root>/klt-pdk.json
@@ -103,6 +113,31 @@ record_subs() {  # dest path=tag...
     for p in "$@"; do printf '%s"%s"' "$sep" "$p"; sep=","; done
     printf ']'
   } >"$dest"
+}
+
+sha() {  # file -- first hex field of the file's sha256sum
+  sha256sum "$1" | cut -d' ' -f1
+}
+
+synth_netlist() {  # workdir toplevel -- newest <toplevel>_synth.v under <workdir>/.klt/synthesize, or nothing
+  ls -t "$1"/.klt/synthesize/*/"$2"_synth.v 2>/dev/null | head -1 || true
+}
+
+provenance_rows() {  # script klt-version -- the shared head rows of every flow/*/records tool-versions.txt
+  # One provenance vocabulary for both flow drivers; each appends its own rows
+  # after this block. The klt row is keyed `klt:` -- the generic form, like
+  # every other tool row; there is one klt per run now that the comparison
+  # build is gone -- and its value is whatever `klt version` printed, the same
+  # ask that fills the smoke records' klt_build.version field. `klt --version`
+  # is not a second spelling of that ask: do not re-fork this row.
+  echo "# Tool and input versions for $1 (predictive PDK; nothing here is fabricated)"
+  echo "klt:          $2  ($PIN_KLT)"
+  echo "yosys:        $(yosys -V 2>&1 | head -1)"
+  echo "python:       $(python3 --version 2>&1)"
+  echo "uv:           $(uvx --version 2>&1 | head -1)"
+  echo "py7zr:        $(uvx --quiet --from py7zr python -I -c 'import py7zr; print(py7zr.__version__)')"
+  echo "asap7:        $PIN_UPSTREAM"
+  echo "asap7sc7p5t_28: $PIN_CELLS"
 }
 
 build_liberty_overlay() {  # asap7 root cell_lib corner...

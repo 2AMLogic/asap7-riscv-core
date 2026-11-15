@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
-# Self-test for the label-anchored, fail-closed pin reads in flow/lib.sh.
+# Self-test for the shared helpers in flow/lib.sh: the label-anchored,
+# fail-closed pin reads, the synthesized-netlist locator, and the shared
+# provenance-row head of the flow tool-versions.txt records.
 #
 # Needs no PDK checkout, no klt and no network: every case is either a read of
-# this repo's own spec/ or a read of a crafted spec/ in a scratch tree.
+# this repo's own spec/, a read of a crafted spec/ in a scratch tree, or a run
+# of a helper over crafted scratch files with its tool asks stubbed.
 #
 # ASAP7 is a predictive PDK; nothing here is fabricated or measured, and this
 # script makes no claim about any design -- it only checks how a pin is read.
@@ -126,6 +129,46 @@ eq "KLT_CMD overrides the whole command" \
   "$(KLT_CMD='my-klt --flag' bash -c 'set -euo pipefail; source "$REPO_LIB"
                                       klt_cmd klayout-tools==0.9.0
                                       IFS="|"; printf "%s\n" "${KLT[*]}"')"
+
+echo
+echo "# 5. synth_netlist: the newest synthesized netlist, or nothing"
+NW="$(mktemp -d "${TMPDIR:-/tmp}/asap7-libtest-net.XXXXXX")"; FAKES+=("$NW")
+mkdir -p "$NW/.klt/synthesize/old" "$NW/.klt/synthesize/new"
+printf 'module old.\n' >"$NW/.klt/synthesize/old/counter_synth.v"
+printf 'module new.\n' >"$NW/.klt/synthesize/new/counter_synth.v"
+printf 'module other.\n' >"$NW/.klt/synthesize/new/other_synth.v"
+touch -d '2026-01-01 00:00:01' "$NW/.klt/synthesize/old/counter_synth.v"
+touch -d '2026-01-01 00:00:02' "$NW/.klt/synthesize/new/counter_synth.v" "$NW/.klt/synthesize/new/other_synth.v"
+eq "synth_netlist picks the newest match" \
+  "$NW/.klt/synthesize/new/counter_synth.v" \
+  "$(read_pin "$SELF_REPO" "synth_netlist $NW counter")"
+eq "synth_netlist is empty when nothing matches" \
+  "" "$(read_pin "$SELF_REPO" "synth_netlist $NW nosuchtop")"
+
+echo
+echo "# 6. provenance_rows: one klt row, keyed klt:, carrying the klt version ask"
+STUBS="$(mktemp -d "${TMPDIR:-/tmp}/asap7-libtest-stubs.XXXXXX")"; FAKES+=("$STUBS")
+for t in yosys python3 uvx; do
+  printf '#!/usr/bin/env bash\necho "stub %s"\n' "$t" >"$STUBS/$t"
+  chmod +x "$STUBS/$t"
+done
+rows() {
+  PATH="$STUBS:$PATH" bash -c '
+    set -euo pipefail
+    source "$REPO_LIB"
+    PIN_KLT=klayout-tools==0.9.0 PIN_UPSTREAM=upstream-sha PIN_CELLS=cells-sha
+    provenance_rows flow/x.sh "klt 0.9.0"
+  '
+}
+eq "header names the writing script" \
+  "# Tool and input versions for flow/x.sh (predictive PDK; nothing here is fabricated)" \
+  "$(rows | head -1)"
+eq "the one klt row is keyed klt: with the klt version ask" \
+  "klt:          klt 0.9.0  (klayout-tools==0.9.0)" \
+  "$(rows | grep '^klt:')"
+eq "shared rows carry exactly the shared vocabulary" \
+  "asap7 asap7sc7p5t_28 klt py7zr python uv yosys" \
+  "$(rows | grep -oE '^[a-z0-9_.]+:' | tr -d ':' | sort | tr '\n' ' ' | sed 's/ $//')"
 
 echo
 echo "flow/lib_test.sh: $PASS passed, $FAIL failed"
