@@ -3,7 +3,10 @@
 # with the pinned sv2v, and run `klt synthesize` of the RV32IMC wrapper against
 # the ratified RVT-only asap7sc7p5t_28 SS Liberty. Writes the gate-level netlist
 # and the synthesis record under flow/core/records/<date>/, or, with --check,
-# regenerates the netlist and byte-compares it with the latest committed one.
+# regenerates the netlist and byte-compares it with the newest committed
+# synthesis record -- the newest flow/core/records/<date>/ that holds a
+# netlist.v (a later directory written by a netlist-less flow does not take
+# over the selection).
 #
 # ASAP7 is a predictive PDK; nothing here is fabricated or measured. Synthesis
 # claims no timing: the clock constraint is passed to the tool and the report's
@@ -26,7 +29,8 @@
 #   KEEP_SCRATCH=1  keep the scratch directory
 #
 # Exit status: 0 ok (and, with --check, byte-identical); 1 a step failed or
-# --check found a difference; 2 refused invocation.
+# --check found a difference; 2 refused invocation -- including --check finding
+# no committed netlist to compare against at all (a refusal, not a difference).
 set -euo pipefail
 
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
@@ -34,7 +38,7 @@ REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 source "$REPO/flow/lib.sh"
 TOP=cve2_rv32imc_wrapper
 WRAPPER="$REPO/rtl/$TOP.sv"
-CELL_LIB=asap7sc7p5t_28_RVT
+CELL_LIB=asap7sc7p5t_28_R
 CORNER=SS
 
 CHECK=0
@@ -53,17 +57,16 @@ ASAP7_ARG="${ARGS[0]:-${ASAP7_DIR:-}}"
 ASAP7="$(cd "$ASAP7_ARG" && pwd)"
 
 # ---- pins, read from the spec -------------------------------------------
-PIN_UPSTREAM="$(spec_sha 'Upstream repo')"
-PIN_CELLS="$(spec_sha 'Cell library')"
-PIN_KLT="$(grep -o 'klayout-tools==[0-9][0-9.]*' "$REPO/spec/core.md" | head -1)"
-for v in PIN_UPSTREAM PIN_CELLS PIN_KLT; do
-  [[ -n "${!v}" ]] || die "could not read $v from spec/" 1
-done
+# Label-anchored and fail-closed (flow/lib.sh); PIN_KLT is the same read the
+# smoke flow makes, so the two scripts cannot drift onto different releases.
+PIN_UPSTREAM="$(spec_sha 'Upstream repo')" || exit 1
+PIN_CELLS="$(spec_sha 'Cell library')" || exit 1
+PIN_KLT="$(spec_klt_pin)" || exit 1
 
 check_pin "$ASAP7" "$PIN_UPSTREAM" "upstream asap7"
 check_pin "$ASAP7/asap7sc7p5t_28" "$PIN_CELLS" "submodule asap7sc7p5t_28"
 
-read -r -a KLT <<<"${KLT_CMD:-uvx --quiet --from $PIN_KLT klt}"
+klt_cmd "$PIN_KLT"
 BUILD="$REPO/flow/build"
 setup_scratch core
 
@@ -98,7 +101,8 @@ build_liberty_overlay "$ASAP7" "$PDK" "$CELL_LIB" "$CORNER"
 # ---- 5. klt synthesize ------------------------------------------------------
 cat >"$W/synth.req.json" <<JSON
 {"schema":"klt.synthesize.request/1","engine":"yosys","sources":["$TOP.v"],"hdl_toplevel":"$TOP",
- "pdk":{"cell_library":"$CELL_LIB","corner":"$CORNER"},"constraints":{"clock_period_ns":1.0}}
+ "pdk":{"cell_library":"$CELL_LIB","corner":"$CORNER"},"constraints":{"clock_period_ns":1.0},
+ "latch_map":{"negative":{"cell":"DLLx1_ASAP7_75t_R","enable":"CLK","data":"D","q":"Q"}}}
 JSON
 rc=0
 ( cd "$W" && "${KLT[@]}" synthesize synth.req.json --pdk asap7 --pdk-root "$PDK" --format json ) >"$SCRATCH/synth.out" 2>"$SCRATCH/synth.err" || rc=$?
@@ -115,8 +119,8 @@ NETLIST="$SCRATCH/netlist.v"
 
 # ---- 6. compare (--check) or record ---------------------------------------
 if [[ $CHECK == 1 ]]; then
-  LATEST="$(ls -d "$REPO"/flow/core/records/*/ 2>/dev/null | sort | tail -1 || true)"
-  [[ -n "$LATEST" && -f "$LATEST/netlist.v" ]] || { echo "synth.sh: no committed netlist to compare against" >&2; exit 1; }
+  LATEST="$(newest_record_with "$REPO/flow/core/records" netlist.v)" \
+    || die "no committed netlist to compare against: nothing under flow/core/records/ holds a netlist.v"
   if cmp -s "$NETLIST" "$LATEST/netlist.v"; then
     echo "synth.sh: regenerated netlist is byte-identical to ${LATEST#"$REPO"/}netlist.v" >&2
     exit 0
