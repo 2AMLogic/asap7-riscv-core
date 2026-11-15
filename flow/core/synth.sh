@@ -3,7 +3,10 @@
 # with the pinned sv2v, and run `klt synthesize` of the RV32IMC wrapper against
 # the ratified RVT-only asap7sc7p5t_28 SS Liberty. Writes the gate-level netlist
 # and the synthesis record under flow/core/records/<date>/, or, with --check,
-# regenerates the netlist and byte-compares it with the latest committed one.
+# regenerates the netlist and byte-compares it with the newest committed
+# synthesis record -- the newest flow/core/records/<date>/ that holds a
+# netlist.v (a later directory written by a netlist-less flow does not take
+# over the selection).
 #
 # ASAP7 is a predictive PDK; nothing here is fabricated or measured. Synthesis
 # claims no timing: the clock constraint is passed to the tool and the report's
@@ -26,7 +29,8 @@
 #   KEEP_SCRATCH=1  keep the scratch directory
 #
 # Exit status: 0 ok (and, with --check, byte-identical); 1 a step failed or
-# --check found a difference; 2 refused invocation.
+# --check found a difference; 2 refused invocation -- including --check finding
+# no committed netlist to compare against at all (a refusal, not a difference).
 set -euo pipefail
 
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
@@ -115,8 +119,8 @@ NETLIST="$SCRATCH/netlist.v"
 
 # ---- 6. compare (--check) or record ---------------------------------------
 if [[ $CHECK == 1 ]]; then
-  LATEST="$(ls -d "$REPO"/flow/core/records/*/ 2>/dev/null | sort | tail -1 || true)"
-  [[ -n "$LATEST" && -f "$LATEST/netlist.v" ]] || { echo "synth.sh: no committed netlist to compare against" >&2; exit 1; }
+  LATEST="$(newest_record_with "$REPO/flow/core/records" netlist.v)" \
+    || die "no committed netlist to compare against: nothing under flow/core/records/ holds a netlist.v"
   if cmp -s "$NETLIST" "$LATEST/netlist.v"; then
     echo "synth.sh: regenerated netlist is byte-identical to ${LATEST#"$REPO"/}netlist.v" >&2
     exit 0

@@ -11,9 +11,11 @@
 # (die runs inside the caller's command substitution, so its exit leaves only
 # that subshell) -- the same contract as verification/lib.sh's pin().
 #
-# flow/lib_test.sh checks those reads: the pins of record, that an unmatched
-# label exits non-zero instead of yielding an empty pin, and that a reordered
-# spec paragraph does not move a pin. It needs no PDK checkout and no klt.
+# flow/lib_test.sh checks those reads, and extract_rvt_liberty's counted
+# fail-closed guard: the pins of record, that an unmatched label exits non-zero
+# instead of yielding an empty pin, that a reordered spec paragraph does not
+# move a pin, and that a corner with the wrong archive count dies before any
+# extraction. It needs no PDK checkout, no klt and no network.
 #
 # Provides:
 #   die <msg> [rc]                       message prefixed with the script name, exit rc (default 2)
@@ -26,11 +28,19 @@
 #   setup_scratch <name>                 sets SCRATCH (mktemp) and removes it on exit unless KEEP_SCRATCH=1
 #   new_record_dir <subdir>              sets DATE and OUT=flow/<subdir>/records/<date>; refuses an
 #                                        existing record set (records are append-only evidence)
+#   newest_record_with <root> <file>     newest directory under <root> holding <file> as a regular
+#                                        file (trailing slash included); empty output, non-zero,
+#                                        when none does
 #   record_subs <dest> <path>=<tag>...   write the host-path substitution list every record is
 #                                        redacted with, for flow/record_lib.py
+#   extract_rvt_liberty <asap7> <dest> <corner>...
+#                                        extract each requested corner's RVT Liberty archives from the
+#                                        pinned checkout's LIB/NLDM into <dest>; dies with a counted
+#                                        message unless every requested corner has exactly 5 archives
 #   build_liberty_overlay <asap7> <root> <cell-lib> <corner>...
-#                                        extract and merge the RVT Liberty for each corner under
-#                                        <root>/lib and write <root>/klt-pdk.json
+#                                        extract_rvt_liberty into <root>/lib/7z, then merge the RVT
+#                                        Liberty for each corner under <root>/lib and write
+#                                        <root>/klt-pdk.json
 
 die() { echo "$(basename "$0"): $*" >&2; exit "${2:-2}"; }
 
@@ -93,6 +103,29 @@ new_record_dir() {  # subdir (smoke|core)
   mkdir -p "$OUT"
 }
 
+newest_record_with() {  # records-root filename -- print the newest directory holding filename
+  # Record roots are heterogeneous: flow/core/records/ is written by both
+  # synth.sh (netlist.v, synth.json, tool-versions.txt) and ff_simple_check.sh
+  # (ff-simple-check.json alone), so "newest directory" is not the same
+  # question as "newest record of the kind being looked for". Walk the
+  # date-named directories newest-first and print the first holding <filename>
+  # as a regular file, trailing slash included -- the form synth.sh's
+  # ${LATEST#"$REPO"/} messages concatenate into. Empty output and a non-zero
+  # status when nothing qualifies (or the root does not exist), so a caller can
+  # refuse "nothing to compare against" distinctly from a failed comparison.
+  local root="$1" want="$2" d
+  [[ -d "$root" ]] || return 1
+  local -a dirs=()
+  readarray -t dirs < <(ls -d "$root"/*/ 2>/dev/null | sort -r)
+  for d in "${dirs[@]}"; do
+    if [[ -f "$d$want" ]]; then
+      printf '%s\n' "$d"
+      return 0
+    fi
+  done
+  return 1
+}
+
 record_subs() {  # dest path=tag...
   # The one convention for naming the host paths a record may not contain: a
   # JSON array of "<path>=<tag>" strings, applied by flow/record_lib.py in the
@@ -105,12 +138,24 @@ record_subs() {  # dest path=tag...
   } >"$dest"
 }
 
-build_liberty_overlay() {  # asap7 root cell_lib corner...
-  local asap7="$1" root="$2" cell_lib="$3" c sep=""; shift 3
+extract_rvt_liberty() {  # asap7 dest corner...
+  # The RVT Liberty of the pinned asap7sc7p5t_28 checkout ships as .7z only (no
+  # 7z binary on the workers): extract each requested corner's archives into
+  # <dest> with a throwaway py7zr env. Fail closed with a counted message when
+  # a requested corner does not have exactly 5 archives -- the five
+  # asap7sc7p5t_28 groups (AO, INVBUF, OA, SEQ, SIMPLE) -- because an empty or
+  # partial glob must never fall through as an unexpanded pattern into whatever
+  # consumes <dest>. The expectation is 5 per corner requested, so a
+  # single-corner caller is not wrong by construction.
+  local asap7="$1" dest="$2" c n want=5; shift 2
   local libdir="$asap7/asap7sc7p5t_28/LIB/NLDM"
-  mkdir -p "$root/lib/7z"
-  # Liberty ships as .7z only (no 7z on the workers): extract with a throwaway py7zr env.
-  uvx --quiet --from py7zr python -I - "$libdir" "$root/lib/7z" "$@" <<'PY'
+  for c in "$@"; do
+    n="$(compgen -G "$libdir/*_RVT_${c}_nldm_*.lib.7z" | wc -l)" || true
+    [[ "$n" == "$want" ]] \
+      || die "expected $want RVT Liberty archives for corner $c in $libdir, found $n" 1
+  done
+  mkdir -p "$dest"
+  uvx --quiet --from py7zr python -I - "$libdir" "$dest" "$@" <<'PY'
 import glob, sys, py7zr
 src, dst, *corners = sys.argv[1:]
 for corner in corners:
@@ -118,6 +163,13 @@ for corner in corners:
         with py7zr.SevenZipFile(f) as z:
             z.extractall(dst)
 PY
+}
+
+build_liberty_overlay() {  # asap7 root cell_lib corner...
+  # extract_rvt_liberty into <root>/lib/7z, then merge each corner's groups
+  # into one Liberty per corner and write the klt-pdk.json naming them.
+  local asap7="$1" root="$2" cell_lib="$3" c sep=""; shift 3
+  extract_rvt_liberty "$asap7" "$root/lib/7z" "$@"
   for c in "$@"; do
     python3 -I "$REPO/flow/merge_lib.py" "$root/lib/${cell_lib}_$c.lib" "${cell_lib}_$c" "$root"/lib/7z/*_RVT_"$c"_nldm_*.lib
   done
