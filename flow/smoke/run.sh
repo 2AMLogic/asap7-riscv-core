@@ -99,6 +99,9 @@ V_PIN="$("${KLT[@]}" version 2>&1 | head -1 || true)"
 # A klt run "worked" when stdout is a JSON object without a top-level "error";
 # flow/record_lib.py owns that definition and the probe is silent by contract.
 usable() { python3 -I "$REPO/flow/record_lib.py" usable "$1"; }
+# A step "ran" when its record's smoke.run_state is "ran";
+# flow/record_lib.py owns that definition and the probe is silent by contract.
+record_ran() { python3 -I "$REPO/flow/record_lib.py" ran "$1"; }
 errmsg() {  # first error message from stdout JSON, else stderr, else rc
   python3 -I - "$1" "$2" "$3" <<'PY'
 import json, sys
@@ -277,7 +280,10 @@ fi
 # as-built netlist are kept next to the records. When it did not, they fall back to one library cell
 # (a stand-in that checks the tool chain and the deck and says nothing about the counter).
 LAYOUT_OK=0; PAR_RAN=0
-if python3 -I -c 'import json,sys; sys.exit(0 if json.load(open(sys.argv[1]))["smoke"]["run_state"]=="ran" else 1)' "$OUT/par.json" 2>/dev/null; then
+# Tolerant on purpose: par.json may be a legitimate not_run record here (the
+# par step never ran), which routes to the stand-in cell below — not an error,
+# unlike the final checks further down where a missing record dies.
+if record_ran "$OUT/par.json"; then
   PR="$W/.klt/place-and-route"
   if [[ -s "$PR/$DUT.gds" && -s "$PR/$DUT.def" && -s "$PR/$DUT.v" ]]; then
     mkdir -p "$OUT/layout"
@@ -377,14 +383,15 @@ if [[ $LINT_RC == 3 ]] || grep -lE '(/home/|/tmp/|/Users/|/root/)' "$OUT"/*.json
 elif [[ $LINT_RC != 0 ]]; then
   echo "run.sh: WARNING: klt env-provenance lint could not run (exit $LINT_RC); the grep check passed" >&2
 fi
-if [[ -f "$OUT/drc.json" ]] && python3 -I -c 'import json,sys; sys.exit(0 if json.load(open(sys.argv[1]))["smoke"]["run_state"]=="ran" else 1)' "$OUT/drc.json"; then
-  GOT="$(python3 -I -c 'import json,sys; print(json.load(open(sys.argv[1]))["provenance"]["deck"]["content_hash"])' "$OUT/drc.json")"
-  [[ "$GOT" == "$PIN_DECK" ]] || die "drc.json deck hash $GOT is not the pin $PIN_DECK" 1
-fi
-if [[ -f "$OUT/lvs.json" ]] && python3 -I -c 'import json,sys; sys.exit(0 if json.load(open(sys.argv[1]))["smoke"]["run_state"]=="ran" else 1)' "$OUT/lvs.json"; then
-  GOT="$(python3 -I -c 'import json,sys; print(json.load(open(sys.argv[1]))["provenance"]["deck"]["content_hash"])' "$OUT/lvs.json")"
-  [[ "$GOT" == "$PIN_LVS_DECK" ]] || die "lvs.json deck hash $GOT is not the pin $PIN_LVS_DECK" 1
-fi
+# One gate per deck-gated step: drc on PIN_DECK, lvs on PIN_LVS_DECK. The ran
+# test is the only guard — the final-checks loop above already died on any
+# missing or empty record, so a [[ -f ]] front here would be unreachable-false.
+for gate in "drc:$PIN_DECK" "lvs:$PIN_LVS_DECK"; do
+  step="${gate%%:*}" pin="${gate##*:}"
+  record_ran "$OUT/$step.json" || continue
+  GOT="$(python3 -I -c 'import json,sys; print(json.load(open(sys.argv[1]))["provenance"]["deck"]["content_hash"])' "$OUT/$step.json")"
+  [[ "$GOT" == "$pin" ]] || die "$step.json deck hash $GOT is not the pin $pin" 1
+done
 echo "run.sh: records written to flow/smoke/records/$DATE:" >&2
 python3 -I - "$OUT" <<'PY' >&2
 import glob, json, os, sys
