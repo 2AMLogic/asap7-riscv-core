@@ -68,12 +68,14 @@ echo "run.sh: records -> flow/smoke/records/$DATE" >&2
 # ---- helper: assemble a record ------------------------------------------
 # Assembles one record on stdout only. flow/record_lib.py redacts it and writes
 # the file, so every record under flow/*/records/ leaves through one redactor
-# (shared with flow/core/synth.sh).
+# (shared with flow/core/synth.sh). The klt_build triple and each failed
+# attempt's "build" tag are derived here from run_state and the exported
+# V_PIN / PIN_KLT pins (one pinned build, decision 0012), not passed in.
 cat >"$SCRATCH/mkrecord.py" <<'PY'
-import json, sys
+import json, os, sys
 
-step, run_state, role, version, ref, note, issues, input_kind, rc_out = sys.argv[1:10]
-extras = json.loads(sys.argv[10]) if len(sys.argv) > 10 else {}
+step, run_state, note, issues, input_kind, rc_out = sys.argv[1:7]
+extras = json.loads(sys.argv[7]) if len(sys.argv) > 7 else {}
 
 report = {}
 if rc_out != "-":
@@ -81,10 +83,17 @@ if rc_out != "-":
 rec = dict(report)
 if run_state == "not_run":
     rec = {"status": "not_run"}
+ran = run_state == "ran"
+if "failed_attempts" in extras:
+    extras["failed_attempts"] = [{"build": "pinned", **a} for a in extras["failed_attempts"]]
 rec["smoke"] = {
     "step": step,
     "run_state": run_state,
-    "klt_build": {"role": role, "version": version, "ref": ref},
+    "klt_build": {
+        "role": "pinned" if ran else "none",
+        "version": os.environ["V_PIN"] if ran else "",
+        "ref": os.environ["PIN_KLT"] if ran else "",
+    },
     "input": input_kind,
     "note": note,
     "klayout_tools_issues": [i for i in issues.split(",") if i],
@@ -95,6 +104,8 @@ PY
 record_subs "$SCRATCH/subs.json" "$SCRATCH=<scratch>" "$ASAP7=<asap7-checkout>" "$REPO=<repo>" "$HOME=<home>"
 
 V_PIN="$("${KLT[@]}" version 2>&1 | head -1 || true)"
+# mkrecord.py derives klt_build from these two pins through the environment.
+export V_PIN PIN_KLT
 
 # A klt run "worked" when stdout is a JSON object without a top-level "error";
 # flow/record_lib.py owns that definition and the probe is silent by contract.
@@ -111,31 +122,46 @@ except Exception:
 PY
 }
 
+# record_ran <record.json>: exit 0 when smoke.run_state is "ran"; a missing,
+# unreadable or unparseable record exits non-zero and stays silent (a gate that
+# asks "did this step run" must fail closed).
+record_ran() {
+  python3 -I -c 'import json,sys; sys.exit(0 if json.load(open(sys.argv[1]))["smoke"]["run_state"]=="ran" else 1)' "$1" 2>/dev/null
+}
+# deck_hash <record.json>: the report's provenance.deck.content_hash (drc / lvs).
+deck_hash() {
+  python3 -I -c 'import json,sys; print(json.load(open(sys.argv[1]))["provenance"]["deck"]["content_hash"])' "$1"
+}
+
 # step <name> <input-label> <note-on-success> <issues-on-gap> <klt args...>
 # Runs the pinned klt. Sets STEP_OK=1 when a report exists; a step the pinned build
 # cannot perform gets a not_run record carrying that build's error in failed_attempts.
+# mkrecord.py derives klt_build and the attempts' "build" tag itself (see below),
+# so no build identity is passed here.
 step() {
   local name="$1" input="$2" note="$3" issues="$4"; shift 4
-  local out="$SCRATCH/$name.out" err="$SCRATCH/$name.err" rc=0 attempts="[]" extra
+  local out="$SCRATCH/$name.out" err="$SCRATCH/$name.err" rc=0 attempts extra
   STEP_OK=0
   ( cd "$W" && "${KLT[@]}" "$@" ) >"$out" 2>"$err" || rc=$?
   if usable "$out"; then
     STEP_OK=1
     extra="$(python3 -I -c 'import json,sys; print(json.dumps({"exit_code":int(sys.argv[1]),**json.loads(sys.argv[2])}))' "$rc" "${STEP_EXTRA:-{\}}")"
-    python3 -I "$SCRATCH/mkrecord.py" "$name" ran pinned "$V_PIN" "$PIN_KLT" "$note" "${RAN_ISSUES:-}" "$input" "$out" "$extra" \
+    python3 -I "$SCRATCH/mkrecord.py" "$name" ran "$note" "${RAN_ISSUES:-}" "$input" "$out" "$extra" \
       | python3 -I "$REPO/flow/record_lib.py" write "$OUT/$name.json" "$SCRATCH/subs.json"
     return
   fi
   local pin_err; pin_err="$(errmsg "$out" "$err" "$rc")"
-  attempts="$(python3 -I -c 'import json,sys; print(json.dumps([{"build":"pinned","version":sys.argv[1],"error":sys.argv[2]}]))' "$V_PIN" "$pin_err")"
+  attempts="$(python3 -I -c 'import json,sys; print(json.dumps([{"version":sys.argv[1],"error":sys.argv[2]}]))' "$V_PIN" "$pin_err")"
   not_run "$name" "$input" "$issues" "$attempts" "Step failed on the pinned build."
 }
 
 # not_run <name> <input> <issues> <attempts-json> <why>
+# attempts-json entries carry no "build": with one pinned build, mkrecord.py
+# stamps every attempt "pinned" itself.
 not_run() {
   local extra
   extra="$(python3 -I -c 'import json,sys; print(json.dumps({"failed_attempts":json.loads(sys.argv[1]),**json.loads(sys.argv[2])}))' "$4" "${STEP_EXTRA:-{\}}")"
-  python3 -I "$SCRATCH/mkrecord.py" "$1" not_run none "" "" "$5" "$3" "$2" - "$extra" \
+  python3 -I "$SCRATCH/mkrecord.py" "$1" not_run "$5" "$3" "$2" - "$extra" \
     | python3 -I "$REPO/flow/record_lib.py" write "$OUT/$1.json" "$SCRATCH/subs.json"
   STEP_OK=0
   if [[ -z "$3" ]]; then
@@ -277,7 +303,7 @@ fi
 # as-built netlist are kept next to the records. When it did not, they fall back to one library cell
 # (a stand-in that checks the tool chain and the deck and says nothing about the counter).
 LAYOUT_OK=0; PAR_RAN=0
-if python3 -I -c 'import json,sys; sys.exit(0 if json.load(open(sys.argv[1]))["smoke"]["run_state"]=="ran" else 1)' "$OUT/par.json" 2>/dev/null; then
+if record_ran "$OUT/par.json"; then
   PR="$W/.klt/place-and-route"
   if [[ -s "$PR/$DUT.gds" && -s "$PR/$DUT.def" && -s "$PR/$DUT.v" ]]; then
     mkdir -p "$OUT/layout"
@@ -377,14 +403,15 @@ if [[ $LINT_RC == 3 ]] || grep -lE '(/home/|/tmp/|/Users/|/root/)' "$OUT"/*.json
 elif [[ $LINT_RC != 0 ]]; then
   echo "run.sh: WARNING: klt env-provenance lint could not run (exit $LINT_RC); the grep check passed" >&2
 fi
-if [[ -f "$OUT/drc.json" ]] && python3 -I -c 'import json,sys; sys.exit(0 if json.load(open(sys.argv[1]))["smoke"]["run_state"]=="ran" else 1)' "$OUT/drc.json"; then
-  GOT="$(python3 -I -c 'import json,sys; print(json.load(open(sys.argv[1]))["provenance"]["deck"]["content_hash"])' "$OUT/drc.json")"
-  [[ "$GOT" == "$PIN_DECK" ]] || die "drc.json deck hash $GOT is not the pin $PIN_DECK" 1
-fi
-if [[ -f "$OUT/lvs.json" ]] && python3 -I -c 'import json,sys; sys.exit(0 if json.load(open(sys.argv[1]))["smoke"]["run_state"]=="ran" else 1)' "$OUT/lvs.json"; then
-  GOT="$(python3 -I -c 'import json,sys; print(json.load(open(sys.argv[1]))["provenance"]["deck"]["content_hash"])' "$OUT/lvs.json")"
-  [[ "$GOT" == "$PIN_LVS_DECK" ]] || die "lvs.json deck hash $GOT is not the pin $PIN_LVS_DECK" 1
-fi
+# The pinned deck every ran step's report must name (skip-on-not_run; a missing
+# record is already refused by the loop above).
+for gate in "drc:$PIN_DECK" "lvs:$PIN_LVS_DECK"; do
+  s="${gate%%:*}"; want="${gate#*:}"
+  [[ -f "$OUT/$s.json" ]] || continue
+  record_ran "$OUT/$s.json" || continue
+  got="$(deck_hash "$OUT/$s.json")"
+  [[ "$got" == "$want" ]] || die "$s.json deck hash $got is not the pin $want" 1
+done
 echo "run.sh: records written to flow/smoke/records/$DATE:" >&2
 python3 -I - "$OUT" <<'PY' >&2
 import glob, json, os, sys
