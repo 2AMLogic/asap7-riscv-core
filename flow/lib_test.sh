@@ -307,6 +307,52 @@ for f in flow/core/synth.sh flow/core/ff_simple_check.sh; do
     no "$f does not call record_leak_guard"
   fi
 done
+echo "# 8. extract_rvt_liberty fails closed on a wrong archive count"
+# The counted guard is the point of the helper: a requested corner without
+# exactly its five group archives must die before the py7zr env is built --
+# the empty-glob fall-through that used to hand merge_lib.py a literal
+# `*_RVT_<c>_nldm_*.lib` filename. The expectation is 5 per corner asked for,
+# so a single-corner caller is not wrong by construction (contrast the
+# literal 15 the all-corners copy asserted). These cases die before uvx runs,
+# so they need no py7zr, no network and no PDK checkout.
+fake_libdir() {  # corner n-groups -> a fake asap7 checkout whose NLDM holds
+  # the first <n-groups> of the five group archives for <corner>
+  local d; d="$(mktemp -d "${TMPDIR:-/tmp}/asap7-libtest.XXXXXX")"
+  mkdir -p "$d/asap7sc7p5t_28/LIB/NLDM"
+  local corner="$1" n="$2" g
+  for g in AO INVBUF OA SEQ SIMPLE; do
+    [[ "$n" -gt 0 ]] || break
+    : >"$d/asap7sc7p5t_28/LIB/NLDM/asap7sc7p5t_${g}_RVT_${corner}_nldm_g0.lib.7z"
+    n=$((n - 1))
+  done
+  printf '%s\n' "$d"
+}
+run_extract() {  # dir corner... -> the extractor's combined output
+  local dir="$1"; shift
+  bash -c 'set -euo pipefail
+           REPO="$1" DEST="$2" ASAP7="$3"; shift 3
+           source "$REPO/flow/lib.sh"
+           extract_rvt_liberty "$ASAP7" "$DEST" "$@"' \
+    _ "$SELF_REPO" "$dir/dest" "$dir" "$@" 2>&1
+}
+expect_counted_die() {  # label want-found want-corner dir corner...
+  local label="$1" want_found="$2" want_corner="$3" dir="$4"; shift 4
+  local got rc
+  got="$(run_extract "$dir" "$@")"; rc=$?
+  if [[ $rc -eq 0 ]]; then no "$label: exited 0, expected a counted die"; return; fi
+  if grep -q "expected 5 RVT Liberty archives for corner $want_corner" <<<"$got" \
+     && grep -q "found $want_found" <<<"$got"; then
+    ok "$label"
+  else
+    no "$label: rc=$rc, output '$got'"
+  fi
+}
+expect_counted_die "corner with no archive dies counted (found 0)" \
+  0 FF "$(fake_libdir FF 0)" FF
+expect_counted_die "partial corner dies counted (found 2)" \
+  2 SS "$(fake_libdir SS 2)" SS
+expect_counted_die "a good first corner does not excuse the next (TT found 0)" \
+  0 TT "$(fake_libdir FF 5)" FF TT
 
 echo
 echo "flow/lib_test.sh: $PASS passed, $FAIL failed"
