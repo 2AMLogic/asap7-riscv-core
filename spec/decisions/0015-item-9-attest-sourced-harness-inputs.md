@@ -43,7 +43,7 @@ attested `.py` import resolves to a file already attested (`archtest_common`) or
    and its reason are recorded in the inventory `description` so the silence is explicit.
 
 3. **Item 9 re-attested in the same commit as the inventory edit** (0014's measured rule: an inventory
-   edit without regeneration renders item 9 `unmet, stale_evidence`). The prior envelope (20-input
+   edit without regeneration renders item 9 `unmet, stale_evidence`). The prior envelope (12-input
    15-check pass, input hash `sha256:6b1dbf95…`, produced at commit `d8087b0`, 2026-11-15) is retained
    byte-for-byte at **`evidence/records/item9-2026-11-15-2.json`**. The convention's plain-date name
    `item9-2026-11-15.json` was already taken earlier the same day — `d8087b0` retained the `556b51a`
