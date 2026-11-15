@@ -45,15 +45,25 @@ known fact rather than as an error:
 | [`0012-shared-archtest-module-and-item9-reattestation.md`](decisions/0012-shared-archtest-module-and-item9-reattestation.md) | one shared module for the two arch-test drivers; T1 item 9 re-attested | adopted 2026-11-06 |
 
 **Every bare "decision 0012" citation in this repository resolves to the
-first one** — the `klt` 0.9.0 / ASAP7 DRC deck record. Verified over every
-tracked file at `46d798c` (2026-11-14); the bare citations are
-`WORK_LOG.md:19,27` and
-[`decisions/0013-asap7-deck-record-follow-ups.md`](decisions/0013-asap7-deck-record-follow-ups.md)
-lines 4, 14 and 16 — all five of them append-only text that is left as
-written. The one other reference,
-[`flow/smoke/analysis/2026-11-05-drc.md`](../flow/smoke/analysis/2026-11-05-drc.md),
-already links the record's path and so is unambiguous. Nothing anywhere cites
+first one** — the `klt` 0.9.0 / ASAP7 DRC deck record. Nothing anywhere cites
 the shared-archtest record, by number or by filename.
+
+The tree is the register: enumerate the bare citations on demand rather than
+trusting a file-and-line inventory written here — such a list rots as soon as
+any cited file moves:
+
+```bash
+git grep -nPi '(?<!\[)decisions? 0012' -- . ':!spec/README.md'
+```
+
+`(?<!\[)` is per-occurrence, so a bare citation sharing a line with a markdown
+link is still reported, and `':!spec/README.md'` keeps this section from
+matching its own prose. Where `git grep -P` is unavailable (git built without
+PCRE support), the portable equivalent:
+
+```bash
+git grep -nEio '.?.?decisions? 0012' -- . ':!spec/README.md' | grep -vi '\[decision'
+```
 
 `0012` is the only duplicated number. The `ci.yml` guard allowlists exactly
 this pair of filenames, so a third `0012` — or a collision on any other
