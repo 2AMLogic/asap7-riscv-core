@@ -48,5 +48,6 @@ if [ "$NEGATIVE" = 1 ]; then
   exit 0
 fi
 rc=0; python3 -I fv.py "$OUT" || rc=$?
+[ -f "$OUT/report.json" ] || die "fv.py wrote no report at $OUT/report.json (fv.py exit $rc); its output above is the real failure"
 leak_guard "$OUT/report.json"
 exit "$rc"
