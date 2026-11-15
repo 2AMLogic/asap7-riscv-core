@@ -10,9 +10,10 @@ no flow script, so it gates nothing by itself.
 `flow/core/synth.sh <asap7-checkout> --check` regenerating and byte-comparing
 `flow/core/records/2026-11-03/netlist.v`, and (2) a fresh-`RECORD_DATE`
 `flow/smoke/run.sh <asap7-checkout>` diffed against
-`flow/smoke/records/2026-11-05/` — are cited by open proposals #91, #99, #101
-and #106 and verified by nobody in a sweep worktree. Measured 2026-11-15
-against `origin/main` @ `314c493`:
+`flow/smoke/records/2026-11-05/` — are cited by proposals #91, #99, #101 and
+#106, of which #91 and #106 are open (#99 and #101 closed 2026-11-14, with
+the criteria still cited), and verified by nobody in a sweep worktree.
+Measured 2026-11-15 against `origin/main` @ `314c493`:
 
 1. **The venue already exists and is already wired for criterion 1.**
    `rtl/inventory.json` (T1 item 1, "Design sources") expresses the
@@ -152,19 +153,22 @@ lists only `README.md`, `LICENSE`, `.github/workflows/ci.yml` and
 so no re-attestation is required and no gate can move. No envelope, inventory,
 manifest, flow record, pin or RTL is edited here. The item-1 drift quoted
 under "Problem" stands until step (b), and item 1 will keep rendering `met`
-with CI green until step (c) lands. On this record's own branch,
-`--attest 9 … --check` exits 3 (the #124 drift, identical on `main` — quoted
-so the PR shows this record did not regress it) and `--attest 10 … --check`
-exits 0 (`status: match`).
+with CI green until step (c) lands. Re-run on this record's branch at
+`c175a585` on 2026-11-15, after #124 was closed by merged #139: `--attest 9
+… --check` exits 0 (`status: match`, identical on `main`, whose tree differs
+from this branch only by this record) and `--attest 10 … --check` exits 0
+(`status: match`), so the PR carrying this record shows `signoff` green
+end-to-end.
 
 **Verification.** Every measured claim above was re-derived on this record's
-branch at `314c493` on 2026-11-15:
+branch at `314c493` on 2026-11-15, and the `--check` runs were re-run at
+`c175a585` the same day after #139 closed #124:
 
 ```
 uvx --python 3.12 --from "klayout-tools==0.8.0" klt signoff \
     --attest 1 --inventory rtl/inventory.json --check evidence/item1.json   # exit 3, "Problem" output
 uvx --python 3.12 --from "klayout-tools==0.8.0" klt signoff \
-    --attest 9 --inventory attest/item9.json --check evidence/item9.json    # exit 3 (#124 drift)
+    --attest 9 --inventory attest/item9.json --check evidence/item9.json    # exit 0, status: match (after #139 closed #124)
 uvx --python 3.12 --from "klayout-tools==0.8.0" klt signoff \
     --attest 10 --inventory attest/item10.json --check evidence/item10.json # exit 0, status: match
 ```
@@ -186,5 +190,5 @@ useful and complementary, built against the #112 / merged-#114 pattern, filed
 separately if wanted; provisioning ASAP7 checkouts on dispatch workers (a
 worker-spec change, not this repo's, and this record deliberately hardcodes no
 path); the #124 item-9 envelope refresh (same drift class, one item over —
-sibling work, not absorbed here); a `klt` pin bump; the duplicate `0012`
-decision number (issue #90).
+completed by merged #139, closing #124 on 2026-11-15, not absorbed here); a
+`klt` pin bump; the duplicate `0012` decision number (issue #90).
