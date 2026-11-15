@@ -27,6 +27,28 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # The flow scripts' shell self-tests (*_test.sh) need no PDK, no klt, no
+      # simulator and no network, and they guard a silent regression: a pin
+      # read that falls back to a position-dependent `head -1` still returns a
+      # plausible value, so nothing else in CI would notice. Discovery is
+      # `git ls-files`, so the set is identical locally and in CI and the next
+      # *_test.sh needs no edit here; the empty-match guard keeps a broken
+      # glob from looking like a pass. Runs before the toolchain build: it is
+      # sub-second, and a failure here means the flow scripts' pin reads are
+      # broken anyway.
+      - name: Shell self-tests
+        run: |
+          set -uo pipefail
+          mapfile -t tests < <(git ls-files '*_test.sh')
+          [ "${#tests[@]}" -gt 0 ] \
+            || { echo "::error::no *_test.sh matched - the glob or the naming convention broke"; exit 1; }
+          rc=0
+          for t in "${tests[@]}"; do
+            echo "== $t"
+            bash "$t" || { echo "::error file=$t::$t failed"; rc=1; }
+          done
+          exit $rc
+
       # Decision records are cited as authority in this repo, so a number that
       # names two records makes every bare "decision NNNN" citation of it
       # unresolvable. spec/decisions/ holds exactly one deliberate, recorded
