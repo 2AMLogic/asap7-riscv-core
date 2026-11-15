@@ -36,30 +36,27 @@ run_guard() {
   ' leak_guard "$1"
 }
 
-guard_case() {  # label want_rc file
+guard_case() {  # label want_rc file [want_reason]
   local got=0 err
   err="$(run_guard "$3" 2>&1 >/dev/null)" || got=$?
   if [ "$got" -eq "$2" ]; then ok "$1"; else no "$1: want exit $2, got $got"; fi
-  printf '%s' "$err"
+  if [ $# -ge 4 ]; then
+    case "$err" in
+      *"$4"*) ok "$1: names the reason" ;;
+      *) no "$1: expected reason \"$4\", got: $err" ;;
+    esac
+  fi
 }
 
 echo "# 1. each of the four host roots fails the guard"
 for root in /home/me /tmp/fv-pos /Users/me /root; do
   printf '{"environment": {"build_log": "%s/x/build_icarus.log"}}\n' "$root" >"$SCRATCH/leak.json"
-  err="$(guard_case "a $root/ path fails" 1 "$SCRATCH/leak.json")"
-  case "$err" in
-    *"leaks an absolute host path"*) ok "a $root/ path names the reason" ;;
-    *) no "a $root/ path: no named reason, got: $err" ;;
-  esac
+  guard_case "a $root/ path fails" 1 "$SCRATCH/leak.json" "leaks an absolute host path"
 done
 
 echo
 echo "# 2. the guard is fail closed"
-err="$(guard_case "a missing file fails" 1 "$SCRATCH/no-such-file.json")"
-case "$err" in
-  *"cannot scan"*) ok "a missing file names the reason" ;;
-  *) no "a missing file: no named reason, got: $err" ;;
-esac
+guard_case "a missing file fails" 1 "$SCRATCH/no-such-file.json" "cannot scan"
 
 echo
 echo "# 3. a redacted record passes"
