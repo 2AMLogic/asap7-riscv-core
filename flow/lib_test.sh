@@ -55,7 +55,7 @@ cleanup() { [[ ${#FAKES[@]} -eq 0 ]] || rm -rf "${FAKES[@]}"; }
 trap cleanup EXIT
 
 echo "# 1. the real spec reads the pins of record"
-eq "spec_klt_pin is the flow pin"      "klayout-tools==0.9.0" "$(read_pin "$SELF_REPO" 'spec_klt_pin')"
+eq "spec_klt_pin is the flow pin"      "klayout-tools==9.9.9" "$(read_pin "$SELF_REPO" 'spec_klt_pin')"
 eq "PIN_DECK is the pinned DRC deck" \
   "sha256:14f146f02cd731de3e0b59452eadfdab9c2c947724a219a1002a31b5e0f12d13" \
   "$(read_pin "$SELF_REPO" "spec_pin 'equal to the pinned hash' 'sha256:[0-9a-f]\{64\}' 1")"
