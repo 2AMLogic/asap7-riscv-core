@@ -1,4 +1,5 @@
-"""Record plumbing shared by the flow scripts (flow/smoke/run.sh, flow/core/synth.sh).
+"""Record plumbing shared by the flow scripts (flow/smoke/run.sh,
+flow/core/synth.sh, flow/core/ff_simple_check.sh).
 
 Invoked by path, like flow/merge_lib.py; `python3 -I` does not put the script's
 directory on sys.path, so this file is a command, never an import.
@@ -15,11 +16,10 @@ usage: record_lib.py usable <json-file>
        record_lib.py write <dest> <subs-file>
            Read one assembled record as JSON on stdin, replace every host path
            named in <subs-file>, and write <dest> (indent=2, sorted keys,
-           trailing newline). Both step-record writers (flow/smoke/run.sh,
-           flow/core/synth.sh) assemble on stdout and write through here, so
-           neither can emit a step record without redacting it.
-           flow/core/ff_simple_check.sh still writes its own record directly
-           and is NOT covered yet (issue #106).
+           trailing newline). Every record writer (flow/smoke/run.sh,
+           flow/core/synth.sh, flow/core/ff_simple_check.sh) assembles on
+           stdout and writes through here, so no writer can emit a record
+           without redacting it.
 
 <subs-file> is a JSON array of "<host-path>=<tag>" strings, applied in order:
 a path that is a prefix of another must come first. Write it with record_subs()
