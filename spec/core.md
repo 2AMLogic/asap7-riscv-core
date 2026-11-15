@@ -47,7 +47,8 @@ and Yosys with the same pinned `sv2v` as `sky130-riscv-soc`: `sv2v v0.0.13`
   `asap7sc7p5t_28` `f970bd3c3292b79ae4d022a3ec80533534614066`; PDK
   `asap7_pdk_r1p7` `58d72c9d291e186a77468586ab0c43d8a21eda6a`.
 - `klt`: release `klayout-tools==0.9.0` is the pinned release for DRC, LVS and the smoke flow
-  (decision 0012, superseding the unreleased tree pin of decision 0005 and the 0.8.0 pin of
+  ([decision 0012, the `klt` 0.9.0 and ASAP7 DRC deck pin](decisions/0012-pin-klt-0-9-0-and-ratify-asap7-drc-deck.md),
+  superseding the unreleased tree pin of decision 0005 and the 0.8.0 pin of
   decision 0008 for these steps). `klt signoff` stays at `klayout-tools==0.8.0` (decision 0008).
 - `klt pdk` does not resolve ASAP7 yet; the repo's flow points at the pinned
   checkout by path until klayout-tools #3782 closes.
@@ -92,7 +93,9 @@ a claimed result.
   `--expect-rule-categories` equal to the deck's declared count, and the
   report's `provenance.deck.content_hash` equal to the pinned hash:
   `sha256:14f146f02cd731de3e0b59452eadfdab9c2c947724a219a1002a31b5e0f12d13`
-  (267 categories; decision 0012, which replaces `sha256:08dba3ee…aa6a`, 263 categories, of decision 0005).
+  (267 categories;
+  [decision 0012, the `klt` 0.9.0 and ASAP7 DRC deck pin](decisions/0012-pin-klt-0-9-0-and-ratify-asap7-drc-deck.md),
+  which replaces `sha256:08dba3ee…aa6a`, 263 categories, of decision 0005).
   The deck is passed by file, so the report records `provenance.deck.released: false`; that is expected
   and the pin is the hash, not that flag (decision 0013). Clean against the released 0.7.0 deck
   (`sha256:a14ce43a…dbd0`, 106 FEOL/MOL categories) does **not** imply metal
@@ -100,8 +103,10 @@ a claimed result.
 - **Not checked yet** (from `pdk-bringup.md` §3): rules needing track, net,
   corner or grid predicates (#3147), FEOL/MOL increments (#2812), PAD.
   The 0.9.0 report lists `coverage.unchecked_rules` as empty, so PAD is not
-  named there (decision 0013, correcting decision 0012 item 3); a clean claim
-  states these as unchecked itself and does not claim full DRM coverage.
+  named there (decision 0013, correcting
+  [decision 0012, the `klt` 0.9.0 and ASAP7 DRC deck pin](decisions/0012-pin-klt-0-9-0-and-ratify-asap7-drc-deck.md)
+  item 3); a clean claim states these as unchecked itself and does not claim
+  full DRM coverage.
 - **"LVS clean" means:** `klt lvs` status `match` (released `klt` 0.9.0, the
   pin above; released 0.7.0 refuses FinFET LVS), with the layout hash,
   reference hash and deck hash recorded, the report's `provenance.deck.content_hash`
