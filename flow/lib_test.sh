@@ -1,10 +1,14 @@
 #!/usr/bin/env bash
-# Self-test for the shared flow/lib.sh helpers: the label-anchored, fail-closed
-# pin reads and the record-selection rule behind synth.sh --check.
+# Self-test for the shared helpers in flow/lib.sh: the label-anchored,
+# fail-closed pin reads, the synthesized-netlist locator, the shared
+# provenance-row head of the flow tool-versions.txt records, the
+# record-selection rule behind synth.sh --check, and extract_rvt_liberty's
+# counted fail-closed guard.
 #
 # Needs no PDK checkout, no klt and no network: every case is either a read of
-# this repo's own spec/ or a read of a crafted spec/ or records/ tree in a
-# scratch directory.
+# this repo's own spec/, a read of a crafted spec/ or records/ tree in a
+# scratch directory, or a run of a helper over crafted scratch files with its
+# tool asks stubbed.
 #
 # ASAP7 is a predictive PDK; nothing here is fabricated or measured, and this
 # script makes no claim about any design -- it only checks how a pin is read
@@ -131,7 +135,46 @@ eq "KLT_CMD overrides the whole command" \
                                       IFS="|"; printf "%s\n" "${KLT[*]}"')"
 
 echo
-echo "# 5. newest_record_with selects the newest record directory holding the file"
+echo "# 5. synth_netlist: the newest synthesized netlist, or nothing"
+NW="$(mktemp -d "${TMPDIR:-/tmp}/asap7-libtest-net.XXXXXX")"; FAKES+=("$NW")
+mkdir -p "$NW/.klt/synthesize/old" "$NW/.klt/synthesize/new"
+printf 'module old.\n' >"$NW/.klt/synthesize/old/counter_synth.v"
+printf 'module new.\n' >"$NW/.klt/synthesize/new/counter_synth.v"
+printf 'module other.\n' >"$NW/.klt/synthesize/new/other_synth.v"
+touch -d '2026-01-01 00:00:01' "$NW/.klt/synthesize/old/counter_synth.v"
+touch -d '2026-01-01 00:00:02' "$NW/.klt/synthesize/new/counter_synth.v" "$NW/.klt/synthesize/new/other_synth.v"
+eq "synth_netlist picks the newest match" \
+  "$NW/.klt/synthesize/new/counter_synth.v" \
+  "$(read_pin "$SELF_REPO" "synth_netlist $NW counter")"
+eq "synth_netlist is empty when nothing matches" \
+  "" "$(read_pin "$SELF_REPO" "synth_netlist $NW nosuchtop")"
+
+echo
+echo "# 6. provenance_rows: one klt row, keyed klt:, carrying the klt version ask"
+STUBS="$(mktemp -d "${TMPDIR:-/tmp}/asap7-libtest-stubs.XXXXXX")"; FAKES+=("$STUBS")
+for t in yosys python3 uvx; do
+  printf '#!/usr/bin/env bash\necho "stub %s"\n' "$t" >"$STUBS/$t"
+  chmod +x "$STUBS/$t"
+done
+rows() {
+  PATH="$STUBS:$PATH" bash -c '
+    set -euo pipefail
+    source "$REPO_LIB"
+    PIN_KLT=klayout-tools==0.9.0 PIN_UPSTREAM=upstream-sha PIN_CELLS=cells-sha
+    provenance_rows flow/x.sh "klt 0.9.0"
+  '
+}
+eq "header names the writing script" \
+  "# Tool and input versions for flow/x.sh (predictive PDK; nothing here is fabricated)" \
+  "$(rows | head -1)"
+eq "the one klt row is keyed klt: with the klt version ask" \
+  "klt:          klt 0.9.0  (klayout-tools==0.9.0)" \
+  "$(rows | grep '^klt:')"
+eq "shared rows carry exactly the shared vocabulary" \
+  "asap7 asap7sc7p5t_28 klt py7zr python uv yosys" \
+  "$(rows | grep -oE '^[a-z0-9_.]+:' | tr -d ':' | sort | tr '\n' ' ' | sed 's/ $//')"
+
+echo "# 7. newest_record_with selects the newest record directory holding the file"
 # The issue #105 shape: flow/core/records/ is written by two flows and only
 # synth.sh's directories hold a netlist.v, so selection must follow the
 # content, not the directory sort order.
@@ -193,7 +236,7 @@ else
 fi
 
 echo
-echo "# 6. the record-writing path still refuses an existing record set"
+echo "# 8. the record-writing path still refuses an existing record set"
 EX="$(fake_repo '# pins
 not read here')"
 mkdir -p "$EX/flow/core/records/2026-11-03"
@@ -212,7 +255,7 @@ eq "new_record_dir on a free date still sets OUT" \
   "$(read_pin "$FREE" 'RECORD_DATE=2026-12-25; new_record_dir core; printf "%s" "$OUT"')"
 
 echo
-echo "# 7. extract_rvt_liberty fails closed on a wrong archive count"
+echo "# 9. extract_rvt_liberty fails closed on a wrong archive count"
 # The counted guard is the point of the helper: a requested corner without
 # exactly its five group archives must die before the py7zr env is built --
 # the empty-glob fall-through that used to hand merge_lib.py a literal
