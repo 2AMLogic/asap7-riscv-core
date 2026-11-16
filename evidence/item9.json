@@ -24,14 +24,14 @@
         "role": "testbench",
         "path": "verification/core/archtest_common.py",
         "passed": true,
-        "content_hash": "sha256:77f9cf39394c5a83d7ac4e9319c9e53bf655453ff1e5b8648190664454f2b4e4"
+        "content_hash": "sha256:421a782f2235decb053f4cc71e79d105793502438492334b18ff0b2eeb1fd420"
       },
       {
         "check": "present",
         "role": "testbench",
         "path": "verification/core/build_tests.py",
         "passed": true,
-        "content_hash": "sha256:7f45dd28395b0cf60d8674617fe11aefb2c5578c48895a55f3290888c58841f4"
+        "content_hash": "sha256:9d29459f2c49f231d3c7b7b300e09cad064fbdabe77228fe3d06a9b1b9c9ce71"
       },
       {
         "check": "present",
@@ -59,14 +59,14 @@
         "role": "testbench",
         "path": "verification/core/runner.py",
         "passed": true,
-        "content_hash": "sha256:3d9e1ebb7eb80972246f32662d1b23aa55eaaffce8cbc2914021bc06d22da270"
+        "content_hash": "sha256:b908a8b06b712934e7f1109023b40164c477d7b1ce887840e1dd1413dae9c0b4"
       },
       {
         "check": "present",
         "role": "testbench",
         "path": "verification/core/setup.sh",
         "passed": true,
-        "content_hash": "sha256:bf3e737412c766a19ce0cd71116772f20b1f45b599066386f0a7101bf9bb1922"
+        "content_hash": "sha256:40e5e991afab6d6559a647cbe1ab53c30dfd8363bb51aad02d6e2e8e097c483f"
       },
       {
         "check": "present",

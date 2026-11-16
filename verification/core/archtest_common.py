@@ -14,11 +14,11 @@ HERE = Path(__file__).resolve().parent
 REPO = HERE.parent.parent
 BUILD = REPO / "verification" / "build"
 TOP = "cve2_rv32imc_wrapper"
-# The committed synthesized netlist the gate-level run simulates (#25), and the
-# cell-library Verilog groups it instantiates (pins in tool-versions.txt).
+# The committed synthesized netlist the gate-level run simulates (#25). The
+# cell-library Verilog groups it instantiates are not restated here: they are a
+# function of this netlist, pinned one key per group in tool-versions.txt, and
+# setup.sh publishes that set through paths.env as CELL_GROUPS.
 NETLIST = REPO / "flow" / "core" / "records" / "2026-11-14" / "netlist.v"
-CELL_GROUPS = ["AO_RVT_TT_201020", "INVBUF_RVT_TT_201020", "OA_RVT_TT_201020",
-               "SIMPLE_RVT_TT_201020", "SEQ_RVT_TT_220101"]
 # Zero-delay functional run: ignore the models' specify blocks (timing arcs and
 # $setuphold checks); the vendor files themselves are used unmodified.
 GATE_BUILD_ARGS = ["-g2012", "-gno-specify"]
@@ -39,8 +39,12 @@ def convert(p, out: Path) -> Path:
 
 
 def gate_sources(p):
-    """DUT sources for --gate: the vendor cell models, then the committed netlist."""
-    return [*(Path(p["CELLS"]) / f"asap7sc7p5t_{g}.v" for g in CELL_GROUPS), NETLIST]
+    """DUT sources for --gate: the vendor cell models, then the committed netlist.
+
+    The group set comes from paths.env, which setup.sh derives from the
+    asap7_cells_<GRP>_sha256 pins, so tool-versions.txt is its one source."""
+    groups = p["CELL_GROUPS"].split(",")
+    return [*(Path(p["CELLS"]) / f"asap7sc7p5t_{g}.v" for g in groups), NETLIST]
 
 
 def prepare(out: Path, negative: bool, gate: bool = False):

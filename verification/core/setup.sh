@@ -85,10 +85,19 @@ if [ ! -f "$BUILD/cve2/upstream/rtl/cve2_top.sv" ]; then
 fi
 
 # ---- ASAP7 RVT functional cell Verilog (gate-level run, run.sh --core --gate) ---
+# Which groups to fetch is derived from the pin file rather than restated here:
+# one asap7_cells_<GRP>_sha256 key per group, taken in pin-file order. That file
+# is the evidence record, so it is the single source of truth for the set, and
+# paths.env below hands the same list to the Python side.
 CELLS_COMMIT="$(pin asap7_cells_commit)"
 CELLS_DIR="$BUILD/asap7-cells/$CELLS_COMMIT"
 mkdir -p "$CELLS_DIR"
-for grp in AO_RVT_TT_201020 INVBUF_RVT_TT_201020 OA_RVT_TT_201020 SIMPLE_RVT_TT_201020 SEQ_RVT_TT_220101; do
+mapfile -t CELL_GROUPS < <(sed -n 's/^asap7_cells_\(.*\)_sha256=.*/\1/p' "$PINS")
+# Fail closed the way pin() does on a missing key: an empty set would fetch
+# nothing and leave the gate-level run with no cell models at all.
+[ "${#CELL_GROUPS[@]}" -gt 0 ] \
+  || die "no asap7_cells_<group>_sha256 pins in verification/tool-versions.txt"
+for grp in "${CELL_GROUPS[@]}"; do
   f="$CELLS_DIR/asap7sc7p5t_$grp.v"
   want="$(pin "asap7_cells_${grp}_sha256")"
   if [ ! -f "$f" ] || [ "$(sha256sum "$f" | cut -d' ' -f1)" != "$want" ]; then
@@ -97,7 +106,14 @@ for grp in AO_RVT_TT_201020 INVBUF_RVT_TT_201020 OA_RVT_TT_201020 SIMPLE_RVT_TT_
   fi
 done
 
-# Paths for the other scripts.
+# Paths for the other scripts. Values must be whitespace-free: paths() in
+# archtest_common.py splits this file on all whitespace, not on newlines.
+CELL_GROUPS_CSV="$(IFS=,; printf '%s' "${CELL_GROUPS[*]}")"
+# Publish the pins the gate-level record cites, read through pin() so a missing
+# or renamed key fails here at setup time instead of as a KeyError in
+# runner.py after the whole run has finished.
+RISCV_ARCH_TEST_COMMIT="$(pin riscv_arch_test_commit)"
+SAIL_RISCV_RELEASE="$(pin sail_riscv_release)"
 cat >"$BUILD/paths.env" <<EOF
 AT=$AT
 SAIL=$SAIL_DIR/sail-riscv-Linux-x86_64/bin/sail_riscv_sim
@@ -106,5 +122,9 @@ SV2V=$SV2V_DIR/sv2v-Linux/sv2v
 CLANG=$LLVM_DIR/$LLVM_NAME/bin/clang-$LLVM_MAJOR
 CVE2=$BUILD/cve2/upstream
 CELLS=$CELLS_DIR
+CELL_GROUPS=$CELL_GROUPS_CSV
+RISCV_ARCH_TEST_COMMIT=$RISCV_ARCH_TEST_COMMIT
+SAIL_RISCV_RELEASE=$SAIL_RISCV_RELEASE
+ASAP7_CELLS_COMMIT=$CELLS_COMMIT
 EOF
 echo "setup.sh: ok"
