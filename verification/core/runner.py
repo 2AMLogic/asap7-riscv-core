@@ -8,7 +8,7 @@ With --negative-control only the first test runs, with one expected signature
 word deliberately flipped; the run is then expected to fail.
 
 With --gate the DUT is the committed synthesized netlist
-(flow/core/records/2026-11-03/netlist.v) plus the pinned ASAP7 RVT functional
+(flow/core/records/2026-11-14/netlist.v) plus the pinned ASAP7 RVT functional
 cell Verilog, zero delay (specify blocks ignored), pre-layout. Same programs,
 signatures and excluded.json. Also writes <run-dir>/record.json (program count,
 failures, tool versions, netlist and model hashes).

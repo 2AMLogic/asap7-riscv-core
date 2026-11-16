@@ -18,7 +18,7 @@ TOP = "cve2_rv32imc_wrapper"
 # cell-library Verilog groups it instantiates are not restated here: they are a
 # function of this netlist, pinned one key per group in tool-versions.txt, and
 # setup.sh publishes that set through paths.env as CELL_GROUPS.
-NETLIST = REPO / "flow" / "core" / "records" / "2026-11-03" / "netlist.v"
+NETLIST = REPO / "flow" / "core" / "records" / "2026-11-14" / "netlist.v"
 # Zero-delay functional run: ignore the models' specify blocks (timing arcs and
 # $setuphold checks); the vendor files themselves are used unmodified.
 GATE_BUILD_ARGS = ["-g2012", "-gno-specify"]

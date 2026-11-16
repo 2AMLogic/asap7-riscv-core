@@ -24,7 +24,7 @@
         "role": "testbench",
         "path": "verification/core/archtest_common.py",
         "passed": true,
-        "content_hash": "sha256:de7fd2b8f9c2244cde7225e8753a1e824092a692f08589838608f414afde5512"
+        "content_hash": "sha256:421a782f2235decb053f4cc71e79d105793502438492334b18ff0b2eeb1fd420"
       },
       {
         "check": "present",
@@ -59,7 +59,7 @@
         "role": "testbench",
         "path": "verification/core/runner.py",
         "passed": true,
-        "content_hash": "sha256:775ca69b862eb8758bb6712115234b160c4b5c98d83ab6270c52d355f9182a51"
+        "content_hash": "sha256:b908a8b06b712934e7f1109023b40164c477d7b1ce887840e1dd1413dae9c0b4"
       },
       {
         "check": "present",
