@@ -13,6 +13,13 @@ usage: record_lib.py usable <json-file>
            erc and sta exit non-zero for violations or not_checked and still
            report.
 
+       record_lib.py ran <json-file>
+           Exit 0 when <json-file> is a step record whose smoke.run_state is
+           "ran", 1 otherwise (including unreadable, non-JSON or malformed).
+           Prints nothing, even for a malformed record; a not_run record is
+           not an error, so callers that care about the difference say so at
+           the call site.
+
        record_lib.py write <dest> <subs-file>
            Read one assembled record as JSON on stdin, replace every host path
            named in <subs-file>, and write <dest> (indent=2, sorted keys,
@@ -54,6 +61,15 @@ def usable(path):
     return 0 if isinstance(d, dict) and "error" not in d else 1
 
 
+def ran(path):
+    try:
+        d = json.load(open(path, encoding="utf-8"))
+        ran_now = d.get("smoke", {}).get("run_state") == "ran"
+    except Exception:
+        return 1
+    return 0 if ran_now else 1
+
+
 def write(dest, subs_file):
     rec = scrub(json.load(sys.stdin), read_subs(subs_file))
     with open(dest, "w", encoding="utf-8") as f:
@@ -65,6 +81,8 @@ def write(dest, subs_file):
 def main(argv):
     if len(argv) == 3 and argv[1] == "usable":
         return usable(argv[2])
+    if len(argv) == 3 and argv[1] == "ran":
+        return ran(argv[2])
     if len(argv) == 4 and argv[1] == "write":
         return write(argv[2], argv[3])
     print(__doc__.strip(), file=sys.stderr)

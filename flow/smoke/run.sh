@@ -110,6 +110,9 @@ export V_PIN PIN_KLT
 # A klt run "worked" when stdout is a JSON object without a top-level "error";
 # flow/record_lib.py owns that definition and the probe is silent by contract.
 usable() { python3 -I "$REPO/flow/record_lib.py" usable "$1"; }
+# A step "ran" when its record's smoke.run_state is "ran";
+# flow/record_lib.py owns that definition and the probe is silent by contract.
+record_ran() { python3 -I "$REPO/flow/record_lib.py" ran "$1"; }
 errmsg() {  # first error message from stdout JSON, else stderr, else rc
   python3 -I - "$1" "$2" "$3" <<'PY'
 import json, sys
@@ -122,12 +125,6 @@ except Exception:
 PY
 }
 
-# record_ran <record.json>: exit 0 when smoke.run_state is "ran"; a missing,
-# unreadable or unparseable record exits non-zero and stays silent (a gate that
-# asks "did this step run" must fail closed).
-record_ran() {
-  python3 -I -c 'import json,sys; sys.exit(0 if json.load(open(sys.argv[1]))["smoke"]["run_state"]=="ran" else 1)' "$1" 2>/dev/null
-}
 # deck_hash <record.json>: the report's provenance.deck.content_hash (drc / lvs).
 deck_hash() {
   python3 -I -c 'import json,sys; print(json.load(open(sys.argv[1]))["provenance"]["deck"]["content_hash"])' "$1"
@@ -298,6 +295,9 @@ fi
 # as-built netlist are kept next to the records. When it did not, they fall back to one library cell
 # (a stand-in that checks the tool chain and the deck and says nothing about the counter).
 LAYOUT_OK=0; PAR_RAN=0
+# Tolerant on purpose: par.json may be a legitimate not_run record here (the
+# par step never ran), which routes to the stand-in cell below — not an error,
+# unlike the final checks further down where a missing record dies.
 if record_ran "$OUT/par.json"; then
   PR="$W/.klt/place-and-route"
   if [[ -s "$PR/$DUT.gds" && -s "$PR/$DUT.def" && -s "$PR/$DUT.v" ]]; then
@@ -402,7 +402,6 @@ fi
 # record is already refused by the loop above).
 for gate in "drc:$PIN_DECK" "lvs:$PIN_LVS_DECK"; do
   s="${gate%%:*}"; want="${gate#*:}"
-  [[ -f "$OUT/$s.json" ]] || continue
   record_ran "$OUT/$s.json" || continue
   got="$(deck_hash "$OUT/$s.json")"
   [[ "$got" == "$want" ]] || die "$s.json deck hash $got is not the pin $want" 1
