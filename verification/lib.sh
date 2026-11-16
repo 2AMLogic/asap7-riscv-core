@@ -17,6 +17,16 @@
 #   check_version <key> <got>  refuse an installed tool whose version is not the
 #                              pinned one; <got> matches the pin exactly or as a
 #                              more specific revision of it (5.050 -> 5.050.1)
+#   leak_guard <file>          die when <file> still names an absolute host path
+#                              (/home/, /tmp/, /Users/, /root/ -- the same
+#                              four-root grep flow/smoke/run.sh runs on its own
+#                              records); a file that cannot be read fails too.
+#                              A committed record names no host path: an input
+#                              is pinned by identity, not location.
+#
+# verification/lib_test.sh checks leak_guard: each of the four roots fails with
+# the named reason, a redacted record passes, and an unreadable file fails
+# closed. It needs no PDK checkout, no klt and no network.
 #
 # PINS is derived from this file's own location, so a caller in any directory
 # reads the same pin file.
@@ -40,4 +50,14 @@ check_version() {  # key installed-version
     "$want"|"$want".*) ;;
     *) die "$1 version mismatch: installed $2, pinned $want (verification/tool-versions.txt)" ;;
   esac
+}
+
+leak_guard() {  # file
+  local m rc=0
+  m="$(grep -nE '(/home/|/tmp/|/Users/|/root/)' "$1")" || rc=$?
+  if [ "$rc" -eq 0 ]; then
+    printf '%s\n' "$m" >&2
+    die "$1 leaks an absolute host path"
+  fi
+  [ "$rc" -eq 1 ] || die "leak_guard: cannot scan $1 (grep exit $rc)"
 }

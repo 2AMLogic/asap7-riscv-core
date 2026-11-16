@@ -206,24 +206,19 @@ PY3
 PDKARGS=(--pdk asap7 --pdk-root "$ROOT")
 
 # ---- tool-versions.txt ----------------------------------------------------
+# Shared head rows from flow/lib.sh (one provenance vocabulary, shared with
+# flow/core/synth.sh), then this driver's own rows.
 {
-  echo "# Tool and input versions for flow/smoke/run.sh (predictive PDK; nothing here is fabricated)"
-  echo "klt_pinned:   $V_PIN  ($PIN_KLT)"
-  echo "yosys:        $(yosys -V 2>&1 | head -1)"
+  provenance_rows flow/smoke/run.sh "$V_PIN"
   echo "openroad:     $(openroad -version 2>&1 | head -1)"
-  echo "python:       $(python3 --version 2>&1)"
-  echo "uv:           $(uvx --version 2>&1 | head -1)"
-  echo "py7zr:        $(uvx --quiet --from py7zr python -I -c 'import py7zr; print(py7zr.__version__)')"
-  echo "asap7:        $PIN_UPSTREAM"
-  echo "asap7sc7p5t_28: $PIN_CELLS"
   echo "asap7_pdk_r1p7: $PIN_PDK"
   echo "pinned_drc_deck: $PIN_DECK"
-  echo "tech_lef_source:  sha256:$(sha256sum "$TECH_SRC" | cut -d' ' -f1)"
-  echo "layer_map:    sha256:$(sha256sum "$LAYERMAP_SRC" | cut -d' ' -f1)  (asap7_pdk_r1p7 cdslib/asap7_TechLib_10/asap7_fromAPR.layermap)"
-  echo "cell_lef:     sha256:$(sha256sum "$ASAP7/asap7sc7p5t_28/LEF/asap7sc7p5t_28_R_1x_220121a.lef" | cut -d' ' -f1)"
-  echo "cell_gds:     sha256:$(sha256sum "$ASAP7/asap7sc7p5t_28/GDS/asap7sc7p5t_28_R_220121a.gds" | cut -d' ' -f1)"
-  echo "cell_cdl:     sha256:$(sha256sum "$ASAP7/asap7sc7p5t_28/CDL/LVS/asap7sc7p5t_28_R.cdl" | cut -d' ' -f1)"
-  echo "counter.sv:   sha256:$(sha256sum "$DUT_SRC" | cut -d' ' -f1)"
+  echo "tech_lef_source:  sha256:$(sha "$TECH_SRC")"
+  echo "layer_map:    sha256:$(sha "$LAYERMAP_SRC")  (asap7_pdk_r1p7 cdslib/asap7_TechLib_10/asap7_fromAPR.layermap)"
+  echo "cell_lef:     sha256:$(sha "$ASAP7/asap7sc7p5t_28/LEF/asap7sc7p5t_28_R_1x_220121a.lef")"
+  echo "cell_gds:     sha256:$(sha "$ASAP7/asap7sc7p5t_28/GDS/asap7sc7p5t_28_R_220121a.gds")"
+  echo "cell_cdl:     sha256:$(sha "$ASAP7/asap7sc7p5t_28/CDL/LVS/asap7sc7p5t_28_R.cdl")"
+  echo "counter.sv:   sha256:$(sha "$DUT_SRC")"
 } >"$OUT/tool-versions.txt"
 
 cp "$DUT_SRC" "$W/$DUT.sv"
@@ -240,7 +235,7 @@ step synth "counter.sv (placeholder DUT), RVT, SS Liberty; not a design claim" \
   synthesize "$W/synth.req.json" "${PDKARGS[@]}" --format json
 SYNTH_NETLIST=""
 if [[ $STEP_OK == 1 ]]; then
-  SYNTH_NETLIST="$(ls -t "$W"/.klt/synthesize/*/${DUT}_synth.v 2>/dev/null | head -1 || true)"
+  SYNTH_NETLIST="$(synth_netlist "$W" "$DUT")"
   [[ -n "$SYNTH_NETLIST" ]] && cp "$SYNTH_NETLIST" "$W/${DUT}_synth.v"
 fi
 

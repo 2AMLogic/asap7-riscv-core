@@ -1,10 +1,14 @@
 #!/usr/bin/env bash
-# Self-test for the shared flow/lib.sh helpers: the label-anchored, fail-closed
-# pin reads and the record-selection rule behind synth.sh --check.
+# Self-test for the shared helpers in flow/lib.sh: the label-anchored,
+# fail-closed pin reads, the synthesized-netlist locator, the shared
+# provenance-row head of the flow tool-versions.txt records, the
+# record-selection rule behind synth.sh --check, and extract_rvt_liberty's
+# counted fail-closed guard.
 #
 # Needs no PDK checkout, no klt and no network: every case is either a read of
-# this repo's own spec/ or a read of a crafted spec/ or records/ tree in a
-# scratch directory.
+# this repo's own spec/, a read of a crafted spec/ or records/ tree in a
+# scratch directory, or a run of a helper over crafted scratch files with its
+# tool asks stubbed.
 #
 # ASAP7 is a predictive PDK; nothing here is fabricated or measured, and this
 # script makes no claim about any design -- it only checks how a pin is read
@@ -44,18 +48,25 @@ read_pin() {  # repo expr
 }
 export REPO_LIB="$SELF_REPO/flow/lib.sh"
 
+# One scratch root, created here in the parent shell: every scratch directory
+# the suite makes is mktemp -d'd inside it, and the trap removes just the
+# root. A command substitution runs in a subshell, so a path registered there
+# never reaches this shell's array -- the per-path registration array the
+# helpers used to feed was dead code (#149): every subshell-created dir
+# survived the run. A parent-owned root makes the subshell depth of a call
+# site irrelevant.
+SCRATCH="$(mktemp -d "${TMPDIR:-/tmp}/asap7-libtest.XXXXXX")"
+cleanup() { rm -rf "$SCRATCH"; }
+trap cleanup EXIT
+
 # A scratch repo holding only the two spec files the helpers read.
 fake_repo() {  # core-md-body
-  local d; d="$(mktemp -d "${TMPDIR:-/tmp}/asap7-libtest.XXXXXX")"
-  FAKES+=("$d")
+  local d; d="$(mktemp -d "$SCRATCH/repo.XXXXXX")"
   mkdir -p "$d/spec"
   printf '%s\n' "$1" >"$d/spec/core.md"
   cp "$SELF_REPO/spec/pdk-bringup.md" "$d/spec/pdk-bringup.md"
   printf '%s' "$d"
 }
-FAKES=()
-cleanup() { [[ ${#FAKES[@]} -eq 0 ]] || rm -rf "${FAKES[@]}"; }
-trap cleanup EXIT
 
 echo "# 1. the real spec reads the pins of record"
 eq "spec_klt_pin is the flow pin"      "klayout-tools==0.9.0" "$(read_pin "$SELF_REPO" 'spec_klt_pin')"
@@ -70,17 +81,29 @@ eq "spec_sha reads the upstream asap7 pin" \
 
 echo
 echo "# 2. a label that does not match fails closed (never an empty pin)"
-for expr in \
-  "spec_pin 'no such label in the spec' 'klayout-tools==[0-9][0-9.]*'" \
-  "spec_pin 'equal to the pinned hash' 'sha256:[0-9a-f]\{64\}' 0" \
-  "spec_sha 'No Such Row'" ; do
-  got="$(read_pin "$SELF_REPO" "$expr" 2>/dev/null)"; rc=$?
-  if [[ $rc -ne 0 && -z "$got" ]]; then
-    ok "exits $rc with no value: $expr"
+# A negative case must assert *why* the read refused, not just rc != 0 with
+# empty stdout: bash's own "command not found" also produces that, so a
+# renamed or missing helper used to read as a pass (#149). Capture the
+# combined output and grep for the helper's die text -- the idiom
+# expect_counted_die already uses for extract_rvt_liberty below.
+expect_refusal() {  # label expr die-text [repo]
+  local label="$1" expr="$2" want="$3" repo="${4:-$SELF_REPO}" got rc
+  got="$(read_pin "$repo" "$expr" 2>&1)"; rc=$?
+  if [[ $rc -ne 0 ]] && grep -qF -- "$want" <<<"$got"; then
+    ok "$label"
   else
-    no "fell through with rc=$rc, value '$got': $expr"
+    no "$label: rc=$rc, output '$got'"
   fi
-done
+}
+expect_refusal "no such label dies with the no-match refusal" \
+  "spec_pin 'no such label in the spec' 'klayout-tools==[0-9][0-9.]*'" \
+  'spec/core.md: no match for /klayout-tools==[0-9][0-9.]*/ on or within 0 line(s) below "no such label in the spec"'
+expect_refusal "a match outside the label window dies with the same refusal" \
+  "spec_pin 'equal to the pinned hash' 'sha256:[0-9a-f]\{64\}' 0" \
+  'spec/core.md: no match for /sha256:[0-9a-f]\{64\}/ on or within 0 line(s) below "equal to the pinned hash"'
+expect_refusal "an unmatched row label dies with the spec_sha refusal" \
+  "spec_sha 'No Such Row'" \
+  'spec/pdk-bringup.md: no 40-hex sha on a row starting "| No Such Row"'
 
 echo
 echo "# 3. the pin survives a reorder of the spec paragraph (the point of the change)"
@@ -131,11 +154,50 @@ eq "KLT_CMD overrides the whole command" \
                                       IFS="|"; printf "%s\n" "${KLT[*]}"')"
 
 echo
-echo "# 5. newest_record_with selects the newest record directory holding the file"
+echo "# 5. synth_netlist: the newest synthesized netlist, or nothing"
+NW="$(mktemp -d "${TMPDIR:-/tmp}/asap7-libtest-net.XXXXXX")"; FAKES+=("$NW")
+mkdir -p "$NW/.klt/synthesize/old" "$NW/.klt/synthesize/new"
+printf 'module old.\n' >"$NW/.klt/synthesize/old/counter_synth.v"
+printf 'module new.\n' >"$NW/.klt/synthesize/new/counter_synth.v"
+printf 'module other.\n' >"$NW/.klt/synthesize/new/other_synth.v"
+touch -d '2026-01-01 00:00:01' "$NW/.klt/synthesize/old/counter_synth.v"
+touch -d '2026-01-01 00:00:02' "$NW/.klt/synthesize/new/counter_synth.v" "$NW/.klt/synthesize/new/other_synth.v"
+eq "synth_netlist picks the newest match" \
+  "$NW/.klt/synthesize/new/counter_synth.v" \
+  "$(read_pin "$SELF_REPO" "synth_netlist $NW counter")"
+eq "synth_netlist is empty when nothing matches" \
+  "" "$(read_pin "$SELF_REPO" "synth_netlist $NW nosuchtop")"
+
+echo
+echo "# 6. provenance_rows: one klt row, keyed klt:, carrying the klt version ask"
+STUBS="$(mktemp -d "${TMPDIR:-/tmp}/asap7-libtest-stubs.XXXXXX")"; FAKES+=("$STUBS")
+for t in yosys python3 uvx; do
+  printf '#!/usr/bin/env bash\necho "stub %s"\n' "$t" >"$STUBS/$t"
+  chmod +x "$STUBS/$t"
+done
+rows() {
+  PATH="$STUBS:$PATH" bash -c '
+    set -euo pipefail
+    source "$REPO_LIB"
+    PIN_KLT=klayout-tools==0.9.0 PIN_UPSTREAM=upstream-sha PIN_CELLS=cells-sha
+    provenance_rows flow/x.sh "klt 0.9.0"
+  '
+}
+eq "header names the writing script" \
+  "# Tool and input versions for flow/x.sh (predictive PDK; nothing here is fabricated)" \
+  "$(rows | head -1)"
+eq "the one klt row is keyed klt: with the klt version ask" \
+  "klt:          klt 0.9.0  (klayout-tools==0.9.0)" \
+  "$(rows | grep '^klt:')"
+eq "shared rows carry exactly the shared vocabulary" \
+  "asap7 asap7sc7p5t_28 klt py7zr python uv yosys" \
+  "$(rows | grep -oE '^[a-z0-9_.]+:' | tr -d ':' | sort | tr '\n' ' ' | sed 's/ $//')"
+
+echo "# 7. newest_record_with selects the newest record directory holding the file"
 # The issue #105 shape: flow/core/records/ is written by two flows and only
 # synth.sh's directories hold a netlist.v, so selection must follow the
 # content, not the directory sort order.
-R="$(mktemp -d "${TMPDIR:-/tmp}/asap7-libtest.XXXXXX")"; FAKES+=("$R")
+R="$(mktemp -d "$SCRATCH/rec.XXXXXX")"
 mkdir -p "$R/records/2026-11-03" "$R/records/2026-11-05"
 printf 'old\n' >"$R/records/2026-11-03/netlist.v"
 printf '{}\n' >"$R/records/2026-11-05/ff-simple-check.json"
@@ -154,56 +216,52 @@ eq "a newer netlist-less directory still does not take over selection" \
   "$R/records/2026-11-14/" \
   "$(read_pin "$SELF_REPO" "newest_record_with '$R/records' netlist.v")"
 
-got="$(read_pin "$SELF_REPO" "newest_record_with '$R/no-file-anywhere' netlist.v" 2>/dev/null)"; rc=$?
-if [[ $rc -ne 0 && -z "$got" ]]; then
-  ok "no directory holds the file: exits $rc with no value"
-else
-  no "no directory holds the file: fell through with rc=$rc, value '$got'"
-fi
+# The refusal contract here is a bare `return 1` with no message, so the
+# assertion is exit 1 with nothing on stdout *or* stderr: read_pin's
+# `|| exit 1` gives a missing helper the same exit 1, and only bash's
+# "command not found" noise on stderr distinguishes it (#149).
+expect_silent_refusal() {  # label expr
+  local label="$1" expr="$2" got rc
+  got="$(read_pin "$SELF_REPO" "$expr" 2>&1)"; rc=$?
+  if [[ $rc -eq 1 && -z "$got" ]]; then
+    ok "$label"
+  else
+    no "$label: rc=$rc, output '$got'"
+  fi
+}
+expect_silent_refusal "no directory holds the file: exits 1 with no value" \
+  "newest_record_with '$R/no-file-anywhere' netlist.v"
+expect_silent_refusal "records root absent entirely: exits 1 with no value" \
+  "newest_record_with '$R/no-such-root' netlist.v"
 
-got="$(read_pin "$SELF_REPO" "newest_record_with '$R/no-such-root' netlist.v" 2>/dev/null)"; rc=$?
-if [[ $rc -ne 0 && -z "$got" ]]; then
-  ok "records root absent entirely: exits $rc with no value"
-else
-  no "records root absent: fell through with rc=$rc, value '$got'"
-fi
-
-S="$(mktemp -d "${TMPDIR:-/tmp}/asap7-libtest.XXXXXX")"; FAKES+=("$S")
+S="$(mktemp -d "$SCRATCH/rec.XXXXXX")"
 mkdir -p "$S/records/2026-11-03"
 printf 'only\n' >"$S/records/2026-11-03/netlist.v"
 eq "a single directory holding the file is selected" "$S/records/2026-11-03/" \
   "$(read_pin "$SELF_REPO" "newest_record_with '$S/records' netlist.v")"
 
-E="$(mktemp -d "${TMPDIR:-/tmp}/asap7-libtest.XXXXXX")"; FAKES+=("$E")
+E="$(mktemp -d "$SCRATCH/rec.XXXXXX")"
 mkdir -p "$E/records/2026-11-03"
-got="$(read_pin "$SELF_REPO" "newest_record_with '$E/records' netlist.v" 2>/dev/null)"; rc=$?
-if [[ $rc -ne 0 && -z "$got" ]]; then
-  ok "an existing but empty record directory is skipped, not selected: exits $rc"
-else
-  no "empty record directory: fell through with rc=$rc, value '$got'"
-fi
+expect_silent_refusal \
+  "an existing but empty record directory is skipped, not selected: exits 1" \
+  "newest_record_with '$E/records' netlist.v"
 
-D="$(mktemp -d "${TMPDIR:-/tmp}/asap7-libtest.XXXXXX")"; FAKES+=("$D")
+D="$(mktemp -d "$SCRATCH/rec.XXXXXX")"
 mkdir -p "$D/records/2026-11-03/netlist.v"
-got="$(read_pin "$SELF_REPO" "newest_record_with '$D/records' netlist.v" 2>/dev/null)"; rc=$?
-if [[ $rc -ne 0 && -z "$got" ]]; then
-  ok "a netlist.v that is a directory rather than a file does not qualify: exits $rc"
-else
-  no "directory-shaped netlist.v: fell through with rc=$rc, value '$got'"
-fi
+expect_silent_refusal \
+  "a netlist.v that is a directory rather than a file does not qualify: exits 1" \
+  "newest_record_with '$D/records' netlist.v"
 
 echo
-echo "# 6. the record-writing path still refuses an existing record set"
+echo "# 8. the record-writing path still refuses an existing record set"
 EX="$(fake_repo '# pins
 not read here')"
 mkdir -p "$EX/flow/core/records/2026-11-03"
 printf '{}\n' >"$EX/flow/core/records/2026-11-03/synth.json"
-got="$(read_pin "$EX" 'RECORD_DATE=2026-11-03; new_record_dir core' 2>/dev/null)"; rc=$?
-if [[ $rc -ne 0 && -z "$got" ]]; then
-  ok "new_record_dir refuses an existing record set (exit $rc)"
-else
-  no "new_record_dir wrote into an existing record set: rc=$rc"
-fi
+expect_refusal "new_record_dir refuses an existing record set" \
+  'RECORD_DATE=2026-11-03; new_record_dir core' \
+  'records already exist in flow/core/records/2026-11-03' \
+  "$EX"
 
 FREE="$(fake_repo '# pins
 not read here')"
@@ -212,7 +270,7 @@ eq "new_record_dir on a free date still sets OUT" \
   "$(read_pin "$FREE" 'RECORD_DATE=2026-12-25; new_record_dir core; printf "%s" "$OUT"')"
 
 echo
-echo "# 7. extract_rvt_liberty fails closed on a wrong archive count"
+echo "# 9. extract_rvt_liberty fails closed on a wrong archive count"
 # The counted guard is the point of the helper: a requested corner without
 # exactly its five group archives must die before the py7zr env is built --
 # the empty-glob fall-through that used to hand merge_lib.py a literal
@@ -222,7 +280,7 @@ echo "# 7. extract_rvt_liberty fails closed on a wrong archive count"
 # so they need no py7zr, no network and no PDK checkout.
 fake_libdir() {  # corner n-groups -> a fake asap7 checkout whose NLDM holds
   # the first <n-groups> of the five group archives for <corner>
-  local d; d="$(mktemp -d "${TMPDIR:-/tmp}/asap7-libtest.XXXXXX")"
+  local d; d="$(mktemp -d "$SCRATCH/lib.XXXXXX")"
   mkdir -p "$d/asap7sc7p5t_28/LIB/NLDM"
   local corner="$1" n="$2" g
   for g in AO INVBUF OA SEQ SIMPLE; do
