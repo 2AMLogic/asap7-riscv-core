@@ -59,11 +59,11 @@ Three facts in the committed core synthesis record shape what follows:
 
 The queue is not kept here by hand: [`WORK_PLAN.md`](WORK_PLAN.md) is
 generated from the labels and issue #6 tracks the items item-by-item. The
-remaining work runs in a fixed order: re-run core synthesis against the
-pinned release, place and route the core, then the checks that need a placed
-core (DRC, LVS, power delivery), then corner verification, post-layout
-verification and characterization — closing on timing closure at the 1 GHz
-predicted post-route target (500 MHz the fallback, 1.5 GHz the stretch).
+remaining work runs in a fixed order: place and route the core, then the
+checks that need a placed core (DRC, LVS, power delivery), then corner
+verification, post-layout verification and characterization — closing on
+timing closure at the 1 GHz predicted post-route target (500 MHz the
+fallback, 1.5 GHz the stretch).
 
 ## Later
 
