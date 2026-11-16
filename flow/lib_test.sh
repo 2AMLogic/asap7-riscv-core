@@ -8,7 +8,8 @@
 # record directory in a scratch tree.
 #
 # ASAP7 is a predictive PDK; nothing here is fabricated or measured, and this
-# script makes no claim about any design -- it only checks how a pin is read.
+# script makes no claim about any design -- it only checks how a pin is read
+# and how a record directory is selected.
 #
 # usage: flow/lib_test.sh
 # Exit status: 0 every case passed; 1 a case failed.
@@ -307,7 +308,90 @@ for f in flow/core/synth.sh flow/core/ff_simple_check.sh; do
     no "$f does not call record_leak_guard"
   fi
 done
-echo "# 8. extract_rvt_liberty fails closed on a wrong archive count"
+echo
+
+echo "# 8. newest_record_with selects the newest record directory holding the file"
+# The issue #105 shape: flow/core/records/ is written by two flows and only
+# synth.sh's directories hold a netlist.v, so selection must follow the
+# content, not the directory sort order.
+R="$(mktemp -d "${TMPDIR:-/tmp}/asap7-libtest.XXXXXX")"; FAKES+=("$R")
+mkdir -p "$R/records/2026-11-03" "$R/records/2026-11-05"
+printf 'old\n' >"$R/records/2026-11-03/netlist.v"
+printf '{}\n' >"$R/records/2026-11-05/ff-simple-check.json"
+eq "the #105 shape: the older synthesis record is selected past a netlist-less dir" \
+  "$R/records/2026-11-03/" \
+  "$(read_pin "$SELF_REPO" "newest_record_with '$R/records' netlist.v")"
+
+mkdir -p "$R/records/2026-11-14"
+printf 'new\n' >"$R/records/2026-11-14/netlist.v"
+eq "the newest directory holding the file is selected" "$R/records/2026-11-14/" \
+  "$(read_pin "$SELF_REPO" "newest_record_with '$R/records' netlist.v")"
+
+mkdir -p "$R/records/2026-11-20"
+printf '{}\n' >"$R/records/2026-11-20/ff-simple-check.json"
+eq "a newer netlist-less directory still does not take over selection" \
+  "$R/records/2026-11-14/" \
+  "$(read_pin "$SELF_REPO" "newest_record_with '$R/records' netlist.v")"
+
+got="$(read_pin "$SELF_REPO" "newest_record_with '$R/no-file-anywhere' netlist.v" 2>/dev/null)"; rc=$?
+if [[ $rc -ne 0 && -z "$got" ]]; then
+  ok "no directory holds the file: exits $rc with no value"
+else
+  no "no directory holds the file: fell through with rc=$rc, value '$got'"
+fi
+
+got="$(read_pin "$SELF_REPO" "newest_record_with '$R/no-such-root' netlist.v" 2>/dev/null)"; rc=$?
+if [[ $rc -ne 0 && -z "$got" ]]; then
+  ok "records root absent entirely: exits $rc with no value"
+else
+  no "records root absent: fell through with rc=$rc, value '$got'"
+fi
+
+S="$(mktemp -d "${TMPDIR:-/tmp}/asap7-libtest.XXXXXX")"; FAKES+=("$S")
+mkdir -p "$S/records/2026-11-03"
+printf 'only\n' >"$S/records/2026-11-03/netlist.v"
+eq "a single directory holding the file is selected" "$S/records/2026-11-03/" \
+  "$(read_pin "$SELF_REPO" "newest_record_with '$S/records' netlist.v")"
+
+E="$(mktemp -d "${TMPDIR:-/tmp}/asap7-libtest.XXXXXX")"; FAKES+=("$E")
+mkdir -p "$E/records/2026-11-03"
+got="$(read_pin "$SELF_REPO" "newest_record_with '$E/records' netlist.v" 2>/dev/null)"; rc=$?
+if [[ $rc -ne 0 && -z "$got" ]]; then
+  ok "an existing but empty record directory is skipped, not selected: exits $rc"
+else
+  no "empty record directory: fell through with rc=$rc, value '$got'"
+fi
+
+D="$(mktemp -d "${TMPDIR:-/tmp}/asap7-libtest.XXXXXX")"; FAKES+=("$D")
+mkdir -p "$D/records/2026-11-03/netlist.v"
+got="$(read_pin "$SELF_REPO" "newest_record_with '$D/records' netlist.v" 2>/dev/null)"; rc=$?
+if [[ $rc -ne 0 && -z "$got" ]]; then
+  ok "a netlist.v that is a directory rather than a file does not qualify: exits $rc"
+else
+  no "directory-shaped netlist.v: fell through with rc=$rc, value '$got'"
+fi
+
+echo
+echo "# 9. the record-writing path still refuses an existing record set"
+EX="$(fake_repo '# pins
+not read here')"
+mkdir -p "$EX/flow/core/records/2026-11-03"
+printf '{}\n' >"$EX/flow/core/records/2026-11-03/synth.json"
+got="$(read_pin "$EX" 'RECORD_DATE=2026-11-03; new_record_dir core' 2>/dev/null)"; rc=$?
+if [[ $rc -ne 0 && -z "$got" ]]; then
+  ok "new_record_dir refuses an existing record set (exit $rc)"
+else
+  no "new_record_dir wrote into an existing record set: rc=$rc"
+fi
+
+FREE="$(fake_repo '# pins
+not read here')"
+eq "new_record_dir on a free date still sets OUT" \
+  "$FREE/flow/core/records/2026-12-25" \
+  "$(read_pin "$FREE" 'RECORD_DATE=2026-12-25; new_record_dir core; printf "%s" "$OUT"')"
+
+echo
+echo "# 10. extract_rvt_liberty fails closed on a wrong archive count"
 # The counted guard is the point of the helper: a requested corner without
 # exactly its five group archives must die before the py7zr env is built --
 # the empty-glob fall-through that used to hand merge_lib.py a literal
