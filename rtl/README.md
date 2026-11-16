@@ -36,6 +36,7 @@ upstream sources must not be edited, so the latch is mapped at synthesis time:
 the `$_DLATCH_N_` primitive onto `DLLx1_ASAP7_75t_R`, the pinned library's
 negative-enable latch (transparent while `CLK` is low — same polarity, pins
 `CLK`/`D`/`Q`; from `asap7sc7p5t_SEQ_RVT_TT_220101`, already in the resolved RVT
-Liberty and in `verification/core/archtest_common.py`'s `CELL_GROUPS`).
+Liberty and among the cell groups pinned one key per group in
+`verification/tool-versions.txt` as `asap7_cells_<GRP>_sha256`).
 Yosys's `latch_inferred` warning is emitted during `proc`, before that techmap
 runs, so it still appears in a mapped run — expected, not a defect.
