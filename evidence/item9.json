@@ -17,7 +17,7 @@
         "role": "testbench",
         "path": "flow/smoke/run.sh",
         "passed": true,
-        "content_hash": "sha256:0d82d77cf8398c03fc6344264187c14f7e8ad8133f5e60925ec5b601b69d7508"
+        "content_hash": "sha256:968bbf3f54f9bd14785526d5db5ca43fe62880b04dff21b9ccad5adf6cea2608"
       },
       {
         "check": "present",
