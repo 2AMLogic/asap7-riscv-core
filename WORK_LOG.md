@@ -5,6 +5,20 @@ triage role. Newest first.
 
 ### 2026-11-14
 
+- **PR #119**: fix(synth): name the cell_library asap7sc7p5t_28_R so klt maps tie cells
+- **PR #114**: refactor(flow): label-anchored, fail-closed pin reads in one flow-lib home
+- **PR #110**: ci: gate T1 item 9's attestation envelope with klt --check, and re-attest it
+- **PR #108**: refactor(flow): one shared record redactor and writer for both flow record writers
+- **PR #104**: docs(smoke): classify the 549 DRC violations on the 2026-11-05 counter layout
+- **PR #109**: refactor: one hash-checked download primitive shared by flow/ and verification/
+- **PR #92**: ci: make item-10 attestation drift self-explanatory and state the rule
+- **Issue #101** (closed): One flow-lib home for the klt pin read and the report-usability check, and two spec reads that depend on document position
+- **Issue #99** (closed): Consolidate the duplicated record host-path redactor in flow/smoke/run.sh and flow/core/synth.sh
+- **Issue #97** (closed): Classify the 549 DRC violations on the counter smoke layout by rule and cause
+- **Issue #95** (closed): Re-run core synthesis on the pinned klt 0.9.0 with a cell_library key that gets tie cells
+- **Issue #93** (closed): Three hash-checked downloaders with three contracts: consolidate fetch_checked, fetch.sh and sv2v.sh
+- **Issue #88** (closed): evidence/item9.json records stale content hashes for 5 of 11 attested testbenches, and nothing re-checks it
+- **Issue #83** (closed): Guide docs pass reds the item-10 signoff gate whenever it edits README.md
 - **PR #87**: refactor(smoke): drop the 0.8.0 comparison-build fallback from the smoke flow
 - **Issue #85** (closed): Remove the 0.8.0 comparison-build fallback from flow/smoke/run.sh: the pin now does every step
 - **PR #86**: refactor(verification): one sourced lib for die/pin/check_version

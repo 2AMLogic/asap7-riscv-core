@@ -108,7 +108,7 @@ rc=0
 ( cd "$W" && "${KLT[@]}" synthesize synth.req.json --pdk asap7 --pdk-root "$PDK" --format json ) >"$SCRATCH/synth.out" 2>"$SCRATCH/synth.err" || rc=$?
 python3 -I "$REPO/flow/record_lib.py" usable "$SCRATCH/synth.out" \
   || { echo "synth.sh: klt synthesize failed (exit $rc)" >&2; head -c 2000 "$SCRATCH/synth.out" "$SCRATCH/synth.err" >&2; exit 1; }
-NETLIST="$(ls -t "$W"/.klt/synthesize/*/"${TOP}"_synth.v 2>/dev/null | head -1 || true)"
+NETLIST="$(synth_netlist "$W" "$TOP")"
 [[ -n "$NETLIST" ]] || die "klt synthesize produced no ${TOP}_synth.v" 1
 # Yosys embeds the absolute path of the converted Verilog in some internal net
 # names (sv2v function casts). Strip the scratch work dir so the committed
@@ -134,7 +134,7 @@ cp "$NETLIST" "$OUT/netlist.v"
 # The record is assembled here and redacted and written by flow/record_lib.py,
 # the one path to flow/*/records/ (shared with flow/smoke/run.sh).
 record_subs "$SCRATCH/subs.json" "$SCRATCH=<scratch>" "$ASAP7=<asap7-checkout>" "$REPO=<repo>" "$HOME=<home>"
-python3 -I - "$SCRATCH/synth.out" "$(sha256sum "$NETLIST" | cut -d" " -f1)" <<'PY' | python3 -I "$REPO/flow/record_lib.py" write "$OUT/synth.json" "$SCRATCH/subs.json"
+python3 -I - "$SCRATCH/synth.out" "$(sha "$NETLIST")" <<'PY' | python3 -I "$REPO/flow/record_lib.py" write "$OUT/synth.json" "$SCRATCH/subs.json"
 import json, sys
 src, netlist_sha = sys.argv[1:3]
 d = json.load(open(src))
@@ -144,20 +144,20 @@ d["core_flow"] = {"note": "Synthesis of the RV32IMC wrapper around unmodified CV
 print(json.dumps(d))
 PY
 
-sha() { sha256sum "$1" | cut -d' ' -f1; }
+# One `klt version` ask, the spelling the shared provenance rows record (see
+# flow/lib.sh); klt has already run successfully by this point, so this only
+# echoes a version.
+KLT_V="$("${KLT[@]}" version 2>&1 | head -1 || true)"
+# Shared head rows from flow/lib.sh (one provenance vocabulary, shared with
+# flow/smoke/run.sh), then this driver's own rows.
 {
-  echo "# Tool and input versions for flow/core/synth.sh (predictive PDK; nothing here is fabricated)"
-  echo "klt:          $("${KLT[@]}" --version 2>&1 | head -1)  ($PIN_KLT)"
-  echo "yosys:        $(yosys -V 2>&1 | head -1)"
+  provenance_rows flow/core/synth.sh "$KLT_V"
   echo "sv2v:         $SV2V_VERSION  (release asset sha256 $PIN_SV2V_SHA; binary sha256 $(sha "$SV2V"))"
   echo "iverilog:     $(iverilog -V 2>&1 | head -1)"
-  echo "py7zr:        $(uvx --quiet --from py7zr python -I -c 'import py7zr; print(py7zr.__version__)')"
   echo "cve2:         $(python3 -I -c 'import json,sys; print(next(i for i in json.load(open(sys.argv[1]))["imports"] if i["from"]=="openhwgroup/cve2")["commit"])' "$REPO/reuse.lock.json")"
   echo "reuse.lock.json: sha256:$(sha "$REPO/reuse.lock.json")"
   echo "wrapper:      sha256:$(sha "$WRAPPER")"
   echo "converted_verilog: sha256:$(sha "$W/$TOP.v")"
-  echo "asap7:        $PIN_UPSTREAM"
-  echo "asap7sc7p5t_28: $PIN_CELLS"
   echo "liberty_corner: RVT $CORNER (merged)  sha256:$(sha "$PDK/lib/${CELL_LIB}_$CORNER.lib")"
   echo "netlist:      sha256:$(sha "$OUT/netlist.v")"
 } >"$OUT/tool-versions.txt"

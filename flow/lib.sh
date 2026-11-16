@@ -11,11 +11,14 @@
 # (die runs inside the caller's command substitution, so its exit leaves only
 # that subshell) -- the same contract as verification/lib.sh's pin().
 #
-# flow/lib_test.sh checks those reads, and extract_rvt_liberty's counted
-# fail-closed guard: the pins of record, that an unmatched label exits non-zero
-# instead of yielding an empty pin, that a reordered spec paragraph does not
-# move a pin, and that a corner with the wrong archive count dies before any
-# extraction. It needs no PDK checkout, no klt and no network.
+# flow/lib_test.sh checks those reads: the pins of record, that an unmatched
+# label exits non-zero instead of yielding an empty pin, and that a reordered
+# spec paragraph does not move a pin; that synth_netlist picks the newest
+# synthesized netlist or nothing; that provenance_rows writes one klt row,
+# keyed `klt:`, carrying the value of the `klt version` ask (tool asks
+# stubbed); that newest_record_with selects by content, not directory sort
+# order; and extract_rvt_liberty's counted fail-closed guard. It needs no PDK
+# checkout, no klt and no network.
 #
 # Provides:
 #   die <msg> [rc]                       message prefixed with the script name, exit rc (default 2)
@@ -35,6 +38,13 @@
 #                                        redacted with, for flow/record_lib.py
 #   record_leak_guard <record-dir>       die if any *.json in <dir> -- plus tool-versions.txt, when
 #                                        present -- names a host path; fails closed on no *.json
+#   sha <file>                           first hex field of the file's sha256sum
+#   synth_netlist <workdir> <toplevel>   newest <toplevel>_synth.v under <workdir>/.klt/synthesize,
+#                                        or nothing
+#   provenance_rows <script> <klt-ver>   the shared head rows of every flow/*/records
+#                                        tool-versions.txt, on stdout (one klt row, keyed
+#                                        `klt:`, value from `klt version`); a driver appends
+#                                        its own rows after this block
 #   extract_rvt_liberty <asap7> <dest> <corner>...
 #                                        extract each requested corner's RVT Liberty archives from the
 #                                        pinned checkout's LIB/NLDM into <dest>; dies with a counted
@@ -138,6 +148,31 @@ record_subs() {  # dest path=tag...
     for p in "$@"; do printf '%s"%s"' "$sep" "$p"; sep=","; done
     printf ']'
   } >"$dest"
+}
+
+sha() {  # file -- first hex field of the file's sha256sum
+  sha256sum "$1" | cut -d' ' -f1
+}
+
+synth_netlist() {  # workdir toplevel -- newest <toplevel>_synth.v under <workdir>/.klt/synthesize, or nothing
+  ls -t "$1"/.klt/synthesize/*/"$2"_synth.v 2>/dev/null | head -1 || true
+}
+
+provenance_rows() {  # script klt-version -- the shared head rows of every flow/*/records tool-versions.txt
+  # One provenance vocabulary for both flow drivers; each appends its own rows
+  # after this block. The klt row is keyed `klt:` -- the generic form, like
+  # every other tool row; there is one klt per run now that the comparison
+  # build is gone -- and its value is whatever `klt version` printed, the same
+  # ask that fills the smoke records' klt_build.version field. `klt --version`
+  # is not a second spelling of that ask: do not re-fork this row.
+  echo "# Tool and input versions for $1 (predictive PDK; nothing here is fabricated)"
+  echo "klt:          $2  ($PIN_KLT)"
+  echo "yosys:        $(yosys -V 2>&1 | head -1)"
+  echo "python:       $(python3 --version 2>&1)"
+  echo "uv:           $(uvx --version 2>&1 | head -1)"
+  echo "py7zr:        $(uvx --quiet --from py7zr python -I -c 'import py7zr; print(py7zr.__version__)')"
+  echo "asap7:        $PIN_UPSTREAM"
+  echo "asap7sc7p5t_28: $PIN_CELLS"
 }
 
 extract_rvt_liberty() {  # asap7 dest corner...
