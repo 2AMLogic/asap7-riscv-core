@@ -19,7 +19,7 @@ met, 1 not applicable**:
 | Item | State | Evidence or owner |
 |---|---|---|
 | 1 Design sources | met | `evidence/item1.json`; netlist `flow/core/records/2026-11-03/netlist.v` (20,441 instances, PR #45) |
-| 2 Layout | unmet | #28, blocked (see below) |
+| 2 Layout | unmet | #28, blocked |
 | 3 DRC clean | unmet | #29, behind #28 |
 | 4 LVS clean | unmet | #30, behind #28 |
 | 5 Corner verification | unmet | #32, behind #28 |
@@ -39,10 +39,6 @@ content hash in `spec/core.md` (decisions
 `0012-pin-klt-0-9-0-and-ratify-asap7-drc-deck` and 0013 — two records share the
 number 0012, which #90 tracks).
 
-Landed since the 2026-11-13 snapshot: the item-10 attestation gate now names
-the attested paths and the re-attest command (#83, PR #92), and both shell
-clean-ups merged (#84, PR #86; #85, PR #87).
-
 Three facts in the committed core synthesis record shape what follows:
 
 1. It was produced by `klt 0.8.0` (`flow/core/records/2026-11-03/tool-versions.txt`);
@@ -59,43 +55,15 @@ Three facts in the committed core synthesis record shape what follows:
 3. `synth.json` counts one `$_DLATCH_N_` instance: a generic latch not mapped
    to a library cell.
 
-## Now
+## Queue state and sequencing
 
-Each is filed and is one pull request; #97 is already claimed and in build.
-
-1. **Re-run core synthesis on the pinned release with a `cell_library` key it
-   recognises.** Done when a new dated directory under `flow/core/records/`
-   holds a `synth.json` from `klayout-tools==0.9.0` without the
-   `setundef -zero/hilomap` warning and a netlist with no x-valued constant
-   assigns, or the record showing why the pinned release cannot reach that.
-   #95. Unblocks #28.
-2. **Account for the unmapped `$_DLATCH_N_`.** Done when a committed note
-   names the source construct and either the netlist maps it to an ASAP7
-   library cell without editing the pinned core, or a generic klayout-tools
-   issue is linked. #96.
-3. **Classify the 549 DRC violations on the counter layout.** Done when a
-   committed table gives each of the seven rule ids in
-   `flow/smoke/records/2026-11-05/drc.json` a count, an example location and a
-   cause (flow setting, deck or tool), with a klayout-tools issue linked per
-   tool or deck cause. #97 (claimed, in build). Clears the way for #29.
-4. **Classify the LVS mismatch on the counter layout.** Done when a committed
-   note explains the 19 topology errors in `lvs.json` of the same record by
-   cause, with upstream issues linked likewise. #98. Clears the way for #30.
-
-## Next
-
-- **Re-run the gate-level arch-test on the new netlist** and re-attest items 1
-  and 9, after Now 1. Done when `verification/run.sh --core --gate` records 72
-  run, 0 failed on it and `rtl/inventory.json` binds it.
-- **#28, item 2: committed P&R flow and routed core GDS.** Needs a netlist the
-  pinned `klt place-and-route` accepts: Now 1, or a release fixing
-  klayout-tools #5074. Acceptance is on the issue (reproducible GDS hash,
-  `power.pdn: true`, a named tap cell master, item 2 `met`).
-- **#29 (DRC), #30 (LVS), #31 (power delivery)** on the routed core, after #28.
-- **#32, item 5: multi-corner `klt sta` and `klt functional-verification`**
-  after #28; it also needs the FF hold corner settled (see below).
-- **#34 (SDF-annotated post-layout run)** after #28 and #32; **#35
-  (characterization report)** after #29, #30 and #32.
+The queue is not kept here by hand: [`WORK_PLAN.md`](WORK_PLAN.md) is
+generated from the labels and issue #6 tracks the items item-by-item. The
+remaining work runs in a fixed order: re-run core synthesis against the
+pinned release, place and route the core, then the checks that need a placed
+core (DRC, LVS, power delivery), then corner verification, post-layout
+verification and characterization — closing on timing closure at the 1 GHz
+predicted post-route target (500 MHz the fallback, 1.5 GHz the stretch).
 
 ## Later
 
@@ -111,23 +79,6 @@ Each is filed and is one pull request; #97 is already claimed and in build.
 - **Resolving ASAP7 through `klt pdk`.** `spec/core.md` points the flow at the
   checkout by path "until klayout-tools #3782 closes"; that issue is now
   closed. First: does the pinned release resolve ASAP7?
-
-## Blocked and waiting
-
-- **#28 is parked on klayout-tools #5074** (open). That issue in turn asks the
-  reporter for a diagnostic `klt synthesize` re-run, so the wait runs both
-  ways; Now 1 is this repo's side. Six of the seven unmet items sit behind #28.
-- **FF hold corner (decision 0002, provisional).** The comparison record
-  `flow/core/records/2026-11-05/ff-simple-check.json` (PR #61) notes an
-  upstream commit after the pin correcting three SIMPLE RVT FF Liberty files.
-  Ratifying FF or re-pinning the library is a spec decision, not yet recorded.
-- **Decisions `0012-pin-klt-0-9-0-and-ratify-asap7-drc-deck` and 0013 still
-  read "proposed"**, though `spec/core.md` already carries their pins. The
-  other 0012 (`0012-shared-archtest-module-and-item9-reattestation`) is
-  adopted; #90 tracks the duplicate number.
-
-**Dispatchable today:** #95, #96 and #98; #97 is already claimed and in build.
-The layout path (#28 to #35) waits on Now 1 or the upstream fix.
 
 ## Not planned
 
