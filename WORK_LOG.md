@@ -5,6 +5,15 @@ triage role. Newest first.
 
 ### 2026-11-16
 
+- **PR #169**: docs: cite run.sh constructs, not line ranges, in smoke analysis notes
+- **Issue #160** (closed): flow/smoke/analysis line citations into run.sh are stale: 3 of 4 in the LVS analysis point at the wrong code
+- **PR #166**: config: record branchProtection block mirroring live required-checks ruleset
+- **PR #147**: flow: guard core records for host-path leaks, redact ff_simple_check through record_lib.py
+- **Issue #106** (closed): Core records are never checked for host-path leaks, and flow/core/ff_simple_check.sh redacts nothing at all
+- **PR #137**: refactor(verification): one source of truth for the ASAP7 cell-group set
+- **Issue #100** (closed): One source of truth for the ASAP7 cell-group set: it is restated in setup.sh and archtest_common.py
+- **PR #127**: refactor(flow): one record-state predicate, one deck-hash gate
+- **Issue #115** (closed): Three duplicated record-state reads in the smoke flow, and two unreachable-false guards
 - **Issue #141** (closed): CLAUDE.md documents the re-attest obligation for item 10 only; item 9's attested testbench paths get no warning
 - **PR #161**: docs: cover item 9 re-attest obligation and manifest inventory-hash binding
 - **Issue #163** (closed): rtl/README.md cites archtest_common.py's CELL_GROUPS, a constant #137 deletes
