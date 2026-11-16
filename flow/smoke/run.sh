@@ -110,6 +110,9 @@ export V_PIN PIN_KLT
 # A klt run "worked" when stdout is a JSON object without a top-level "error";
 # flow/record_lib.py owns that definition and the probe is silent by contract.
 usable() { python3 -I "$REPO/flow/record_lib.py" usable "$1"; }
+# A step "ran" when its record's smoke.run_state is "ran";
+# flow/record_lib.py owns that definition and the probe is silent by contract.
+record_ran() { python3 -I "$REPO/flow/record_lib.py" ran "$1"; }
 errmsg() {  # first error message from stdout JSON, else stderr, else rc
   python3 -I - "$1" "$2" "$3" <<'PY'
 import json, sys
@@ -122,12 +125,6 @@ except Exception:
 PY
 }
 
-# record_ran <record.json>: exit 0 when smoke.run_state is "ran"; a missing,
-# unreadable or unparseable record exits non-zero and stays silent (a gate that
-# asks "did this step run" must fail closed).
-record_ran() {
-  python3 -I -c 'import json,sys; sys.exit(0 if json.load(open(sys.argv[1]))["smoke"]["run_state"]=="ran" else 1)' "$1" 2>/dev/null
-}
 # deck_hash <record.json>: the report's provenance.deck.content_hash (drc / lvs).
 deck_hash() {
   python3 -I -c 'import json,sys; print(json.load(open(sys.argv[1]))["provenance"]["deck"]["content_hash"])' "$1"
@@ -209,24 +206,19 @@ PY3
 PDKARGS=(--pdk asap7 --pdk-root "$ROOT")
 
 # ---- tool-versions.txt ----------------------------------------------------
+# Shared head rows from flow/lib.sh (one provenance vocabulary, shared with
+# flow/core/synth.sh), then this driver's own rows.
 {
-  echo "# Tool and input versions for flow/smoke/run.sh (predictive PDK; nothing here is fabricated)"
-  echo "klt_pinned:   $V_PIN  ($PIN_KLT)"
-  echo "yosys:        $(yosys -V 2>&1 | head -1)"
+  provenance_rows flow/smoke/run.sh "$V_PIN"
   echo "openroad:     $(openroad -version 2>&1 | head -1)"
-  echo "python:       $(python3 --version 2>&1)"
-  echo "uv:           $(uvx --version 2>&1 | head -1)"
-  echo "py7zr:        $(uvx --quiet --from py7zr python -I -c 'import py7zr; print(py7zr.__version__)')"
-  echo "asap7:        $PIN_UPSTREAM"
-  echo "asap7sc7p5t_28: $PIN_CELLS"
   echo "asap7_pdk_r1p7: $PIN_PDK"
   echo "pinned_drc_deck: $PIN_DECK"
-  echo "tech_lef_source:  sha256:$(sha256sum "$TECH_SRC" | cut -d' ' -f1)"
-  echo "layer_map:    sha256:$(sha256sum "$LAYERMAP_SRC" | cut -d' ' -f1)  (asap7_pdk_r1p7 cdslib/asap7_TechLib_10/asap7_fromAPR.layermap)"
-  echo "cell_lef:     sha256:$(sha256sum "$ASAP7/asap7sc7p5t_28/LEF/asap7sc7p5t_28_R_1x_220121a.lef" | cut -d' ' -f1)"
-  echo "cell_gds:     sha256:$(sha256sum "$ASAP7/asap7sc7p5t_28/GDS/asap7sc7p5t_28_R_220121a.gds" | cut -d' ' -f1)"
-  echo "cell_cdl:     sha256:$(sha256sum "$ASAP7/asap7sc7p5t_28/CDL/LVS/asap7sc7p5t_28_R.cdl" | cut -d' ' -f1)"
-  echo "counter.sv:   sha256:$(sha256sum "$DUT_SRC" | cut -d' ' -f1)"
+  echo "tech_lef_source:  sha256:$(sha "$TECH_SRC")"
+  echo "layer_map:    sha256:$(sha "$LAYERMAP_SRC")  (asap7_pdk_r1p7 cdslib/asap7_TechLib_10/asap7_fromAPR.layermap)"
+  echo "cell_lef:     sha256:$(sha "$ASAP7/asap7sc7p5t_28/LEF/asap7sc7p5t_28_R_1x_220121a.lef")"
+  echo "cell_gds:     sha256:$(sha "$ASAP7/asap7sc7p5t_28/GDS/asap7sc7p5t_28_R_220121a.gds")"
+  echo "cell_cdl:     sha256:$(sha "$ASAP7/asap7sc7p5t_28/CDL/LVS/asap7sc7p5t_28_R.cdl")"
+  echo "counter.sv:   sha256:$(sha "$DUT_SRC")"
 } >"$OUT/tool-versions.txt"
 
 cp "$DUT_SRC" "$W/$DUT.sv"
@@ -243,7 +235,7 @@ step synth "counter.sv (placeholder DUT), RVT, SS Liberty; not a design claim" \
   synthesize "$W/synth.req.json" "${PDKARGS[@]}" --format json
 SYNTH_NETLIST=""
 if [[ $STEP_OK == 1 ]]; then
-  SYNTH_NETLIST="$(ls -t "$W"/.klt/synthesize/*/${DUT}_synth.v 2>/dev/null | head -1 || true)"
+  SYNTH_NETLIST="$(synth_netlist "$W" "$DUT")"
   [[ -n "$SYNTH_NETLIST" ]] && cp "$SYNTH_NETLIST" "$W/${DUT}_synth.v"
 fi
 
@@ -303,6 +295,9 @@ fi
 # as-built netlist are kept next to the records. When it did not, they fall back to one library cell
 # (a stand-in that checks the tool chain and the deck and says nothing about the counter).
 LAYOUT_OK=0; PAR_RAN=0
+# Tolerant on purpose: par.json may be a legitimate not_run record here (the
+# par step never ran), which routes to the stand-in cell below — not an error,
+# unlike the final checks further down where a missing record dies.
 if record_ran "$OUT/par.json"; then
   PR="$W/.klt/place-and-route"
   if [[ -s "$PR/$DUT.gds" && -s "$PR/$DUT.def" && -s "$PR/$DUT.v" ]]; then
@@ -407,7 +402,6 @@ fi
 # record is already refused by the loop above).
 for gate in "drc:$PIN_DECK" "lvs:$PIN_LVS_DECK"; do
   s="${gate%%:*}"; want="${gate#*:}"
-  [[ -f "$OUT/$s.json" ]] || continue
   record_ran "$OUT/$s.json" || continue
   got="$(deck_hash "$OUT/$s.json")"
   [[ "$got" == "$want" ]] || die "$s.json deck hash $got is not the pin $want" 1

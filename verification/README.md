@@ -104,7 +104,7 @@ verification/run.sh --core --gate --negative-control # flipped word; exit 0 only
 
 Same programs, Sail signatures, `tb_core.v`, `test_archtest.py` and
 `core/excluded.json` as core mode, but the DUT is the committed synthesized
-netlist `flow/core/records/2026-11-03/netlist.v` plus the ASAP7 7.5-track RVT
+netlist `flow/core/records/2026-11-14/netlist.v` plus the ASAP7 7.5-track RVT
 functional cell Verilog (AO, OA, INVBUF, SIMPLE, SEQ groups) from
 `asap7sc7p5t_28` at the commit pinned in `spec/pdk-bringup.md`
 (`asap7_cells_*` in `tool-versions.txt`). `core/setup.sh` fetches the five files
@@ -137,6 +137,20 @@ RTL record; every program matches Sail. The negative control fails as intended:
 dut=`33333336`, expected-after-flip=`33333337`), and the run exits as an
 expected failure.
 
+Committed records for the superseding netlist (decision 0017, the DUT re-pointed
+to the tie-cell netlist `flow/core/records/2026-11-14/netlist.v`):
+`records/2026-11-15/gate-core-archtest.json` and
+`records/2026-11-15/gate-core-archtest-negative-control.json`.
+
+Result (2026-11-15): 72 programs run, 0 failed against the 2026-11-14 netlist
+(sha256 `e559a5923d6be0a79645ad32bb7c64e82b5c54c3bcf144bb769a7827e5ee22ad`,
+recorded by the runner from the `NETLIST` path itself), `C-cebreak-01` excluded
+as before; every program matches Sail, so the tie cells
+(`TIEHIx1`/`TIELOx1`, from the `SIMPLE` group) change no observable behaviour.
+The negative control again fails on `I-add-01` as intended and exits as an
+expected failure. `records/2026-11-06/` stays untouched as the append-only
+evidence for the 2026-11-03 netlist.
+
 ## klt functional-verification report (core, RTL)
 
 ```sh
@@ -149,7 +163,10 @@ Runs the same suite as core mode (same `setup.sh`, `build_tests.py`, sv2v conver
 `klayout-tools` release (`klayout_tools` in `tool-versions.txt`, fetched by `uvx`, with the
 pinned cocotb). One klt request per program is written to `OUT_DIR/requests/`; the program
 image and tohost address reach `tb_core.v` as `-D` macros because a klt request has no
-plusargs. `OUT_DIR/report.json` collects the per-program klt responses.
+plusargs. `OUT_DIR/report.json` collects the per-program klt responses, with
+host paths replaced by `<scratch>`/`<repo>` tags; after the run a leak-guard
+scan (`leak_guard` in `lib.sh`, self-tested by `lib_test.sh`) fails the script
+if report.json still names a host path.
 
 Committed run: `records/2026-11-05/klt-fv-core-archtest.json` (72 programs, 0 failed;
 `C-cebreak-01` excluded per `core/excluded.json`) and

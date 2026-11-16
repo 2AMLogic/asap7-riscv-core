@@ -2,8 +2,8 @@
 # Evidence run for the SIMPLE RVT FF Liberty anomaly (spec/pdk-bringup.md section 5).
 # Extracts the RVT FF/TT/SS Liberty of the five asap7sc7p5t_28 groups from the
 # pinned checkout, runs ff_simple_check.py, and writes
-# flow/core/records/<date>/ff-simple-check.json (append-only: a re-run needs a
-# new RECORD_DATE).
+# flow/core/records/<date>/ff-simple-check.json through flow/record_lib.py
+# (append-only: a re-run needs a new RECORD_DATE).
 #
 # ASAP7 is a predictive PDK; nothing here is fabricated or measured.
 #
@@ -50,12 +50,17 @@ if [[ "${NO_UPSTREAM:-0}" != 1 ]] && git -C "$CELLS" fetch -q origin 2>/dev/null
   fi
 fi
 
-python3 -I - "$SCRATCH/check.json" "$OUT/ff-simple-check.json" "$PIN_CELLS" "$UPSTREAM" <<'PY'
+# The record is assembled on stdout and redacted and written by
+# flow/record_lib.py, the one path to flow/*/records/ (shared with the other
+# writers); record_leak_guard then checks what landed.
+record_subs "$SCRATCH/subs.json" "$SCRATCH=<scratch>" "$ASAP7=<asap7-checkout>" "$REPO=<repo>" "$HOME=<home>"
+python3 -I - "$SCRATCH/check.json" "$PIN_CELLS" "$UPSTREAM" <<'PY' | python3 -I "$REPO/flow/record_lib.py" write "$OUT/ff-simple-check.json" "$SCRATCH/subs.json"
 import json, sys
-src, dst, pin, upstream = sys.argv[1:]
+src, pin, upstream = sys.argv[1:]
 rec = json.load(open(src))
 rec["pinned_asap7sc7p5t_28"] = pin
 rec["later_upstream_check"] = upstream
-open(dst, "w").write(json.dumps(rec, indent=2, sort_keys=True) + "\n")
+print(json.dumps(rec))
 PY
+record_leak_guard "$OUT"
 echo "ok    wrote ${OUT#"$REPO"/}/ff-simple-check.json"

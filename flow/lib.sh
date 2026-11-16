@@ -11,11 +11,14 @@
 # (die runs inside the caller's command substitution, so its exit leaves only
 # that subshell) -- the same contract as verification/lib.sh's pin().
 #
-# flow/lib_test.sh checks those reads, and extract_rvt_liberty's counted
-# fail-closed guard: the pins of record, that an unmatched label exits non-zero
-# instead of yielding an empty pin, that a reordered spec paragraph does not
-# move a pin, and that a corner with the wrong archive count dies before any
-# extraction. It needs no PDK checkout, no klt and no network.
+# flow/lib_test.sh checks those reads: the pins of record, that an unmatched
+# label exits non-zero instead of yielding an empty pin, and that a reordered
+# spec paragraph does not move a pin; that synth_netlist picks the newest
+# synthesized netlist or nothing; that provenance_rows writes one klt row,
+# keyed `klt:`, carrying the value of the `klt version` ask (tool asks
+# stubbed); that newest_record_with selects by content, not directory sort
+# order; and extract_rvt_liberty's counted fail-closed guard. It needs no PDK
+# checkout, no klt and no network.
 #
 # Provides:
 #   die <msg> [rc]                       message prefixed with the script name, exit rc (default 2)
@@ -33,6 +36,15 @@
 #                                        when none does
 #   record_subs <dest> <path>=<tag>...   write the host-path substitution list every record is
 #                                        redacted with, for flow/record_lib.py
+#   record_leak_guard <record-dir>       die if any *.json in <dir> -- plus tool-versions.txt, when
+#                                        present -- names a host path; fails closed on no *.json
+#   sha <file>                           first hex field of the file's sha256sum
+#   synth_netlist <workdir> <toplevel>   newest <toplevel>_synth.v under <workdir>/.klt/synthesize,
+#                                        or nothing
+#   provenance_rows <script> <klt-ver>   the shared head rows of every flow/*/records
+#                                        tool-versions.txt, on stdout (one klt row, keyed
+#                                        `klt:`, value from `klt version`); a driver appends
+#                                        its own rows after this block
 #   extract_rvt_liberty <asap7> <dest> <corner>...
 #                                        extract each requested corner's RVT Liberty archives from the
 #                                        pinned checkout's LIB/NLDM into <dest>; dies with a counted
@@ -138,6 +150,31 @@ record_subs() {  # dest path=tag...
   } >"$dest"
 }
 
+sha() {  # file -- first hex field of the file's sha256sum
+  sha256sum "$1" | cut -d' ' -f1
+}
+
+synth_netlist() {  # workdir toplevel -- newest <toplevel>_synth.v under <workdir>/.klt/synthesize, or nothing
+  ls -t "$1"/.klt/synthesize/*/"$2"_synth.v 2>/dev/null | head -1 || true
+}
+
+provenance_rows() {  # script klt-version -- the shared head rows of every flow/*/records tool-versions.txt
+  # One provenance vocabulary for both flow drivers; each appends its own rows
+  # after this block. The klt row is keyed `klt:` -- the generic form, like
+  # every other tool row; there is one klt per run now that the comparison
+  # build is gone -- and its value is whatever `klt version` printed, the same
+  # ask that fills the smoke records' klt_build.version field. `klt --version`
+  # is not a second spelling of that ask: do not re-fork this row.
+  echo "# Tool and input versions for $1 (predictive PDK; nothing here is fabricated)"
+  echo "klt:          $2  ($PIN_KLT)"
+  echo "yosys:        $(yosys -V 2>&1 | head -1)"
+  echo "python:       $(python3 --version 2>&1)"
+  echo "uv:           $(uvx --version 2>&1 | head -1)"
+  echo "py7zr:        $(uvx --quiet --from py7zr python -I -c 'import py7zr; print(py7zr.__version__)')"
+  echo "asap7:        $PIN_UPSTREAM"
+  echo "asap7sc7p5t_28: $PIN_CELLS"
+}
+
 extract_rvt_liberty() {  # asap7 dest corner...
   # The RVT Liberty of the pinned asap7sc7p5t_28 checkout ships as .7z only (no
   # 7z binary on the workers): extract each requested corner's archives into
@@ -178,4 +215,32 @@ build_liberty_overlay() {  # asap7 root cell_lib corner...
     for c in "$@"; do printf '%s"%s":"lib/%s_%s.lib"' "$sep" "$c" "$cell_lib" "$c"; sep=","; done
     printf '}}}\n'
   } >"$root/klt-pdk.json"
+}
+
+record_leak_guard() {  # record-dir
+  # The post-write check every core record directory must pass before the
+  # script that wrote it exits: grep the *.json records -- plus
+  # tool-versions.txt, when present -- for the four host-path roots and die
+  # naming any file that matches. flow/smoke/run.sh runs the same four-root
+  # grep inline, ahead of `klt env-provenance lint-envelope`; that inline copy
+  # stays by choice -- the smoke flow is an attested path and folding it onto
+  # this helper costs an item 9 re-attest -- so the duplication is deliberate,
+  # not drift. Fails closed: a directory holding no *.json at all, or a grep
+  # that errors (exit above 1), dies with its own reason instead of passing.
+  local d="$1" f rc=0 leaks
+  local -a jsons=() cands=()
+  for f in "$d"/*.json; do [[ -f "$f" ]] && jsons+=("$f"); done
+  if [[ ${#jsons[@]} -eq 0 ]]; then
+    die "record_leak_guard: no *.json record in $d; refusing to pass an empty record set" 1
+  fi
+  cands=("${jsons[@]}")
+  [[ -f "$d/tool-versions.txt" ]] && cands+=("$d/tool-versions.txt")
+  leaks="$(grep -lE '(/home/|/tmp/|/Users/|/root/)' "${cands[@]}" 2>/dev/null)" || rc=$?
+  if [[ $rc -gt 1 ]]; then
+    die "record_leak_guard: grep failed over $d (exit $rc); failing closed" 1
+  fi
+  if [[ -n "$leaks" ]]; then
+    printf '%s\n' "$leaks" >&2
+    die "a record leaks an absolute host path" 1
+  fi
 }
