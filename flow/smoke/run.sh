@@ -402,7 +402,6 @@ fi
 # record is already refused by the loop above).
 for gate in "drc:$PIN_DECK" "lvs:$PIN_LVS_DECK"; do
   s="${gate%%:*}"; want="${gate#*:}"
-  [[ -f "$OUT/$s.json" ]] || continue
   record_ran "$OUT/$s.json" || continue
   got="$(deck_hash "$OUT/$s.json")"
   [[ "$got" == "$want" ]] || die "$s.json deck hash $got is not the pin $want" 1
