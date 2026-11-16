@@ -1,4 +1,4 @@
-# 0015 — Item 9's inventory attests every input the attested harness cannot run without
+# 0016 — Item 9's inventory attests every input the attested harness cannot run without
 
 **Status:** adopted 2026-11-15. Extends the inventory and envelope produced under
 `spec/decisions/0014-item-9-check-gate-and-lib-sh-attestation.md` (not that record's decisions — the
