@@ -87,7 +87,7 @@
         "role": "testbench",
         "path": "verification/lib.sh",
         "passed": true,
-        "content_hash": "sha256:3bfb9b3c421e5c1b9089663b6b39821bdd96e39e12bb3f8b018d2804dff15219"
+        "content_hash": "sha256:540a7c066a7bfc7b58fd9120ee069231990df65f249721397bd89436e168a2b6"
       },
       {
         "check": "present",
