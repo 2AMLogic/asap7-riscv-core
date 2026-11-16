@@ -60,7 +60,6 @@ Issues carrying `loom:curated`.
 ## Proposed (Architect / Hermit)
 
 - **#111**: Remove the vendored design-evidence-tiers.md: 1053 lines identical to the pinned klt's shipped copy, unchecked *(hermit)*
-- **#165**: Retire the hand-kept queue state in ROADMAP.md: it restates WORK_PLAN.md and is already stale *(hermit)*
 
 ## Epics
 

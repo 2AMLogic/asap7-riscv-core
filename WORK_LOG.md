@@ -5,6 +5,8 @@ triage role. Newest first.
 
 ### 2026-11-16
 
+- **PR #173**: docs: drop hand-kept queue sections from ROADMAP.md, point at WORK_PLAN.md and #6
+- **Issue #165** (closed): Retire the hand-kept queue state in ROADMAP.md: it restates WORK_PLAN.md and is already stale
 - **Issue #148** (closed): A signoff verdict is only valid for the merge ref it ran against: a stale green check turned main red for seven runs
 - **PR #169**: docs: cite run.sh constructs, not line ranges, in smoke analysis notes
 - **Issue #160** (closed): flow/smoke/analysis line citations into run.sh are stale: 3 of 4 in the LVS analysis point at the wrong code
