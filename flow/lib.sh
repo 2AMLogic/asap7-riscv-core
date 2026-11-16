@@ -36,6 +36,8 @@
 #                                        when none does
 #   record_subs <dest> <path>=<tag>...   write the host-path substitution list every record is
 #                                        redacted with, for flow/record_lib.py
+#   record_leak_guard <record-dir>       die if any *.json in <dir> -- plus tool-versions.txt, when
+#                                        present -- names a host path; fails closed on no *.json
 #   sha <file>                           first hex field of the file's sha256sum
 #   synth_netlist <workdir> <toplevel>   newest <toplevel>_synth.v under <workdir>/.klt/synthesize,
 #                                        or nothing
@@ -213,4 +215,32 @@ build_liberty_overlay() {  # asap7 root cell_lib corner...
     for c in "$@"; do printf '%s"%s":"lib/%s_%s.lib"' "$sep" "$c" "$cell_lib" "$c"; sep=","; done
     printf '}}}\n'
   } >"$root/klt-pdk.json"
+}
+
+record_leak_guard() {  # record-dir
+  # The post-write check every core record directory must pass before the
+  # script that wrote it exits: grep the *.json records -- plus
+  # tool-versions.txt, when present -- for the four host-path roots and die
+  # naming any file that matches. flow/smoke/run.sh runs the same four-root
+  # grep inline, ahead of `klt env-provenance lint-envelope`; that inline copy
+  # stays by choice -- the smoke flow is an attested path and folding it onto
+  # this helper costs an item 9 re-attest -- so the duplication is deliberate,
+  # not drift. Fails closed: a directory holding no *.json at all, or a grep
+  # that errors (exit above 1), dies with its own reason instead of passing.
+  local d="$1" f rc=0 leaks
+  local -a jsons=() cands=()
+  for f in "$d"/*.json; do [[ -f "$f" ]] && jsons+=("$f"); done
+  if [[ ${#jsons[@]} -eq 0 ]]; then
+    die "record_leak_guard: no *.json record in $d; refusing to pass an empty record set" 1
+  fi
+  cands=("${jsons[@]}")
+  [[ -f "$d/tool-versions.txt" ]] && cands+=("$d/tool-versions.txt")
+  leaks="$(grep -lE '(/home/|/tmp/|/Users/|/root/)' "${cands[@]}" 2>/dev/null)" || rc=$?
+  if [[ $rc -gt 1 ]]; then
+    die "record_leak_guard: grep failed over $d (exit $rc); failing closed" 1
+  fi
+  if [[ -n "$leaks" ]]; then
+    printf '%s\n' "$leaks" >&2
+    die "a record leaks an absolute host path" 1
+  fi
 }

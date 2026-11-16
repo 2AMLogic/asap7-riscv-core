@@ -133,7 +133,7 @@ cp "$NETLIST" "$OUT/netlist.v"
 
 # The record is assembled here and redacted and written by flow/record_lib.py,
 # the one path to flow/*/records/ (shared with flow/smoke/run.sh).
-record_subs "$SCRATCH/subs.json" "$SCRATCH=<scratch>" "$REPO=<repo>" "$HOME=<home>"
+record_subs "$SCRATCH/subs.json" "$SCRATCH=<scratch>" "$ASAP7=<asap7-checkout>" "$REPO=<repo>" "$HOME=<home>"
 python3 -I - "$SCRATCH/synth.out" "$(sha "$NETLIST")" <<'PY' | python3 -I "$REPO/flow/record_lib.py" write "$OUT/synth.json" "$SCRATCH/subs.json"
 import json, sys
 src, netlist_sha = sys.argv[1:3]
@@ -161,4 +161,8 @@ KLT_V="$("${KLT[@]}" version 2>&1 | head -1 || true)"
   echo "liberty_corner: RVT $CORNER (merged)  sha256:$(sha "$PDK/lib/${CELL_LIB}_$CORNER.lib")"
   echo "netlist:      sha256:$(sha "$OUT/netlist.v")"
 } >"$OUT/tool-versions.txt"
+
+# Record and tool-versions.txt are both on disk now: neither may name a host
+# path (records are append-only evidence, so a redaction miss is permanent).
+record_leak_guard "$OUT"
 echo "synth.sh: records -> flow/core/records/$DATE" >&2
