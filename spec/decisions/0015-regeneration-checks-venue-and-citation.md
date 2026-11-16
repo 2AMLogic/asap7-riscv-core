@@ -11,8 +11,9 @@ no flow script, so it gates nothing by itself.
 `flow/core/records/2026-11-03/netlist.v`, and (2) a fresh-`RECORD_DATE`
 `flow/smoke/run.sh <asap7-checkout>` diffed against
 `flow/smoke/records/2026-11-05/` — are cited by proposals #91, #99, #101 and
-#106, of which #91 and #106 are open (#99 and #101 closed 2026-11-14, with
-the criteria still cited), and verified by nobody in a sweep worktree.
+#106; as of 2026-11-15, #106 is open and #91, #99 and #101 are closed (#99
+and #101 on 2026-11-14, #91 on 2026-11-15), all with the criteria still
+cited — and verified by nobody in a sweep worktree.
 Measured 2026-11-15 against `origin/main` @ `314c493`:
 
 1. **The venue already exists and is already wired for criterion 1.**
@@ -53,7 +54,8 @@ Measured 2026-11-15 against `origin/main` @ `314c493`:
    The envelope's recorded `exit_status: 0` describes a command that per #105
    cannot exit 0 on `main` at all (`--check` picks the newest record
    directory, which no longer holds a `netlist.v`, and exits 1 before
-   comparing). Yet T1 item 1 still renders `met` with CI green:
+   comparing; since fixed by #105 — Decision 3(a)). Yet T1 item 1 still
+   renders `met` with CI green:
    `.github/workflows/signoff.yml` gates only items 9 and 10 with `--check`
    steps, and the tier byte-compare is structurally blind to body drift
    because `manifests/asap7-riscv-core.json` binds item 1's citation to the
@@ -98,9 +100,10 @@ Measured 2026-11-15 against `origin/main` @ `314c493`:
 
 3. **Sequencing, with the dependency named.** In order, and not re-ordered:
 
-   (a) **#105** fixes `--check`'s target selection (the newest record
-   directory no longer holds a `netlist.v`; the command exits 1
-   unconditionally on `main` today).
+   (a) **#105** fixes `--check`'s target selection — **completed by commit
+   `83718f7`, on `main` as of 2026-11-15**; before it, `--check` picked the
+   newest record directory, which no longer held a `netlist.v`, and exited 1
+   unconditionally.
 
    (b) **An operator refreshes `evidence/item1.json` on a PDK-capable host**,
    retaining the superseded envelope *first* per decision 0014's two-step
@@ -129,21 +132,20 @@ Measured 2026-11-15 against `origin/main` @ `314c493`:
    criterion-2 inventory entry proposed later:
 
    - The checkout may be passed as `$ASAP7_DIR` instead of an argument
-     (`flow/core/synth.sh:50`, `flow/core/ff_simple_check.sh:21`).
+     (`ASAP7_DIR` in `flow/core/synth.sh` and in `flow/core/ff_simple_check.sh`).
    - The two criteria do not impose the same provisioning. Criterion 1 needs
-     only the upstream repo and `asap7sc7p5t_28` at their pins —
-     `flow/core/synth.sh` makes two `check_pin` calls (`flow/core/synth.sh:62-63`).
-     Criterion 2 additionally needs `asap7_pdk_r1p7` initialized —
-     `flow/smoke/run.sh` makes three `check_pin` calls
-     (`flow/smoke/run.sh:54-56`) and reads the submodule's layermap at
-     `flow/smoke/run.sh:175`.
+     only the upstream repo and `asap7sc7p5t_28` at their pins — two
+     `check_pin` calls in `flow/core/synth.sh`. Criterion 2 additionally
+     needs `asap7_pdk_r1p7` initialized — three `check_pin` calls in
+     `flow/smoke/run.sh`, which also reads the submodule's
+     `asap7_fromAPR.layermap`.
    - A `--filter=blob:none` partial clone with `asap7sc7p5t_28` initialized is
      ~150 MB, not multi-gigabyte (measured 2026-11-14 on a dispatch worker).
      Checkout paths are host residue and are deliberately not recorded here —
      a run states where its checkout lived instead.
    - Criterion 2 writes into a fresh record set: `new_record_dir` refuses an
-     existing record set (documented `flow/lib.sh:29-30`; the function is
-     defined at `flow/lib.sh:94` with the refusal at `flow/lib.sh:98`), so the
+     existing record set (the refusal is `die`d inside `new_record_dir` in
+     `flow/lib.sh`, whose usage block documents the append-only rule), so the
      run sets `RECORD_DATE` to a new date and diffs the six step records
      against `flow/smoke/records/2026-11-05/`.
 
@@ -175,7 +177,13 @@ uvx --python 3.12 --from "klayout-tools==0.8.0" klt signoff \
 
 `git status --porcelain` was empty after each run (`--check` writes nothing);
 the tool was the CI-pinned `klayout-tools==0.8.0` under `uvx --python 3.12` in
-a throwaway environment; no host tool was installed or changed. The item-1
+a throwaway environment; no host tool was installed or changed. Re-stated
+2026-11-16: the Decision 4 citations were originally `path:line` integers,
+which rot as `flow/` scripts are edited (main's post-`c175a585` edits had
+already moved five of them), so they now cite the identifiers instead —
+re-verified at this record's branch head and on `origin/main` the same day,
+and the three `--check` runs above were re-run at that head with unchanged
+results. The item-1
 fresh hashes quoted under "Problem" are as observed at `314c493` — they are
 expected to move again as `flow/` scripts are edited, which is the drift this
 record's step (c) is what will finally make visible. Regeneration results
@@ -183,8 +191,9 @@ everywhere in this repo are tool outputs against a predictive PDK; ASAP7 is
 never fabricated and nothing here is measured silicon.
 
 **Not decided here.** The `signoff.yml` gate step and its item-10 re-attest
-(step (c) — its own PR, after (a) and (b)); the #105 selection fix itself; a
-criterion-2 inventory entry (needs a host that can run the smoke flow); the
+(step (c) — its own PR, after (a) and (b)); the #105 selection fix (completed
+by commit `83718f7` on `main` 2026-11-15, not absorbed here); a criterion-2
+inventory entry (needs a host that can run the smoke flow); the
 PDK-free differential harness over the record-writing code paths — genuinely
 useful and complementary, built against the #112 / merged-#114 pattern, filed
 separately if wanted; provisioning ASAP7 checkouts on dispatch workers (a
