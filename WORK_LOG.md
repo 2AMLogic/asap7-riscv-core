@@ -5,6 +5,7 @@ triage role. Newest first.
 
 ### 2026-11-17
 
+- **PR #182**: chore(loom): resync installed Loom to v0.19.1306
 - **PR #179**: chore(evidence): item 9 attests subprocess-reached harness inputs
 - **Issue #178** (closed): attest/item9.json's closure walk is source/import-only: four subprocess-reached repo inputs are still unattested
 - **PR #154**: feat(attest): item 9 attests the harness's sourced inputs; decision 0015
