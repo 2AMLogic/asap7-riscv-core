@@ -19,13 +19,13 @@ _None._
 
 `loom:important`; taken before unlabelled work.
 
-_None._
+- **#122**: The accepted core netlist has no consumer: inventory, gate-level archtest and item 1 all still cite records/2026-11-03
 
 ## Ready
 
 Human-approved issues ready for implementation (`loom:issue`).
 
-_None._
+- **#117**: Attestation-gate drift messages print "command " with an empty name for the non-path check rows
 
 ## In Progress
 
@@ -51,10 +51,12 @@ Issues carrying `loom:curated`.
 
 - **#6**: Track the gap to T1 (klayout-tools design-evidence-tiers.md) *(curated)*
 - **#28**: T1 item 2 (layout): committed P&R flow and routed cve2_top GDS on ASAP7 *(curated)*
+- **#117**: Attestation-gate drift messages print "command " with an empty name for the non-path check rows *(curated)*
+- **#122**: The accepted core netlist has no consumer: inventory, gate-level archtest and item 1 all still cite records/2026-11-03 *(curated)*
 
 ## Proposed (Architect / Hermit)
 
-_None._
+- **#111**: Remove the vendored design-evidence-tiers.md: 1053 lines identical to the pinned klt's shipped copy, unchecked *(hermit)*
 
 ## Epics
 
@@ -66,12 +68,12 @@ _None._
 |------|-------|
 | Operator merge-risk holds | 0 |
 | Very important | 1 |
-| Important | 0 |
-| Ready (`loom:issue`) | 0 |
+| Important | 1 |
+| Ready (`loom:issue`) | 1 |
 | In Progress (`loom:building`) | 0 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 0 |
-| Curated | 2 |
-| Architect / Hermit proposals | 0 |
+| Curated | 4 |
+| Architect / Hermit proposals | 2 |
 | Active epics | 0 |
 <!-- guide:plan-body:end -->

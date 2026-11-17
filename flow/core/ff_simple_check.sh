@@ -2,8 +2,8 @@
 # Evidence run for the SIMPLE RVT FF Liberty anomaly (spec/pdk-bringup.md section 5).
 # Extracts the RVT FF/TT/SS Liberty of the five asap7sc7p5t_28 groups from the
 # pinned checkout, runs ff_simple_check.py, and writes
-# flow/core/records/<date>/ff-simple-check.json (append-only: a re-run needs a
-# new RECORD_DATE).
+# flow/core/records/<date>/ff-simple-check.json through flow/record_lib.py
+# (append-only: a re-run needs a new RECORD_DATE).
 #
 # ASAP7 is a predictive PDK; nothing here is fabricated or measured.
 #
@@ -32,17 +32,10 @@ check_pin "$CELLS" "$PIN_CELLS" "submodule asap7sc7p5t_28"
 setup_scratch ffsimple
 new_record_dir core
 
-# Liberty ships as .7z only: extract with a throwaway py7zr env.
-uvx --quiet --from py7zr python -I - "$CELLS/LIB/NLDM" "$SCRATCH" <<'PY'
-import glob, sys, py7zr
-src, dst = sys.argv[1:]
-files = sorted(glob.glob(f"{src}/*_RVT_*_nldm_*.lib.7z"))
-if len(files) != 15:
-    sys.exit(f"expected 15 RVT Liberty archives, found {len(files)}")
-for f in files:
-    with py7zr.SevenZipFile(f) as z:
-        z.extractall(dst)
-PY
+# Liberty ships as .7z only: extract it with the shared counted extractor
+# (flow/lib.sh), which fails closed unless each of FF, TT and SS has exactly
+# its five group archives -- the counted check this script used to carry.
+extract_rvt_liberty "$ASAP7" "$SCRATCH" FF TT SS
 
 python3 -I "$REPO/flow/core/ff_simple_check.py" "$SCRATCH" "$SCRATCH/check.json"
 
@@ -57,12 +50,17 @@ if [[ "${NO_UPSTREAM:-0}" != 1 ]] && git -C "$CELLS" fetch -q origin 2>/dev/null
   fi
 fi
 
-python3 -I - "$SCRATCH/check.json" "$OUT/ff-simple-check.json" "$PIN_CELLS" "$UPSTREAM" <<'PY'
+# The record is assembled on stdout and redacted and written by
+# flow/record_lib.py, the one path to flow/*/records/ (shared with the other
+# writers); record_leak_guard then checks what landed.
+record_subs "$SCRATCH/subs.json" "$SCRATCH=<scratch>" "$ASAP7=<asap7-checkout>" "$REPO=<repo>" "$HOME=<home>"
+python3 -I - "$SCRATCH/check.json" "$PIN_CELLS" "$UPSTREAM" <<'PY' | python3 -I "$REPO/flow/record_lib.py" write "$OUT/ff-simple-check.json" "$SCRATCH/subs.json"
 import json, sys
-src, dst, pin, upstream = sys.argv[1:]
+src, pin, upstream = sys.argv[1:]
 rec = json.load(open(src))
 rec["pinned_asap7sc7p5t_28"] = pin
 rec["later_upstream_check"] = upstream
-open(dst, "w").write(json.dumps(rec, indent=2, sort_keys=True) + "\n")
+print(json.dumps(rec))
 PY
+record_leak_guard "$OUT"
 echo "ok    wrote ${OUT#"$REPO"/}/ff-simple-check.json"

@@ -7,6 +7,10 @@
       "known_hosts": []
     }
   },
+  "branchProtection": {
+    "requiredStatusChecks": ["harness", "signoff"],
+    "strictRequiredStatusChecks": false
+  },
   "health_monitoring": {
     "enabled": true,
     "collect_interval_minutes": 5,

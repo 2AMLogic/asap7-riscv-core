@@ -3,7 +3,10 @@
 # with the pinned sv2v, and run `klt synthesize` of the RV32IMC wrapper against
 # the ratified RVT-only asap7sc7p5t_28 SS Liberty. Writes the gate-level netlist
 # and the synthesis record under flow/core/records/<date>/, or, with --check,
-# regenerates the netlist and byte-compares it with the latest committed one.
+# regenerates the netlist and byte-compares it with the newest committed
+# synthesis record -- the newest flow/core/records/<date>/ that holds a
+# netlist.v (a later directory written by a netlist-less flow does not take
+# over the selection).
 #
 # ASAP7 is a predictive PDK; nothing here is fabricated or measured. Synthesis
 # claims no timing: the clock constraint is passed to the tool and the report's
@@ -26,7 +29,8 @@
 #   KEEP_SCRATCH=1  keep the scratch directory
 #
 # Exit status: 0 ok (and, with --check, byte-identical); 1 a step failed or
-# --check found a difference; 2 refused invocation.
+# --check found a difference; 2 refused invocation -- including --check finding
+# no committed netlist to compare against at all (a refusal, not a difference).
 set -euo pipefail
 
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
@@ -97,13 +101,14 @@ build_liberty_overlay "$ASAP7" "$PDK" "$CELL_LIB" "$CORNER"
 # ---- 5. klt synthesize ------------------------------------------------------
 cat >"$W/synth.req.json" <<JSON
 {"schema":"klt.synthesize.request/1","engine":"yosys","sources":["$TOP.v"],"hdl_toplevel":"$TOP",
- "pdk":{"cell_library":"$CELL_LIB","corner":"$CORNER"},"constraints":{"clock_period_ns":1.0}}
+ "pdk":{"cell_library":"$CELL_LIB","corner":"$CORNER"},"constraints":{"clock_period_ns":1.0},
+ "latch_map":{"negative":{"cell":"DLLx1_ASAP7_75t_R","enable":"CLK","data":"D","q":"Q"}}}
 JSON
 rc=0
 ( cd "$W" && "${KLT[@]}" synthesize synth.req.json --pdk asap7 --pdk-root "$PDK" --format json ) >"$SCRATCH/synth.out" 2>"$SCRATCH/synth.err" || rc=$?
 python3 -I "$REPO/flow/record_lib.py" usable "$SCRATCH/synth.out" \
   || { echo "synth.sh: klt synthesize failed (exit $rc)" >&2; head -c 2000 "$SCRATCH/synth.out" "$SCRATCH/synth.err" >&2; exit 1; }
-NETLIST="$(ls -t "$W"/.klt/synthesize/*/"${TOP}"_synth.v 2>/dev/null | head -1 || true)"
+NETLIST="$(synth_netlist "$W" "$TOP")"
 [[ -n "$NETLIST" ]] || die "klt synthesize produced no ${TOP}_synth.v" 1
 # Yosys embeds the absolute path of the converted Verilog in some internal net
 # names (sv2v function casts). Strip the scratch work dir so the committed
@@ -114,8 +119,8 @@ NETLIST="$SCRATCH/netlist.v"
 
 # ---- 6. compare (--check) or record ---------------------------------------
 if [[ $CHECK == 1 ]]; then
-  LATEST="$(ls -d "$REPO"/flow/core/records/*/ 2>/dev/null | sort | tail -1 || true)"
-  [[ -n "$LATEST" && -f "$LATEST/netlist.v" ]] || { echo "synth.sh: no committed netlist to compare against" >&2; exit 1; }
+  LATEST="$(newest_record_with "$REPO/flow/core/records" netlist.v)" \
+    || die "no committed netlist to compare against: nothing under flow/core/records/ holds a netlist.v"
   if cmp -s "$NETLIST" "$LATEST/netlist.v"; then
     echo "synth.sh: regenerated netlist is byte-identical to ${LATEST#"$REPO"/}netlist.v" >&2
     exit 0
@@ -128,8 +133,8 @@ cp "$NETLIST" "$OUT/netlist.v"
 
 # The record is assembled here and redacted and written by flow/record_lib.py,
 # the one path to flow/*/records/ (shared with flow/smoke/run.sh).
-record_subs "$SCRATCH/subs.json" "$SCRATCH=<scratch>" "$REPO=<repo>" "$HOME=<home>"
-python3 -I - "$SCRATCH/synth.out" "$(sha256sum "$NETLIST" | cut -d" " -f1)" <<'PY' | python3 -I "$REPO/flow/record_lib.py" write "$OUT/synth.json" "$SCRATCH/subs.json"
+record_subs "$SCRATCH/subs.json" "$SCRATCH=<scratch>" "$ASAP7=<asap7-checkout>" "$REPO=<repo>" "$HOME=<home>"
+python3 -I - "$SCRATCH/synth.out" "$(sha "$NETLIST")" <<'PY' | python3 -I "$REPO/flow/record_lib.py" write "$OUT/synth.json" "$SCRATCH/subs.json"
 import json, sys
 src, netlist_sha = sys.argv[1:3]
 d = json.load(open(src))
@@ -139,21 +144,25 @@ d["core_flow"] = {"note": "Synthesis of the RV32IMC wrapper around unmodified CV
 print(json.dumps(d))
 PY
 
-sha() { sha256sum "$1" | cut -d' ' -f1; }
+# One `klt version` ask, the spelling the shared provenance rows record (see
+# flow/lib.sh); klt has already run successfully by this point, so this only
+# echoes a version.
+KLT_V="$("${KLT[@]}" version 2>&1 | head -1 || true)"
+# Shared head rows from flow/lib.sh (one provenance vocabulary, shared with
+# flow/smoke/run.sh), then this driver's own rows.
 {
-  echo "# Tool and input versions for flow/core/synth.sh (predictive PDK; nothing here is fabricated)"
-  echo "klt:          $("${KLT[@]}" --version 2>&1 | head -1)  ($PIN_KLT)"
-  echo "yosys:        $(yosys -V 2>&1 | head -1)"
+  provenance_rows flow/core/synth.sh "$KLT_V"
   echo "sv2v:         $SV2V_VERSION  (release asset sha256 $PIN_SV2V_SHA; binary sha256 $(sha "$SV2V"))"
   echo "iverilog:     $(iverilog -V 2>&1 | head -1)"
-  echo "py7zr:        $(uvx --quiet --from py7zr python -I -c 'import py7zr; print(py7zr.__version__)')"
   echo "cve2:         $(python3 -I -c 'import json,sys; print(next(i for i in json.load(open(sys.argv[1]))["imports"] if i["from"]=="openhwgroup/cve2")["commit"])' "$REPO/reuse.lock.json")"
   echo "reuse.lock.json: sha256:$(sha "$REPO/reuse.lock.json")"
   echo "wrapper:      sha256:$(sha "$WRAPPER")"
   echo "converted_verilog: sha256:$(sha "$W/$TOP.v")"
-  echo "asap7:        $PIN_UPSTREAM"
-  echo "asap7sc7p5t_28: $PIN_CELLS"
   echo "liberty_corner: RVT $CORNER (merged)  sha256:$(sha "$PDK/lib/${CELL_LIB}_$CORNER.lib")"
   echo "netlist:      sha256:$(sha "$OUT/netlist.v")"
 } >"$OUT/tool-versions.txt"
+
+# Record and tool-versions.txt are both on disk now: neither may name a host
+# path (records are append-only evidence, so a redaction miss is permanent).
+record_leak_guard "$OUT"
 echo "synth.sh: records -> flow/core/records/$DATE" >&2

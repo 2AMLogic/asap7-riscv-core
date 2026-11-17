@@ -36,31 +36,61 @@ on ASAP7, designed and verified by AI agents. **Digital.**
   at stated corners. Recorded results are append-only evidence.
 - Spec changes go through `spec/` with a decision record; agents do not relax
   the ratified spec to make results pass.
-- **Attested hygiene paths: re-attest in the same PR.** `README.md`,
-  `LICENSE`, `.github/workflows/ci.yml` and `.github/workflows/signoff.yml`
-  are attested files — `attest/item10.json` lists them and
-  `evidence/item10.json` pins each one's sha256. **Any** diff that touches one
-  of those four must also commit a re-attested `evidence/item10.json`, or the
-  `klt signoff` workflow's "Re-check the item 10 attestation envelope" step
-  reds the pull request. This applies to documentation-only passes: a one-word
-  `README.md` edit is drift. Regenerate the envelope with the klt version CI
-  pins, in a throwaway environment — never install a different klt onto the
-  host:
+- **Attested paths: re-attest in the same PR.** Two attestation inventories
+  gate pull requests through the `klt signoff` workflow, each enforced by its
+  own "Re-check the item N attestation envelope" step: **item 10** (repo
+  hygiene, `attest/item10.json` → `evidence/item10.json`) and **item 9**
+  (testbenches shipped, `attest/item9.json` → `evidence/item9.json`). **Any**
+  diff that touches a path an inventory attests must also commit a re-attested
+  envelope for that item in the same PR, or the matching step reds the pull
+  request. This applies to documentation-only passes: a one-word edit of an
+  attested file is drift. Each inventory is the source of truth for which
+  paths it attests — check it before editing a file it may pin.
 
-  ```bash
-  uvx --python 3.12 --from "klayout-tools==0.8.0" klt signoff \
-      --attest 10 --inventory attest/item10.json -o evidence/item10.json
-  ```
+  - **Item 10 (repo hygiene).** `attest/item10.json` attests four files:
+    `README.md`, `LICENSE`, `.github/workflows/ci.yml` and
+    `.github/workflows/signoff.yml`. Regenerate the envelope with the klt
+    version CI pins, in a throwaway environment — never install a different
+    klt onto the host:
 
-  `--python 3.12` is load-bearing: `uvx` puts its own environment first on
-  `PATH`, and the envelope's two harness checks run `verification/run.sh`,
+    ```bash
+    uvx --python 3.12 --from "klayout-tools==0.8.0" klt signoff \
+        --attest 10 --inventory attest/item10.json -o evidence/item10.json
+    ```
+
+    (Whether item 10's re-attest also needs a retention step is unresolved —
+    #89.) Item 10's envelope harness checks are the cheaper of the two.
+
+  - **Item 9 (testbenches shipped).** `attest/item9.json` attests the
+    verification and smoke testbench paths (e.g. `flow/smoke/run.sh`,
+    `verification/run.sh`); the inventory lists them, not this file.
+    Re-attesting item 9 is a two-step change and both steps belong in the
+    same PR (ratified in
+    `spec/decisions/0014-item-9-check-gate-and-lib-sh-attestation.md`):
+    retain the superseded envelope first — copy the committed
+    `evidence/item9.json` to
+    `evidence/records/item9-<date-the-committed-envelope-was-produced>.json`
+    — then regenerate, committing both:
+
+    ```bash
+    uvx --python 3.12 --from "klayout-tools==0.8.0" klt signoff \
+        --attest 9 --inventory attest/item9.json -o evidence/item9.json
+    ```
+
+    This re-attest runs `attest/item9.json`'s `local_only` cold start
+    (`verification/run.sh --core`, timeout 1800 s), so it needs a host with
+    `iverilog`, `verilator 5.050`, `python 3.12` and network egress — it
+    cannot be done in a sweep worktree (cf. #107, #112).
+
+  `--python 3.12` is load-bearing for both: `uvx` puts its own environment
+  first on `PATH`, and each envelope's harness checks run `verification/run.sh`,
   which refuses any `python3` that does not match `verification/tool-versions.txt`
   (`python=3.12`). Without it the re-attest fails with both harness checks at
   exit 1 and writes nothing.
 
-  Never hand-edit `evidence/item10.json`, and never drop a path from
-  `attest/item10.json` to dodge the gate — that weakens the attestation and
-  needs a `spec/` decision record.
+  Never hand-edit an envelope, and never drop a path from an inventory to
+  dodge the gate — that weakens the attestation and needs a `spec/` decision
+  record.
 - **1 GHz predicted post-route at the slow corner is the target.** 500 MHz is
   the fallback and 1.5 GHz is a stretch.
 

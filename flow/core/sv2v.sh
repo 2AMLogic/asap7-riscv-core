@@ -5,10 +5,11 @@
 # netlist that is verified is converted exactly as the netlist that is synthesized.
 #
 #   source flow/core/sv2v.sh; sv2v_ensure <build-dir>
-#       Reads the pin from spec/core.md, sets PIN_SV2V, PIN_SV2V_SHA, SV2V and
-#       SV2V_VERSION. Unless $SV2V is already set, downloads the pinned release
-#       into <build-dir>/sv2v/<pin>/ (sha256-checked). Always asserts the version.
-#       Exits 1 on any failure.
+#       Reads the pin from spec/core.md scoped to its '**sv2v (decision
+#       0010):**' paragraph, failing closed (sv2v_read_pin), and sets
+#       PIN_SV2V, PIN_SV2V_SHA, SV2V and SV2V_VERSION. Unless $SV2V is already
+#       set, downloads the pinned release into <build-dir>/sv2v/<pin>/
+#       (sha256-checked). Always asserts the version. Exits 1 on any failure.
 #
 #   flow/core/sv2v.sh convert <sv2v> <upstream-dir> <wrapper.sv> <top> <out.v>
 #       Converts the CVE2 closure under <upstream-dir> plus the wrapper.
@@ -18,11 +19,40 @@ _SV2V_REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 # shellcheck source=fetch_checked.sh
 . "$_SV2V_REPO/fetch_checked.sh"
 
+sv2v_read_pin() {
+  # The sv2v pin, read scoped to its labelled paragraph and failing closed
+  # naming what it could not read -- the same contract flow/lib.sh's spec_pin
+  # gives the flow tree's own spec reads. It cannot call spec_pin: sv2v.sh is
+  # sourced by one script in each tree, and sourcing flow/lib.sh would drag
+  # its failure helper (exit ${2:-2}) across the flow/verification boundary
+  # this file straddles, silently changing verification/core/setup.sh's exit
+  # status for its own pin failures (see fetch_checked.sh's header). One
+  # consumer is also not the multi-consumer case that earned fetch_checked.sh
+  # its shared root, so the read lives here, next to its only user.
+  #
+  # The scope is the whole paragraph -- the label line through the next blank
+  # line -- not a fixed line window: prose may reflow inside the paragraph
+  # (the sha256 sits three lines below the label today), and this read
+  # survives that. The label is matched as a fixed string, like spec_pin does.
+  local spec para
+  spec="$_SV2V_REPO/spec/core.md"
+  para="$(awk 'index($0, "**sv2v (decision 0010):**"){f=1} f{print} f&&/^$/{exit}' "$spec" 2>/dev/null || true)"
+  [[ -n "$para" ]] \
+    || { echo "sv2v.sh: no '**sv2v (decision 0010):**' paragraph in spec/core.md" >&2; exit 1; }
+  # The || true on each read keeps it pipefail-safe: both sourcing callers set
+  # set -euo pipefail, and an unrescued empty grep would kill the caller before
+  # the guards below can speak -- the dead guard this replaces.
+  PIN_SV2V="$(printf '%s\n' "$para" | grep -o 'sv2v v[0-9][0-9.]*' | head -1 | cut -d' ' -f2 || true)"
+  PIN_SV2V_SHA="$(printf '%s\n' "$para" | grep -o '[0-9a-f]\{64\}' | head -1 || true)"
+  [[ -n "$PIN_SV2V" ]] \
+    || { echo "sv2v.sh: no 'sv2v v<version>' in the '**sv2v (decision 0010):**' paragraph of spec/core.md" >&2; exit 1; }
+  [[ -n "$PIN_SV2V_SHA" ]] \
+    || { echo "sv2v.sh: no sha256 in the '**sv2v (decision 0010):**' paragraph of spec/core.md" >&2; exit 1; }
+}
+
 sv2v_ensure() {
   local build="$1" zip
-  PIN_SV2V="$(grep -o 'sv2v v[0-9][0-9.]*' "$_SV2V_REPO/spec/core.md" | head -1 | cut -d' ' -f2)"
-  PIN_SV2V_SHA="$(grep -A2 'zachjs/sv2v' "$_SV2V_REPO/spec/core.md" | grep -o '[0-9a-f]\{64\}' | head -1)"
-  [[ -n "$PIN_SV2V" && -n "$PIN_SV2V_SHA" ]] || { echo "sv2v.sh: could not read the sv2v pin from spec/core.md" >&2; exit 1; }
+  sv2v_read_pin
   if [[ -z "${SV2V:-}" ]]; then
     SV2V="$build/sv2v/$PIN_SV2V/sv2v-Linux/sv2v"
     if [[ ! -x "$SV2V" ]]; then

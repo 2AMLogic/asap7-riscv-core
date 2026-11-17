@@ -9,6 +9,8 @@
 # fetched with uvx into a throwaway env; cocotb is the verification/requirements.txt
 # pin. iverilog must be on PATH at the pinned version (as for run.sh).
 # OUT_DIR defaults to verification/runs/fv-<UTC timestamp>-<pid>; report.json inside.
+# After the run a leak_guard scan fails the script if report.json still names a
+# host path (fv.py redacts the two roots it knows; the guard catches any other).
 set -euo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -41,7 +43,11 @@ if [ "$NEGATIVE" = 1 ]; then
   [ "$rc" = 1 ] && [ -f "$OUT/report.json" ] || die "negative control: expected a reported test failure, got exit $rc"
   python3 -I -c 'import json,sys; r=json.load(open(sys.argv[1])); sys.exit(0 if r["tests_failed"]>=1 and all(x["response"].get("status")!="error" for x in r["results"]) else 1)' "$OUT/report.json" \
     || die "negative control: no genuine test failure in $OUT/report.json"
+  leak_guard "$OUT/report.json"
   echo "negative control: run failed as expected"
   exit 0
 fi
-python3 -I fv.py "$OUT"
+rc=0; python3 -I fv.py "$OUT" || rc=$?
+[ -f "$OUT/report.json" ] || die "fv.py wrote no report at $OUT/report.json (fv.py exit $rc); its output above is the real failure"
+leak_guard "$OUT/report.json"
+exit "$rc"
