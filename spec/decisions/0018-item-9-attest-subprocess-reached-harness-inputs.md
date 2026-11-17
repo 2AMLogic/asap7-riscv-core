@@ -6,8 +6,8 @@
 
 **Problem.** The closure walks behind #145 and #154 matched `source`/`import` patterns only, so a repo
 file run as `python3 -I "$REPO/foo.py"` — or passed to an interpreter by an attested script — was
-invisible to them. Six such files are reached from attested harness files; two were already attested,
-four were not:
+invisible to them. Nine such files are reached from attested harness files; four were already attested,
+five were not:
 
 | repo file | invoked by (attested) | executed by item 9's `cold_start` (`verification/run.sh --core`)? |
 |---|---|---|
@@ -17,10 +17,11 @@ four were not:
 | `flow/merge_lib.py` | `flow/lib.sh:211` | no — smoke-flow driver |
 | `flow/core/fetch.sh` | `verification/core/setup.sh:84` | **yes** — whenever `verification/build/cve2/upstream/rtl/cve2_top.sv` is absent, which is every true cold start |
 
-(`verification/core/runner.py`, `verification/core/build_tests.py` and `verification/core/link.ld` are
-reached the same way — `run.sh:76,82`, `archtest_common.py:57`, `build_tests.py:57` — and were already
-attested, which is why the source/import walk never surfaced the mechanism: its unattested hits all
-happened to be absent, not the mechanism itself.)
+(`verification/core/setup.sh`, `verification/core/runner.py`, `verification/core/build_tests.py` and
+`verification/core/link.ld` are reached the same way — `run.sh:67`, `run.sh:76,82`,
+`archtest_common.py:57`, `build_tests.py:57` — and were already attested, which is why the
+source/import walk never surfaced the mechanism: its unattested hits all happened to be absent, not
+the mechanism itself.)
 
 Until this record, `flow/core/fetch.sh` is the strongest counterexample: it sits on the core path
 itself, and the cold start whose result the envelope records cannot run without it. The other four are
