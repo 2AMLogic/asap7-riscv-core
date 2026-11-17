@@ -43,12 +43,28 @@ attested `.py` import resolves to a file already attested (`archtest_common`) or
    and its reason are recorded in the inventory `description` so the silence is explicit.
 
 3. **Item 9 re-attested in the same commit as the inventory edit** (0014's measured rule: an inventory
-   edit without regeneration renders item 9 `unmet, stale_evidence`). The prior envelope (12-input
-   15-check pass, input hash `sha256:6b1dbf95…`, produced at commit `d8087b0`, 2026-11-15) is retained
-   byte-for-byte at **`evidence/records/item9-2026-11-15-2.json`**. The convention's plain-date name
-   `item9-2026-11-15.json` was already taken earlier the same day — `d8087b0` retained the `556b51a`
-   envelope there — so the `-2` suffix disambiguates; the envelope itself carries no timestamp field,
-   so the name is the only place the collision could surface. `manifests/asap7-riscv-core.json`'s
+   edit without regeneration renders item 9 `unmet, stale_evidence`). Two superseded envelopes are
+   retained byte-for-byte, each before its rewrite:
+
+   - The first (12-input 15-check pass, input hash `sha256:6b1dbf95…`, produced at commit `d8087b0`,
+     2026-11-15) at **`evidence/records/item9-2026-11-15-2.json`** (file hash `sha256:3a36d2d7…`). The
+     convention's plain-date name `item9-2026-11-15.json` was already taken earlier the same day —
+     `d8087b0` retained the `556b51a` envelope there — so the `-2` suffix disambiguates; the envelope
+     itself carries no timestamp field, so the name is the only place the collision could surface.
+     This file byte-duplicates `main`'s `evidence/records/item9-2026-11-15-d8087b0.json` (identical
+     `3a36d2d7…` bytes under two naming conventions); both are kept — the retention set is
+     append-only and nothing is deleted.
+   - The second (same 12-input 15-check inventory generation, envelope `sha256:9901f69b…`, produced
+     at commit `bb6b559`, 2026-11-16 — #157's re-attest after #142 rewrote `flow/core/sv2v.sh`) at
+     **`evidence/records/item9-2026-11-16-bb6b559.json`**, named by decision 0017's
+     date-plus-producing-commit convention. `main` moved onto that envelope while this PR was open,
+     so it is the envelope this branch supersedes on the merged tree.
+
+   That #142 rewrite is also why the landing envelope is produced over the merged tree: it pins
+   `flow/core/sv2v.sh` at `sha256:549ad8e5…` — the content `main` actually carries — not the
+   `sha256:7b22ea80…` this branch attested before the rebase.
+
+   `manifests/asap7-riscv-core.json`'s
    item-9 citation hash moved to the new inventory hash and
    `manifests/asap7-riscv-core.signoff.json` was regenerated from both; item 9 still renders `met`,
    with a non-null citation, `check_count` 20, and `t1_met_count` unchanged at 3 of 11.
@@ -63,17 +79,21 @@ uvx --python 3.12 --from "klayout-tools==0.8.0" klt signoff --attest 9 --invento
 `--python 3.12` is load-bearing: the cold start runs `verification/run.sh`, which refuses any `python3`
 not matching `verification/tool-versions.txt`. The `klt` pin is not bumped here.
 
-**Verification.** The live cold start that produced the envelope — `verification/run.sh --core`, driven
-by `klt signoff --attest 9` on a host with iverilog 13.0, verilator 5.050, python 3.12.3 and network
-egress: **72 of 72 riscv-arch-test I/M/C programs pass, 0 failures, 0 skipped, exit 0**
-(`verification/runs/20261115T201341Z-3288127/results.xml`; `C-cebreak-01` is excluded with its
-diagnosed reason in `verification/core/excluded.json` and decision 0011, so 72 is the full set). The
-new envelope is `evidence/item9.json` (17 attested paths, 20/20 checks, input hash
-`sha256:4b13b862…`). Negative control for the new coverage, run twice: with the new envelope
-committed, editing one byte of a newly-attested file — a comment in `fetch_checked.sh`, then a
+**Verification.** The live cold start that produced the committed envelope — `verification/run.sh
+--core`, driven by `klt signoff --attest 9` on a host with iverilog 13.0, verilator 5.050,
+python 3.12.3 and network egress: **72 of 72 riscv-arch-test I/M/C programs pass, 0 failures, 0
+skipped, exit 0** (`verification/runs/20261116T234911Z-366619/results.xml`; `C-cebreak-01` is excluded
+with its diagnosed reason in `verification/core/excluded.json` and decision 0011, so 72 is the full
+set). An earlier run of the same command over the pre-merge tree
+(`verification/runs/20261115T201341Z-3288127`) produced a first-envelope iteration that this PR
+replaced with the merged-tree re-attest before landing. The committed envelope is
+`evidence/item9.json` (17 attested paths, 20/20 checks, input hash `sha256:9fa21c9c…`, pinning
+`flow/core/sv2v.sh` at `sha256:549ad8e5…`). Negative control for the new coverage, run twice: with the
+envelope committed, editing one byte of a newly-attested file — a comment in `fetch_checked.sh`, then a
 byte of `verification/tool-versions.txt` (a non-`.sh` data input) — makes
 `klt signoff --attest 9 --inventory attest/item9.json --check evidence/item9.json` exit **3** and name
-that row; reverting each restores `status: match`, exit 0. This is the check that proves the gap
+that row (`attestation.checks.0`, then `attestation.checks.16`); reverting each restores
+`status: match`, exit 0. This is the check that proves the gap
 closed, not merely that the envelope regenerated. RTL simulation of the converted CVE2 closure against
 a predictive PDK; ASAP7 is never fabricated and nothing here is measured.
 
