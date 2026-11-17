@@ -5,6 +5,8 @@ triage role. Newest first.
 
 ### 2026-11-17
 
+- **PR #179**: chore(evidence): item 9 attests subprocess-reached harness inputs
+- **Issue #178** (closed): attest/item9.json's closure walk is source/import-only: four subprocess-reached repo inputs are still unattested
 - **PR #154**: feat(attest): item 9 attests the harness's sourced inputs; decision 0015
 - **Issue #145** (closed): item 9's attestation inventory omits five inputs its attested harness cannot run without
 

@@ -26,7 +26,6 @@ Judge-approved PRs under a hold (`loom:blocked` or `loom:operator`) — only a h
 Human-approved issues ready for implementation (`loom:issue`).
 
 - **#117**: Attestation-gate drift messages print "command " with an empty name for the non-path check rows
-- **#145**: item 9's attestation inventory omits five inputs its attested harness cannot run without
 
 ## In Progress
 
@@ -38,7 +37,7 @@ _None._
 
 PRs waiting on Judge (`loom:review-requested`).
 
-- **#154**: feat(attest): item 9 attests the harness's sourced inputs; decision 0015
+_None._
 
 ## Approved (Awaiting Merge)
 
@@ -54,7 +53,6 @@ Issues carrying `loom:curated`.
 - **#28**: T1 item 2 (layout): committed P&R flow and routed cve2_top GDS on ASAP7 *(curated)*
 - **#117**: Attestation-gate drift messages print "command " with an empty name for the non-path check rows *(curated)*
 - **#122**: The accepted core netlist has no consumer: inventory, gate-level archtest and item 1 all still cite records/2026-11-03 *(curated)*
-- **#145**: item 9's attestation inventory omits five inputs its attested harness cannot run without *(curated)*
 
 ## Proposed (Architect / Hermit)
 
@@ -71,11 +69,11 @@ _None._
 | Operator merge-risk holds | 1 |
 | Very important | 1 |
 | Important | 1 |
-| Ready (`loom:issue`) | 2 |
+| Ready (`loom:issue`) | 1 |
 | In Progress (`loom:building`) | 0 |
-| PRs awaiting review | 1 |
+| PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 1 |
-| Curated | 5 |
+| Curated | 4 |
 | Architect / Hermit proposals | 2 |
 | Active epics | 0 |
 <!-- guide:plan-body:end -->
