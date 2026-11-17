@@ -3,15 +3,36 @@
   "kind": "generic",
   "status": "pass",
   "t1_item": 9,
-  "summary": "T1 item 9 (Testbenches shipped): 15/15 attestation checks passed (klt signoff --attest)",
+  "summary": "T1 item 9 (Testbenches shipped): 20/20 attestation checks passed (klt signoff --attest)",
   "source": "attest/item9.json",
   "attestation": {
     "producer": "klt signoff --attest",
     "inventory_schema_version": 1,
     "hash_algorithm": "sha256-raw-bytes",
-    "check_count": 15,
-    "passed_count": 15,
+    "check_count": 20,
+    "passed_count": 20,
     "checks": [
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "fetch_checked.sh",
+        "passed": true,
+        "content_hash": "sha256:d210febebdaaee935df9e7471efed7ce7bb9d8350d03c5770a7f6a7379c87000"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "flow/core/sv2v.sh",
+        "passed": true,
+        "content_hash": "sha256:549ad8e5f3ceb63d25ee6beeeb3257031f7bd73abc75ce89ca50975470d6f67f"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "flow/lib.sh",
+        "passed": true,
+        "content_hash": "sha256:bcad7aa152f99b2e3db240d8e19ba23f61e1109d4719559b93f17bc26dafa737"
+      },
       {
         "check": "present",
         "role": "testbench",
@@ -92,9 +113,23 @@
       {
         "check": "present",
         "role": "testbench",
+        "path": "verification/requirements.txt",
+        "passed": true,
+        "content_hash": "sha256:bb9da4c9c151f83d50cab5620368a77261a662799a6515b50879463923e04822"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
         "path": "verification/run.sh",
         "passed": true,
         "content_hash": "sha256:029fc7f2845e4ff225cd84bfb55b6f7402e4cb0ee78e35115249c67b7382cd0f"
+      },
+      {
+        "check": "present",
+        "role": "testbench",
+        "path": "verification/tool-versions.txt",
+        "passed": true,
+        "content_hash": "sha256:4a8eba6a76ef39d4431d271a9a3b35ebb2167fcb236643852823782c84acc667"
       },
       {
         "check": "command",
@@ -147,7 +182,7 @@
         "path": "attest/item9.json",
         "scope": "repo"
       },
-      "content_hash": "sha256:6b1dbf958b857cb75bb99463483ce3ce4983d41bbcb90815ddad1f5debd1e586"
+      "content_hash": "sha256:9fa21c9c86ed12fffd2eb5bfe23bed439859e9884254f357b52e926f9ee82d20"
     }
   }
 }
