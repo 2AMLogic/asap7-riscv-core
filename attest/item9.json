@@ -2,11 +2,14 @@
   "schema_version": 1,
   "kind": "t1-attestation-inventory",
   "t1_item": 9,
-  "description": "Testbenches backing the core-functional claim only: the riscv-arch-test I/M/C subset (72 programs; C-cebreak-01 is excluded with its diagnosed reason in verification/core/excluded.json and spec/decisions/0011-c-cebreak-01-mtvec-not-writable.md) run on cve2_rv32imc_wrapper under cocotb + Icarus, signatures compared with the Sail golden model; plus the negative control. verification/lib.sh is the shared shell library that verification/run.sh and verification/core/setup.sh both source and cannot run without; it is listed because the harness does not execute without it, not because it is itself a bench. flow/smoke/run.sh drives the ASAP7 smoke flow on the placeholder counter DUT only; it is listed as a driver, backs no core claim, and its cold start (needs an ASAP7 checkout and writes a dated record) is not run by this attestation. No bench exists yet for the standard-cells, predicted-clock, drc or lvs rows (owners: #28 standard-cells, #6 predicted-clock, #29 drc, #30 lvs). RTL simulation of the converted CVE2 closure, not the gate-level netlist. ASAP7 is a predictive PDK; nothing here is fabricated or measured.",
+  "description": "Testbenches backing the core-functional claim only: the riscv-arch-test I/M/C subset (72 programs; C-cebreak-01 is excluded with its diagnosed reason in verification/core/excluded.json and spec/decisions/0011-c-cebreak-01-mtvec-not-writable.md) run on cve2_rv32imc_wrapper under cocotb + Icarus, signatures compared with the Sail golden model; plus the negative control. Boundary rule (spec/decisions/0016-item-9-attest-sourced-harness-inputs.md): every input the attested harness cannot execute without is listed here, whether or not it is itself a bench. verification/lib.sh is the shared shell library that verification/run.sh and verification/core/setup.sh both source and cannot run without; it is listed because the harness does not execute without it, not because it is itself a bench. The same rule pulls in the rest of the harness's sourced or consumed inputs: verification/tool-versions.txt, the pin table verification/lib.sh reads and dies without, which also carries every download sha256 the harness enforces; verification/requirements.txt, which verification/run.sh hashes and pip-installs the harness Python environment from; fetch_checked.sh, sourced by verification/core/setup.sh and by flow/core/sv2v.sh for every sha256-checked tool download; flow/core/sv2v.sh, sourced by verification/core/setup.sh to convert the CVE2 closure before simulation; and flow/lib.sh, sourced by flow/smoke/run.sh — listed for consistency with its attested driver, not because the smoke cold start backs a core claim. spec/core.md is deliberately not listed: it is the ratified spec, change-controlled under spec/decisions/, and attesting it would red this gate on every spec edit; excluding it is a policy decision recorded in spec/decisions/0016-item-9-attest-sourced-harness-inputs.md, not an oversight. flow/smoke/run.sh drives the ASAP7 smoke flow on the placeholder counter DUT only; it is listed as a driver, backs no core claim, and its cold start (needs an ASAP7 checkout and writes a dated record) is not run by this attestation. No bench exists yet for the standard-cells, predicted-clock, drc or lvs rows (owners: #28 standard-cells, #6 predicted-clock, #29 drc, #30 lvs). RTL simulation of the converted CVE2 closure, not the gate-level netlist. ASAP7 is a predictive PDK; nothing here is fabricated or measured.",
   "testbenches": [
     "verification/run.sh",
     "verification/lib.sh",
+    "verification/tool-versions.txt",
+    "verification/requirements.txt",
     "verification/core/setup.sh",
+    "fetch_checked.sh",
     "verification/core/build_tests.py",
     "verification/core/runner.py",
     "verification/core/archtest_common.py",
@@ -15,6 +18,8 @@
     "verification/core/model_test.h",
     "verification/core/link.ld",
     "verification/core/excluded.json",
+    "flow/core/sv2v.sh",
+    "flow/lib.sh",
     "flow/smoke/run.sh"
   ],
   "cold_start": {
