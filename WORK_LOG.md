@@ -3,6 +3,11 @@
 Chronological record of merged PRs and closed issues, maintained by the Guide
 triage role. Newest first.
 
+### 2026-11-17
+
+- **PR #154**: feat(attest): item 9 attests the harness's sourced inputs; decision 0015
+- **Issue #145** (closed): item 9's attestation inventory omits five inputs its attested harness cannot run without
+
 ### 2026-11-16
 
 - **PR #167**: chore(loom): resync installed Loom to v0.19.1302
