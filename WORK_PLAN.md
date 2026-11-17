@@ -13,19 +13,19 @@ _None._
 
 `loom:very-important` (one counts per workspace); every stage takes these first.
 
-- **#28**: T1 item 2 (layout): committed P&R flow and routed cve2_top GDS on ASAP7
+- **#28**: T1 item 2 (layout): committed P&R flow and routed cve2_top GDS on ASAP7 *(held)*
 
 ## Important
 
 `loom:important`; taken before unlabelled work.
 
-- **#122**: The accepted core netlist has no consumer: inventory, gate-level archtest and item 1 all still cite records/2026-11-03
+- **#122**: The accepted core netlist has no consumer: inventory, gate-level archtest and item 1 all still cite records/2026-11-03 *(held)*
 
 ## Ready
 
 Human-approved issues ready for implementation (`loom:issue`).
 
-- **#117**: Attestation-gate drift messages print "command " with an empty name for the non-path check rows
+_None._
 
 ## In Progress
 
@@ -50,9 +50,8 @@ _None._
 Issues carrying `loom:curated`.
 
 - **#6**: Track the gap to T1 (klayout-tools design-evidence-tiers.md) *(curated)*
-- **#28**: T1 item 2 (layout): committed P&R flow and routed cve2_top GDS on ASAP7 *(curated)*
-- **#117**: Attestation-gate drift messages print "command " with an empty name for the non-path check rows *(curated)*
-- **#122**: The accepted core netlist has no consumer: inventory, gate-level archtest and item 1 all still cite records/2026-11-03 *(curated)*
+- **#28**: T1 item 2 (layout): committed P&R flow and routed cve2_top GDS on ASAP7 *(curated)* *(held)*
+- **#122**: The accepted core netlist has no consumer: inventory, gate-level archtest and item 1 all still cite records/2026-11-03 *(curated)* *(held)*
 
 ## Proposed (Architect / Hermit)
 
@@ -69,11 +68,11 @@ _None._
 | Operator merge-risk holds | 0 |
 | Very important | 1 |
 | Important | 1 |
-| Ready (`loom:issue`) | 1 |
+| Ready (`loom:issue`) | 0 |
 | In Progress (`loom:building`) | 0 |
 | PRs awaiting review | 0 |
 | Approved PRs awaiting merge | 0 |
-| Curated | 4 |
-| Architect / Hermit proposals | 2 |
+| Curated | 3 |
+| Architect / Hermit proposals | 1 |
 | Active epics | 0 |
 <!-- guide:plan-body:end -->
