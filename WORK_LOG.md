@@ -5,6 +5,7 @@ triage role. Newest first.
 
 ### 2026-11-16
 
+- **PR #167**: chore(loom): resync installed Loom to v0.19.1302
 - **PR #173**: docs: drop hand-kept queue sections from ROADMAP.md, point at WORK_PLAN.md and #6
 - **Issue #165** (closed): Retire the hand-kept queue state in ROADMAP.md: it restates WORK_PLAN.md and is already stale
 - **Issue #148** (closed): A signoff verdict is only valid for the merge ref it ran against: a stale green check turned main red for seven runs
