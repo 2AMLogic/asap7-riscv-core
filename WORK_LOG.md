@@ -3,6 +3,11 @@
 Chronological record of merged PRs and closed issues, maintained by the Guide
 triage role. Newest first.
 
+### 2026-11-18
+
+- **PR #187**: ci: add merge_group triggers to harness and signoff workflows
+- **Issue #186** (closed): Merge queue: add the merge_group trigger to the required-check workflow(s)
+
 ### 2026-11-17
 
 - **PR #128**: fix(signoff): label non-path attestation check rows by check kind in the drift map
