@@ -3,6 +3,11 @@
 Chronological record of merged PRs and closed issues, maintained by the Guide
 triage role. Newest first.
 
+### 2026-11-19
+
+- **PR #192**: docs: correct shared-archtest 0012 citation claim in spec/README.md
+- **Issue #191** (closed): Correct the shared-archtest 0012 citation guidance in spec/README.md
+
 ### 2026-11-18
 
 - **PR #187**: ci: add merge_group triggers to harness and signoff workflows
