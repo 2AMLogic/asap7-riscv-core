@@ -75,6 +75,12 @@ jobs:
       # the same klt version this job installs:
       #   uvx --python 3.12 --from "klayout-tools==0.8.0" klt signoff \
       #       --attest 10 --inventory attest/item10.json -o evidence/item10.json
+      # No retention step: the envelope is tool-produced and the superseded one
+      # reproduces byte-for-byte from its own commit, so in-place regeneration
+      # is allowed (spec/decisions/0019-attestation-retention.md, proposed
+      # pending operator ratification). Item 9 differs only because
+      # spec/decisions/0014-item-9-check-gate-and-lib-sh-attestation.md orders
+      # retain-first for it; that order is unchanged.
       - name: Re-check the item 10 attestation envelope
         run: |
           set -uo pipefail
