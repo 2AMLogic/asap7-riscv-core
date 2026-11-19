@@ -45,8 +45,8 @@ known fact rather than as an error:
 | [`0012-shared-archtest-module-and-item9-reattestation.md`](decisions/0012-shared-archtest-module-and-item9-reattestation.md) | one shared module for the two arch-test drivers; T1 item 9 re-attested | adopted 2026-11-06 |
 
 **Every bare "decision 0012" citation in this repository resolves to the
-first one** — the `klt` 0.9.0 / ASAP7 DRC deck record. Nothing anywhere cites
-the shared-archtest record, by number or by filename.
+first one** — the `klt` 0.9.0 / ASAP7 DRC deck record. References to the
+shared-archtest record use its filename.
 
 The tree is the register: enumerate the bare citations on demand rather than
 trusting a file-and-line inventory written here — such a list rots as soon as
