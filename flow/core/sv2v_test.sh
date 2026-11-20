@@ -34,12 +34,21 @@ eq() {  # label want got
 PIN_VERSION="v0.0.13"  # the pins of record, spec/core.md decision 0010; a spec
 PIN_SHA="552799a1d76cd177b9b4cc63a3e77823a3d2a6eb4ec006569288abeff28e1ff8"  # bump updates this test in the same PR
 
+# One parent-owned scratch root, created here in the parent shell: every
+# scratch tree the suite makes is mktemp -d'd inside it, and the trap removes
+# just the root. Every fake_tree caller uses command substitution, so a path
+# registered inside it never reaches a parent-shell array -- the
+# per-directory bookkeeping this suite used to carry was dead code (#199),
+# and a parent-owned root makes the subshell depth of a call site irrelevant.
+SCRATCH="$(mktemp -d "${TMPDIR:-/tmp}/asap7-sv2vtest.XXXXXX")"
+cleanup() { rm -rf "$SCRATCH"; }
+trap cleanup EXIT
+
 # A scratch tree holding copies of the real sv2v.sh + fetch_checked.sh and a
 # spec/core.md (a control body if given, else this repo's real spec).
 # shellcheck disable=SC2120  # the bare calls are deliberate: no body means the real spec copy
 fake_tree() {  # [core-md-body]
-  local d; d="$(mktemp -d "${TMPDIR:-/tmp}/asap7-sv2vtest.XXXXXX")"
-  FAKES+=("$d")
+  local d; d="$(mktemp -d "$SCRATCH/tree.XXXXXX")"
   mkdir -p "$d/flow/core" "$d/spec" "$d/build"
   cp "$SELF_REPO/flow/core/sv2v.sh" "$d/flow/core/sv2v.sh"
   cp "$SELF_REPO/fetch_checked.sh" "$d/fetch_checked.sh"
@@ -59,9 +68,6 @@ printf '%s\n' "$PIN_SV2V" "$PIN_SV2V_SHA"
 EOF
   printf '%s' "$d"
 }
-FAKES=()
-cleanup() { [[ ${#FAKES[@]} -eq 0 ]] || rm -rf "${FAKES[@]}"; }
-trap cleanup EXIT
 
 run_ensure() {  # tree -> the two pins on stdout; exit status as a caller sees
   bash "$1/drive.sh" "$1" "$1/stub" "$1/build"
