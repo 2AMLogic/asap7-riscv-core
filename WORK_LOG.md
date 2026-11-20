@@ -5,6 +5,12 @@ triage role. Newest first.
 
 ### 2026-11-20
 
+- **PR #203**: fix(flow): compare parsed SIMPLE FF and TT cell dictionaries directly
+- **Issue #202** (closed): Compare parsed SIMPLE FF and TT timing tables directly
+- **PR #201**: fix(flow): allocate every self-test fixture under a parent-owned scratch root
+- **Issue #199** (closed): Remove ineffective fixture tracking from the sv2v and flow library self-tests
+- **PR #190**: docs: propose attestation-retention decision and align item 10 recipe
+- **Issue #89** (closed): Record when an attestation envelope may be regenerated in place
 - **PR #197**: feat(flow): publish the latch-mapped 2026-11-20 core netlist and re-attest item 1
 
 ### 2026-11-19
