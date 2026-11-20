@@ -2,19 +2,28 @@
 # Cold-start entry point for the PDK-free cocotb + Icarus harness.
 #
 #   verification/run.sh                    lint + placeholder test; exit 0 on pass
-#   verification/run.sh --negative-control same, but with a deliberately failing
-#                                          assertion; exit 0 only if the test FAILS
+#   verification/run.sh --negative-control same, but with a deliberately wrong
+#                                          expected count; exit 0 only when the
+#                                          JUnit report shows that comparison
+#                                          ran and detected the mismatch
 #   verification/run.sh --core             riscv-arch-test I/M/C on the RV32IMC core
 #                                          (cve2_rv32imc_wrapper), signatures vs Sail
 #   verification/run.sh --core --negative-control
 #                                          same with one expected signature word
-#                                          flipped; exit 0 only if the run FAILS
+#                                          flipped; exit 0 only when the JUnit
+#                                          report shows the flip was detected
 #   verification/run.sh --core --gate      same programs on the committed synthesized
 #                                          netlist + pinned ASAP7 cell Verilog
 #                                          (zero-delay, pre-layout); writes record.json
 #   verification/run.sh --core --gate --negative-control
-#                                          same, one expected word flipped; exit 0
-#                                          only if the run FAILS
+#                                          flipped word; exit 0 only when the JUnit
+#                                          report shows the flip was detected
+#
+# Every negative control goes through one verdict rule,
+# negative_control_verdict in lib.sh: the runner's tests-failed exit (exactly
+# 1) must be backed by JUnit evidence that the intended comparison ran and
+# detected the injected mismatch. Startup, build and report-writing failures
+# propagate directly instead of reading as a pass.
 #
 # Tool versions come from verification/tool-versions.txt and
 # verification/requirements.txt, never from whatever is on PATH.
@@ -73,10 +82,13 @@ if [ "$CORE" = 1 ]; then
     echo "== riscv-arch-test I/M/C on cve2_rv32imc_wrapper (cocotb + icarus) =="
   fi
   if [ "$NEGATIVE" = 1 ]; then
-    if "$VENV/bin/python" "$HERE/core/runner.py" "$RUN_DIR" --negative-control "${ARGS[@]}"; then
-      die "negative control: run passed but was expected to fail"
-    fi
-    echo "negative control: run failed as expected"
+    rc=0
+    "$VENV/bin/python" "$HERE/core/runner.py" "$RUN_DIR" --negative-control "${ARGS[@]}" || rc=$?
+    # core/test_archtest.py flips exactly one expected word, so the injected
+    # mismatch is a one-word signature diff; the failed testcase stays visible
+    # in $RUN_DIR/results.xml and, for --gate, in record.json.
+    negative_control_verdict "$VENV/bin/python" "$rc" "$RUN_DIR/results.xml" \
+      ': 1/[0-9]+ signature words differ'
     exit 0
   fi
   "$VENV/bin/python" "$HERE/core/runner.py" "$RUN_DIR" "${ARGS[@]}"
@@ -89,10 +101,13 @@ verilator --lint-only -Wall --top-module counter "$HERE/smoke/counter.sv"
 
 echo "== cocotb + icarus =="
 if [ "$NEGATIVE" = 1 ]; then
-  if SMOKE_NEGATIVE_CONTROL=1 "$VENV/bin/python" "$HERE/smoke/runner.py" "$RUN_DIR"; then
-    die "negative control: test passed but was expected to fail"
-  fi
-  echo "negative control: test failed as expected"
+  rc=0
+  SMOKE_NEGATIVE_CONTROL=1 "$VENV/bin/python" "$HERE/smoke/runner.py" "$RUN_DIR" || rc=$?
+  # smoke/test_counter.py expects 99 instead of the real count 5, so the
+  # injected mismatch fails the final count comparison with a
+  # "count=N, expected 99" message; any other failure stays a failure.
+  negative_control_verdict "$VENV/bin/python" "$rc" "$RUN_DIR/results.xml" \
+    'count=[0-9]+, expected 99'
   exit 0
 fi
 "$VENV/bin/python" "$HERE/smoke/runner.py" "$RUN_DIR"

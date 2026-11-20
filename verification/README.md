@@ -37,15 +37,20 @@ gitignored.
 verification/run.sh --negative-control
 ```
 
-Runs the same flow with a deliberately failing assertion
-(`SMOKE_NEGATIVE_CONTROL=1`) and exits 0 only if the test *fails*; it exits
-non-zero if the broken assertion unexpectedly passes.
+Runs the same flow with a deliberately wrong expected count
+(`SMOKE_NEGATIVE_CONTROL=1`). One verdict rule, `negative_control_verdict` in
+`lib.sh` (self-tested by `lib_test.sh`), decides the exit: the command exits 0
+only when the runner's tests-failed exit is backed by JUnit evidence that the
+intended comparison ran and detected the injected mismatch. A startup, build or
+report-writing failure with no usable report, a failure that is not the
+injected mismatch, or an unexpected pass each exit non-zero. The failed
+testcase stays visible in `results.xml`.
 
 ## Core mode
 
 ```sh
 verification/run.sh --core                    # exit 0 only if every program passes
-verification/run.sh --core --negative-control # exit 0 only if the broken check fails
+verification/run.sh --core --negative-control # exit 0 only if the flipped word is detected
 ```
 
 `core/setup.sh` first downloads the pinned inputs into `verification/build/`
@@ -66,8 +71,9 @@ does not, and nothing attested depends on it. Run `spike_setup.sh` once, then
 `python3 -I verification/core/spike_trace.py`. `spike_trace.py` accepts only the
 mtvec shape CVE2 can represent when traces are compared (see its docstring).
 
-The negative control flips one expected word of the first program; the run must
-fail on exactly that.
+The negative control flips one expected word of the first program; the run
+must fail on exactly that — the same `negative_control_verdict` rule as the
+smoke control, so only a detected one-word signature mismatch exits 0.
 
 What it claims: RTL simulation of the converted source (not the gate-level
 netlist; see "Gate-level mode" below) matches Sail on the programs actually run, which are those listed in
@@ -107,7 +113,7 @@ uvx --python 3.12 --from "klayout-tools==0.8.0" klt signoff --attest 9 \
 
 ```sh
 verification/run.sh --core --gate                    # exit 0 only if every program passes
-verification/run.sh --core --gate --negative-control # flipped word; exit 0 only if the run FAILS
+verification/run.sh --core --gate --negative-control # flipped word; exit 0 only if the flip is detected
 ```
 
 Same programs, Sail signatures, `tb_core.v`, `test_archtest.py` and
