@@ -5,6 +5,8 @@ triage role. Newest first.
 
 ### 2026-11-20
 
+- **PR #212**: fix(verification): require JUnit evidence for negative-control exits
+- **Issue #208** (closed): Remove duplicate negative-control checks that accept runner startup failures
 - **PR #210**: feat(verification): generate a pinned Spike retirement trace for the core test ELFs
 - **Issue #205** (closed): Generate a pinned Spike retirement trace for the CVE2 test ELFs
 - **PR #203**: fix(flow): compare parsed SIMPLE FF and TT cell dictionaries directly
