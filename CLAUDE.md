@@ -58,8 +58,11 @@ on ASAP7, designed and verified by AI agents. **Digital.**
         --attest 10 --inventory attest/item10.json -o evidence/item10.json
     ```
 
-    (Whether item 10's re-attest also needs a retention step is unresolved —
-    #89.) Item 10's envelope harness checks are the cheaper of the two.
+    Item 10 needs no retention step: a tool-produced envelope is regenerated
+    in place because the superseded one reproduces from its own commit
+    (`spec/decisions/0019-attestation-retention.md`, proposed pending
+    operator ratification). Item 10's envelope harness checks are the cheaper
+    of the two.
 
   - **Item 9 (testbenches shipped).** `attest/item9.json` attests the
     verification and smoke testbench paths (e.g. `flow/smoke/run.sh`,

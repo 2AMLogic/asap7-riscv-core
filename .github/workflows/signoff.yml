@@ -75,6 +75,12 @@ jobs:
       # the same klt version this job installs:
       #   uvx --python 3.12 --from "klayout-tools==0.8.0" klt signoff \
       #       --attest 10 --inventory attest/item10.json -o evidence/item10.json
+      # No retention step: the envelope is tool-produced and the superseded one
+      # reproduces byte-for-byte from its own commit, so in-place regeneration
+      # is allowed (spec/decisions/0019-attestation-retention.md, proposed
+      # pending operator ratification). Item 9 differs only because
+      # spec/decisions/0014-item-9-check-gate-and-lib-sh-attestation.md orders
+      # retain-first for it; that order is unchanged.
       - name: Re-check the item 10 attestation envelope
         run: |
           set -uo pipefail
@@ -112,12 +118,15 @@ jobs:
       # and network egress can refresh it.
       #
       # Re-attesting item 9 is a TWO-step change, and both steps belong in the
-      # same commit (spec/decisions/0012-shared-archtest-module-and-item9-reattestation.md
-      # and spec/decisions/0014-item-9-check-gate-and-lib-sh-attestation.md):
+      # same commit (spec/decisions/0014-item-9-check-gate-and-lib-sh-attestation.md;
+      # the general rule is spec/decisions/0019-attestation-retention.md, proposed
+      # pending operator ratification):
       #   1. RETAIN the envelope being superseded first — copy the committed
       #      evidence/item9.json to evidence/records/item9-<the date IT was
-      #      produced>.json. Attestations are append-only: never overwrite one
-      #      without keeping the version it replaces.
+      #      produced>.json. This retain-first step is ordered specifically for
+      #      item 9 by spec/decisions/0014-item-9-check-gate-and-lib-sh-attestation.md
+      #      (rule 4 of spec/decisions/0019-attestation-retention.md); it is not a
+      #      general requirement — item 10 regenerates in place, see above.
       #   2. Then regenerate, pinned to the klt version this job installs, on a
       #      host that can run the cold start:
       #        uvx --python 3.12 --from "klayout-tools==0.8.0" klt signoff \
