@@ -108,7 +108,7 @@
         "role": "testbench",
         "path": "verification/core/setup.sh",
         "passed": true,
-        "content_hash": "sha256:40e5e991afab6d6559a647cbe1ab53c30dfd8363bb51aad02d6e2e8e097c483f"
+        "content_hash": "sha256:8aa935c5f69d9fc293df2003c83a8f5967b88693173fb234c861c5aad25cb109"
       },
       {
         "check": "present",
@@ -143,7 +143,7 @@
         "role": "testbench",
         "path": "verification/run.sh",
         "passed": true,
-        "content_hash": "sha256:029fc7f2845e4ff225cd84bfb55b6f7402e4cb0ee78e35115249c67b7382cd0f"
+        "content_hash": "sha256:67900c4462d4f52215294719ae42374d316fc98fce72c8dd184950c89515bca5"
       },
       {
         "check": "present",

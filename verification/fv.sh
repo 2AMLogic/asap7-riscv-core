@@ -34,7 +34,9 @@ command -v uvx >/dev/null || die "uvx not found on PATH"
 
 OUT="${OUT:-$HERE/runs/fv-$(date -u +%Y%m%dT%H%M%SZ)-$$}"
 mkdir -p "$OUT"
-"$HERE/core/setup.sh"
+# --rtl: fv.py reads no ASAP7 cell models, so its cold start skips that
+# download (#200).
+"$HERE/core/setup.sh" --rtl
 
 export KLT_CMD="uvx --python $PY_VER --from klayout-tools==$KLT_VER --with $COCOTB klt"
 cd "$HERE/core"

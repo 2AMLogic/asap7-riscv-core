@@ -52,7 +52,10 @@ verification/run.sh --core --negative-control # exit 0 only if the broken check 
 (gitignored, every download sha256- or commit-checked): riscv-arch-test, the
 Sail RISC-V golden model, the xPack RISC-V GCC, sv2v (the `spec/core.md` pin)
 and the hash-locked CVE2 closure. Nothing is installed on the host; network is
-needed on a cold start. Then `core/build_tests.py` compiles each program and runs
+needed on a cold start. Both RTL entry points (`run.sh --core` without `--gate`,
+`fv.sh`) invoke it as `core/setup.sh --rtl`, which skips the ASAP7 cell models
+only the gate-level run reads (#200): a cold RTL start never downloads them and
+cannot fail on that download. Then `core/build_tests.py` compiles each program and runs
 it on Sail to get the **expected signature** (the DUT never produces its own
 reference), and `core/runner.py` (helpers shared with `core/fv.py` in `core/archtest_common.py`) converts the RTL, builds it with Icarus and runs
 one cocotb test per program (`core/test_archtest.py`): reset, run until the program
@@ -107,7 +110,8 @@ Same programs, Sail signatures, `tb_core.v`, `test_archtest.py` and
 netlist `flow/core/records/2026-11-14/netlist.v` plus the ASAP7 7.5-track RVT
 functional cell Verilog (AO, OA, INVBUF, SIMPLE, SEQ groups) from
 `asap7sc7p5t_28` at the commit pinned in `spec/pdk-bringup.md`
-(`asap7_cells_*` in `tool-versions.txt`). `core/setup.sh` fetches the five files
+(`asap7_cells_*` in `tool-versions.txt`). `run.sh --core --gate` invokes
+`core/setup.sh` with no argument (the full set), which fetches the five files
 into `verification/build/asap7-cells/` and aborts on a sha256 mismatch; the
 vendor files are used unmodified. The runner writes `record.json` (program
 count, failures, tool versions, netlist and model hashes) into the run dir.
@@ -158,7 +162,7 @@ verification/fv.sh [OUT_DIR]                     # exit 0 only if every program 
 verification/fv.sh --negative-control [OUT_DIR]  # flipped signature word; exit 0 only if the run FAILS
 ```
 
-Runs the same suite as core mode (same `setup.sh`, `build_tests.py`, sv2v conversion,
+Runs the same suite as core mode (same `setup.sh --rtl` cold start, `build_tests.py`, sv2v conversion,
 `tb_core.v` and `test_archtest.py`) through `klt functional-verification` from the pinned
 `klayout-tools` release (`klayout_tools` in `tool-versions.txt`, fetched by `uvx`, with the
 pinned cocotb). One klt request per program is written to `OUT_DIR/requests/`; the program

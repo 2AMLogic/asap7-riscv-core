@@ -64,7 +64,13 @@ mkdir -p "$RUN_DIR"
 echo "run dir: $RUN_DIR"
 
 if [ "$CORE" = 1 ]; then
-  "$HERE/core/setup.sh"
+  # --rtl: the RTL run reads no ASAP7 cell models, so its cold start skips
+  # that download (#200); --gate prepares every input as before.
+  if [ "$GATE" = 1 ]; then
+    "$HERE/core/setup.sh"
+  else
+    "$HERE/core/setup.sh" --rtl
+  fi
   ARGS=()
   [ "$GATE" = 1 ] && ARGS+=(--gate)
   if [ "$GATE" = 1 ]; then
