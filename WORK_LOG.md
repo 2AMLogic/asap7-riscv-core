@@ -135,7 +135,7 @@ triage role. Newest first.
 
 ### 2026-11-05
 
-- The klt 0.9.0 smoke run for #17 produced DEF and GDS for the counter (`par` reported `ok`). With the re-pinned DRC deck (decision 0012, `sha256:14f146f0…`, 267 categories), DRC reported 549 routing-layer auxiliary grid violations. LVS reported `mismatch` with 19 topology errors. ERC reported `not_checked`. STA remains predicted. [Smoke run records](flow/smoke/records/2026-11-05/)
+- The klt 0.9.0 smoke run for #17 produced DEF and GDS for the counter (`par` reported `ok`). With the re-pinned DRC deck (decision 0012, `sha256:14f146f0…`, 267 categories), DRC reported 549 violations across seven rule categories. LVS reported `mismatch` with 19 topology errors. ERC reported `not_checked`. STA remains predicted. [Smoke run records](flow/smoke/records/2026-11-05/)
 - **PR #63**: feat: run core arch-test suite through klt functional-verification
 - **Issue #59** (closed): Run the riscv-arch-test core suite through klt functional-verification and commit the report
 - **PR #61**: feat: add SIMPLE RVT FF Liberty comparison script and record
