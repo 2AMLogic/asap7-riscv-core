@@ -55,8 +55,10 @@ export REPO_LIB="$SELF_REPO/flow/lib.sh"
 # never reaches this shell's array -- the per-path registration array the
 # helpers used to feed was dead code (#149): every subshell-created dir
 # survived the run. A parent-owned root makes the subshell depth of a call
-# site irrelevant.
-SCRATCH="$(mktemp -d "${TMPDIR:-/tmp}/asap7-libtest.XXXXXX")"
+# site irrelevant. #199 finished the sweep: the record, four-root, netlist
+# and stub fixtures that still allocated outside the root moved under it,
+# and the dead FAKES appends went away.
+SCRATCH="$(mktemp -d "${TMPDIR:-/tmp}/asap7-libtest.XXXXXX")" || exit 1
 cleanup() { rm -rf "$SCRATCH"; }
 trap cleanup EXIT
 
@@ -160,8 +162,7 @@ echo "# 5. record_leak_guard: the post-write host-path check every core record m
 # A scratch record directory whose files are the given name=content pairs.
 recdir() {  # [name=content]...
   local d kv
-  d="$(mktemp -d "${TMPDIR:-/tmp}/asap7-libtest.XXXXXX")"
-  FAKES+=("$d")
+  d="$(mktemp -d "$SCRATCH/rec.XXXXXX")"
   for kv in "$@"; do printf '%s\n' "${kv#*=}" >"$d/${kv%%=*}"; done
   printf '%s\n' "$d"
 }
@@ -239,10 +240,10 @@ fi
 echo
 echo "# 6. the four-root substitution order: a checkout path tags <asap7-checkout>, never <home>/..."
 
-FH="$(mktemp -d "${TMPDIR:-/tmp}/asap7-libtest.XXXXXX")"; FAKES+=("$FH")
-FS="$(mktemp -d "${TMPDIR:-/tmp}/asap7-libtest.XXXXXX")"; FAKES+=("$FS")
-FR="$(mktemp -d "${TMPDIR:-/tmp}/asap7-libtest.XXXXXX")"; FAKES+=("$FR")
-FOUT="$(mktemp -d "${TMPDIR:-/tmp}/asap7-libtest.XXXXXX")"; FAKES+=("$FOUT")
+FH="$(mktemp -d "$SCRATCH/home.XXXXXX")"
+FS="$(mktemp -d "$SCRATCH/scratch.XXXXXX")"
+FR="$(mktemp -d "$SCRATCH/repo.XXXXXX")"
+FOUT="$(mktemp -d "$SCRATCH/out.XXXXXX")"
 FA="$FH/asap7"  # the checkout normally lives under the operator's home
 
 # The write-through pair synth.sh uses: record_subs in the smoke order, then
@@ -334,7 +335,7 @@ done
 echo
 
 echo "# 8. synth_netlist: the newest synthesized netlist, or nothing"
-NW="$(mktemp -d "${TMPDIR:-/tmp}/asap7-libtest-net.XXXXXX")"; FAKES+=("$NW")
+NW="$(mktemp -d "$SCRATCH/net.XXXXXX")"
 mkdir -p "$NW/.klt/synthesize/old" "$NW/.klt/synthesize/new"
 printf 'module old.\n' >"$NW/.klt/synthesize/old/counter_synth.v"
 printf 'module new.\n' >"$NW/.klt/synthesize/new/counter_synth.v"
@@ -349,7 +350,7 @@ eq "synth_netlist is empty when nothing matches" \
 
 echo
 echo "# 9. provenance_rows: one klt row, keyed klt:, carrying the klt version ask"
-STUBS="$(mktemp -d "${TMPDIR:-/tmp}/asap7-libtest-stubs.XXXXXX")"; FAKES+=("$STUBS")
+STUBS="$(mktemp -d "$SCRATCH/stubs.XXXXXX")"
 for t in yosys python3 uvx; do
   printf '#!/usr/bin/env bash\necho "stub %s"\n' "$t" >"$STUBS/$t"
   chmod +x "$STUBS/$t"
