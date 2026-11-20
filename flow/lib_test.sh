@@ -58,7 +58,7 @@ export REPO_LIB="$SELF_REPO/flow/lib.sh"
 # site irrelevant. #199 finished the sweep: the record, four-root, netlist
 # and stub fixtures that still allocated outside the root moved under it,
 # and the dead FAKES appends went away.
-SCRATCH="$(mktemp -d "${TMPDIR:-/tmp}/asap7-libtest.XXXXXX")"
+SCRATCH="$(mktemp -d "${TMPDIR:-/tmp}/asap7-libtest.XXXXXX")" || exit 1
 cleanup() { rm -rf "$SCRATCH"; }
 trap cleanup EXIT
 

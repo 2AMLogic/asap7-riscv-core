@@ -40,7 +40,7 @@ PIN_SHA="552799a1d76cd177b9b4cc63a3e77823a3d2a6eb4ec006569288abeff28e1ff8"  # bu
 # registered inside it never reaches a parent-shell array -- the
 # per-directory bookkeeping this suite used to carry was dead code (#199),
 # and a parent-owned root makes the subshell depth of a call site irrelevant.
-SCRATCH="$(mktemp -d "${TMPDIR:-/tmp}/asap7-sv2vtest.XXXXXX")"
+SCRATCH="$(mktemp -d "${TMPDIR:-/tmp}/asap7-sv2vtest.XXXXXX")" || exit 1
 cleanup() { rm -rf "$SCRATCH"; }
 trap cleanup EXIT
 
