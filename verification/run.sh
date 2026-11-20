@@ -47,15 +47,21 @@ done
 [ "$GATE" = 0 ] || [ "$CORE" = 1 ] || { echo "run.sh: --gate needs --core" >&2; exit 2; }
 
 command -v iverilog >/dev/null || die "iverilog not found on PATH"
-command -v verilator >/dev/null || die "verilator not found on PATH"
 command -v python3 >/dev/null || die "python3 not found on PATH"
 
 check_version iverilog \
   "$(iverilog -V 2>/dev/null | sed -n '1s/.*version \([0-9][0-9.]*\).*/\1/p')"
-check_version verilator \
-  "$(verilator --version | sed -n '1s/^Verilator \([0-9][0-9.]*\).*/\1/p')"
 check_version python \
   "$(python3 -c 'import platform; print(platform.python_version())')"
+
+# Verilator backs the smoke lint below: both core modes simulate with Icarus
+# alone, so its checks run on the smoke path only and a Verilator install is
+# not a prerequisite of --core / --core --gate.
+if [ "$CORE" = 0 ]; then
+  command -v verilator >/dev/null || die "verilator not found on PATH"
+  check_version verilator \
+    "$(verilator --version | sed -n '1s/^Verilator \([0-9][0-9.]*\).*/\1/p')"
+fi
 
 # Venv inside the checkout (gitignored); reinstall when the pin file changes.
 if [ ! -x "$VENV/bin/python" ]; then

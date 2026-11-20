@@ -26,7 +26,8 @@ verification/run.sh
 It works from any working directory. It:
 
 1. checks the installed `iverilog`, `verilator` and `python3` against
-   `tool-versions.txt` and exits non-zero with a clear message on a mismatch;
+   `tool-versions.txt` and exits non-zero with a clear message on a mismatch
+   (the Verilator checks are smoke-only — see [Core mode](#core-mode));
 2. creates `verification/.venv` and installs `requirements.txt` (exact pins);
 3. runs `verilator --lint-only -Wall` over `smoke/counter.sv`;
 4. builds with Icarus and runs the cocotb test (`smoke/runner.py`);
@@ -56,6 +57,13 @@ testcase stays visible in `results.xml`.
 verification/run.sh --core                    # exit 0 only if every program passes
 verification/run.sh --core --negative-control # exit 0 only if the flipped word is detected
 ```
+
+Prerequisites are mode-specific: `iverilog` and `python3` are checked at
+startup for every mode, but Verilator is checked only on the smoke path —
+the lint step it backs is smoke-only, and both core modes (RTL and
+gate-level) simulate with Icarus alone. A host without Verilator runs
+`--core` and `--core --gate`; only the default smoke mode refuses to start
+without the pinned Verilator 5.050.
 
 `core/setup.sh` first downloads the pinned inputs into `verification/build/`
 (gitignored, every download sha256- or commit-checked): riscv-arch-test, the
@@ -266,7 +274,7 @@ item 5 stays `unmet` until the multi-corner `klt sta` half lands (#32).
 | What | Pin | File |
 |------|-----|------|
 | Icarus Verilog | 13.0 | `tool-versions.txt` |
-| Verilator | 5.050 | `tool-versions.txt` |
+| Verilator (smoke lint only) | 5.050 | `tool-versions.txt` |
 | Python | 3.12 | `tool-versions.txt` |
 | cocotb | 2.0.1 | `requirements.txt` |
 | klayout-tools (`fv.sh`) | 0.8.0 | `tool-versions.txt` |
