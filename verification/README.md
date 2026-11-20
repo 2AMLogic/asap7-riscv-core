@@ -169,7 +169,8 @@ evidence for the 2026-11-03 netlist.
 
 ```sh
 verification/fv.sh [OUT_DIR]                     # exit 0 only if every program passes
-verification/fv.sh --negative-control [OUT_DIR]  # flipped signature word; exit 0 only if the run FAILS
+verification/fv.sh --negative-control [OUT_DIR]  # flipped signature word; exit 0 only if the
+                                                 # report evidences that one-word mismatch
 ```
 
 Runs the same suite as core mode (same `setup.sh`, `build_tests.py`, sv2v conversion,
