@@ -5,6 +5,8 @@ triage role. Newest first.
 
 ### 2026-11-20
 
+- **PR #215**: fix(verification): pin fv.sh's negative control to the injected mismatch
+- **Issue #213** (closed): fv.sh's negative control accepts any genuine test failure, not the injected mismatch
 - **PR #212**: fix(verification): require JUnit evidence for negative-control exits
 - **Issue #208** (closed): Remove duplicate negative-control checks that accept runner startup failures
 - **PR #210**: feat(verification): generate a pinned Spike retirement trace for the core test ELFs
