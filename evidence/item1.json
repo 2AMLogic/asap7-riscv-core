@@ -17,14 +17,14 @@
         "role": "source",
         "path": "flow/core/fetch.sh",
         "passed": true,
-        "content_hash": "sha256:086be3c7225e2a7848ed18b995f12b6574cbcbf324268e8a46f61d6a3a1c1d8a"
+        "content_hash": "sha256:1647d263eba72a6dbf4441df7cbaabf89b61d6d9c9fa74a5cdfc7975708db68d"
       },
       {
         "check": "present",
         "role": "source",
         "path": "flow/core/synth.sh",
         "passed": true,
-        "content_hash": "sha256:40982cb124de878989c4a79446a675fdae7f4015cac078229aadb423c1ca35ac"
+        "content_hash": "sha256:dc29ba4d006acffe6ba4a775de697519084d9306b61aa524cb80a479f2705b1a"
       },
       {
         "check": "present",
@@ -43,14 +43,14 @@
       {
         "check": "present",
         "role": "derived",
-        "path": "flow/core/records/2026-11-03/netlist.v",
+        "path": "flow/core/records/2026-11-20/netlist.v",
         "passed": true,
-        "content_hash": "sha256:754ee8731dc0262696cd69044176b14b0c9376e9eecec3420f085802a6860809"
+        "content_hash": "sha256:126ea30db50456f07f7c138490167bcc3334c760dd15b4a6f53ae56233822793"
       },
       {
         "check": "command",
         "role": "freshness",
-        "target": "flow/core/records/2026-11-03/netlist.v",
+        "target": "flow/core/records/2026-11-20/netlist.v",
         "generator": "flow/core/synth.sh (klt synthesize)",
         "argv": [
           "flow/core/synth.sh",
@@ -73,7 +73,7 @@
         "path": "rtl/inventory.json",
         "scope": "repo"
       },
-      "content_hash": "sha256:c50ab1d53705cc35947579ab1d6ad3bad2838bc14dd5d479800e30b01bbd39b2"
+      "content_hash": "sha256:2c1b4cacc00c561393764d63bbb4a2e604e73d656b0b126f6757906339b0e7cb"
     }
   }
 }

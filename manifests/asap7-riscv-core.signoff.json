@@ -34,7 +34,7 @@
         "command": null,
         "kind": "generic",
         "check_status": "pass",
-        "content_hash": "sha256:c50ab1d53705cc35947579ab1d6ad3bad2838bc14dd5d479800e30b01bbd39b2",
+        "content_hash": "sha256:2c1b4cacc00c561393764d63bbb4a2e604e73d656b0b126f6757906339b0e7cb",
         "input_verified": true,
         "exit_status": 0,
         "artifact_binding": {
@@ -43,7 +43,7 @@
             "path": "rtl/inventory.json",
             "scope": "repo"
           },
-          "content_hash": "sha256:c50ab1d53705cc35947579ab1d6ad3bad2838bc14dd5d479800e30b01bbd39b2",
+          "content_hash": "sha256:2c1b4cacc00c561393764d63bbb4a2e604e73d656b0b126f6757906339b0e7cb",
           "input_verified": true,
           "summary": "T1 item 1 (Design sources): 6/6 attestation checks passed (klt signoff --attest)",
           "source": "rtl/inventory.json",
