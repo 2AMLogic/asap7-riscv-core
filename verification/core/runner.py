@@ -92,7 +92,8 @@ def main(run_dir: Path, negative: bool, gate: bool = False) -> int:
                 bad = tc.find("error")
             if bad is not None:
                 failed += 1
-                failures.append({"test": n, "message": (bad.get("message") or bad.text or "")[:300]})
+                # cocotb 2.x writes the assertion text in error_msg=, not message=
+                failures.append({"test": n, "message": (bad.get("message") or bad.get("error_msg") or bad.text or "")[:300]})
                 print(f"FAIL {n}")
     ET.ElementTree(merged).write(run_dir / "results.xml")
     total = len(names)
