@@ -58,6 +58,14 @@ reference), and `core/runner.py` (helpers shared with `core/fv.py` in `core/arch
 one cocotb test per program (`core/test_archtest.py`): reset, run until the program
 stores to `tohost`, compare the signature region word for word.
 
+The Spike reference lane (`core/spike_setup.sh`, `core/spike_trace.py`, self-test
+`core/test_spike_trace.py`) generates a per-instruction retirement trace of the core
+test ELFs from the pinned Spike. It is deliberately **not** part of `setup.sh` or
+`run.sh`: it needs the `dtc` and Boost prerequisites that the rest of the harness
+does not, and nothing attested depends on it. Run `spike_setup.sh` once, then
+`python3 -I verification/core/spike_trace.py`. `spike_trace.py` accepts only the
+mtvec shape CVE2 can represent when traces are compared (see its docstring).
+
 The negative control flips one expected word of the first program; the run must
 fail on exactly that.
 

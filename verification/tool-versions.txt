@@ -24,6 +24,16 @@ riscv_gcc_sha256=aaaa8060c914851a3e5ee1ba82cc3d6f80972f90638a05c6e823a37557a3375
 llvm_release=19.1.7
 llvm_sha256=4a5ec53951a584ed36f80240f6fbf8fdd46b4cf6c7ee87cc2d5018dc37caf679
 
+# Spike ISA simulator (riscv-software-src/riscv-isa-sim), the independent
+# per-instruction retirement-trace reference for the core tests (#205).
+# Upstream ships no release binaries, so verification/core/spike_setup.sh
+# fetches the commit (the immutable pin) and builds it, together with the dtc
+# release Spike forks at every startup to build its device tree. The
+# berkeley-softfloat-3 submodule is fixed by the pinned tree's own gitlink.
+spike_commit=e53c8ccf3448ae459877ed3236cb39b2a1d493bf
+dtc_release=1.7.2
+dtc_sha256=8f1486962f093f28a2f79f01c1fd82f144ef640ceabe555536d43362212ceb7c
+
 # ASAP7 7.5-track RVT functional cell Verilog for the gate-level run
 # (verification/run.sh --core --gate): the asap7sc7p5t_28 submodule commit pinned
 # in spec/pdk-bringup.md, Verilog/ directory, one key per group the committed
