@@ -148,16 +148,15 @@ def _imm_cb(e):
 
 def next_pcs(enc, pc, regs, csrs):
     """The set of pcs the instruction at <pc> may retire to next, or None when
-    the target cannot be modelled from the trace (a jump through a register
-    with no logged value, mret with no tracked mepc)."""
+    the target cannot be modelled from the trace (mret with no tracked mepc).
+    Register jumps always resolve: the tracked GPRs start at 0 and Spike logs
+    every GPR write."""
     if enc & 3 == 3:
         op = enc & 0x7f
         if op == 0x6f:
             return {(pc + _imm_jal(enc)) & 0xffffffff}
         if op == 0x67:
-            v = regs.get((enc >> 15) & 31)
-            if v is None:
-                return None
+            v = regs[(enc >> 15) & 31]
             return {(v + _imm_jalr(enc)) & 0xfffffffe}
         if op == 0x63:
             return {(pc + 4) & 0xffffffff, (pc + _imm_branch(enc)) & 0xffffffff}
@@ -173,9 +172,7 @@ def next_pcs(enc, pc, regs, csrs):
             return {(pc + 2) & 0xffffffff, (pc + _imm_cb(enc)) & 0xffffffff}
     elif q == 2 and f3 == 4 and (enc & 0x7c) == 0 and ((enc >> 7) & 31) != 0:
         # c.jr (funct4 1000) / c.jalr (funct4 1001), rs2 == 0; c.ebreak has rs1 == 0
-        v = regs.get((enc >> 7) & 31)
-        if v is None:
-            return None
+        v = regs[(enc >> 7) & 31]
         return {v & 0xfffffffe}
     return {pc + 2}
 
@@ -183,27 +180,41 @@ def next_pcs(enc, pc, regs, csrs):
 def _effects(tokens, name, lineno):
     rd = rd_val = None
     csr, loads, stores = [], [], []
+
+    def bad(why, t):
+        return TraceError(f"{name}: line {lineno}: {why} at effect {t!r}")
+
+    def hexval(i, t):
+        """tokens[i] as a hex number, or TraceError naming the program."""
+        if i >= len(tokens):
+            raise bad("truncated effects", t)
+        try:
+            return int(tokens[i], 16)
+        except ValueError:
+            raise bad(f"non-hex value {tokens[i]!r}", t) from None
+
     i = 0
     while i < len(tokens):
         t = tokens[i]
         if t[0] == "x" and t[1:].isdigit():
-            rd, rd_val = int(t[1:]), int(tokens[i + 1], 16)
+            rd, rd_val = int(t[1:]), hexval(i + 1, t)
             i += 2
         elif t[0] == "c" and "_" in t:
             num, nm = t[1:].split("_", 1)
-            csr.append((int(num), nm, int(tokens[i + 1], 16)))
+            if not num.isdigit():
+                raise bad("malformed CSR token", t)
+            csr.append((int(num), nm, hexval(i + 1, t)))
             i += 2
         elif t == "mem":
+            addr = hexval(i + 1, t)
             if i + 2 < len(tokens) and tokens[i + 2].startswith("0x"):
-                stores.append((int(tokens[i + 1], 16), int(tokens[i + 2], 16)))
+                stores.append((addr, hexval(i + 2, t)))
                 i += 3
             else:
-                loads.append(int(tokens[i + 1], 16))
+                loads.append(addr)
                 i += 2
         else:
             raise TraceError(f"{name}: line {lineno}: unrecognized effect {t!r}")
-        if i > len(tokens):
-            raise TraceError(f"{name}: line {lineno}: truncated effects")
     return rd, rd_val, csr, loads, stores
 
 
@@ -250,8 +261,7 @@ def parse(log, name, entry, tohost):
             nxt = next_pcs(prev["enc"], prev["pc"], regs, csrs)
             if nxt is not None and rec["pc"] not in nxt:
                 mtvec = csrs.get(MTVEC)
-                base = None if mtvec is None else (
-                    mtvec & ~0xff if mtvec & 1 else mtvec & ~3)
+                base = None if mtvec is None else mtvec & ~3  # BASE field, any alignment
                 if base is None or rec["pc"] != base:
                     raise TraceError(
                         f"{name}: line {lineno}: pc {rec['pc']:#x} follows {prev['pc']:#x}: "

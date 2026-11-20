@@ -205,6 +205,32 @@ def test_negative(elf, tohost):
           "the raw log continues past the tohost store and the reader cuts it")
 
 
+def test_malformed_effects():
+    """Every malformed effect shape raises TraceError naming the program (pure
+    parse(), no Spike), and a vectored mtvec base need not be 256-byte aligned."""
+    good = "core   0: 3 0x80000080 (0x00000013)"
+    for tail in ("x5", "x5 zzzz", "c_mtvec 0x1", "c773_mtvec", "c773_mtvec zz",
+                 "mem", "mem zzz", "mem 0x80003000 0xzz", "v3_vreg 0x1"):
+        try:
+            st.parse(f"{good} {tail}\n", "prog.elf", 0x80000080, 0x80001000)
+        except st.TraceError as e:
+            check("prog.elf" in str(e), f"malformed effects {tail!r} -> TraceError naming the program")
+        except Exception as e:  # IndexError / ValueError escaping is the defect
+            no(f"malformed effects {tail!r} escaped as {type(e).__name__}")
+        else:
+            no(f"malformed effects {tail!r} must fail, but parse() returned")
+    log = ("core   0: 3 0x80000080 (0x00100073) c773_mtvec 0x80002041\n"
+           "core   0: 3 0x80000084 (0x00000013)\n"
+           "core   0: 3 0x80002040 (0x00000013)\n"
+           "core   0: 3 0x80002044 (0x00000013) mem 0x80001000 0x00000001\n")
+    try:
+        t = st.parse(log, "prog.elf", 0x80000080, 0x80001000)
+        check(t[2].get("exception") and t[2]["handler"] == 0x80002040,
+              "an unaligned vectored mtvec base traps to BASE (& ~3), as Spike does")
+    except st.TraceError as e:
+        no(f"unaligned vectored mtvec base rejected: {e}")
+
+
 def test_repeatable(elf):
     a = st.run_spike(elf)
     b = st.run_spike(elf)
@@ -227,6 +253,7 @@ def main():
     suite_json = json.loads((BUILD / "tests" / "tests.json").read_text())[0]
     tohost = json.loads((BUILD / "tests" / f"{suite_json}.json").read_text())["tohost"]
     test_negative(suite_elf, tohost)
+    test_malformed_effects()
     test_repeatable(det)
     print(f"test_spike_trace: {PASS} passed, {FAIL} failed")
     return 1 if FAIL else 0
