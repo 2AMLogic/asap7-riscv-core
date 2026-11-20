@@ -125,11 +125,11 @@ def main(libdir, out):
             "SS_over_TT": ratios(data[("SIMPLE", "SS")], data[("SIMPLE", "TT")], {name}),
         }
     # identical-body test: does SIMPLE FF equal SIMPLE TT table-for-table?
-    identical = all(
-        a[1:] == b[1:]
-        for c, dt in data[("SIMPLE", "TT")].items()
-        for a, b in zip(data[("SIMPLE", "FF")].get(c, []), dt)
-    )
+    # One equality on the parsed dictionaries: same cell set, same table
+    # count and order, same rise/fall kind, same axes and values. Anything
+    # else -- a missing cell, a kind change with equal numbers, an extra
+    # table -- is a mismatch.
+    identical = data[("SIMPLE", "FF")] == data[("SIMPLE", "TT")]
 
     r_s = cmp["SIMPLE"]["FF_over_TT"]["median"]
     r_ref = statistics.median([cmp[g]["FF_over_TT"]["median"] for g in REF_GROUPS])
