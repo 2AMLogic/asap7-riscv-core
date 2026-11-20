@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Self-test for the record-level host-path guard and the negative-control
-# verdict rule in verification/lib.sh.
+# verdict rules (JUnit and KLT JSON) in verification/lib.sh.
 #
 # leak_guard is what keeps a committed record from naming a host path: fv.sh
 # runs it on report.json after every run, and fv.py's redaction is what should
@@ -12,8 +12,14 @@
 # that the intended comparison ran and detected the injected mismatch, so a
 # runner that dies at startup (any exit but the tests-failed 1, or no report)
 # can no longer read as a pass. The cases pin both bench fingerprints against
-# the exact failure-message shapes the testbenches emit. Needs no PDK
-# checkout, no klt, no simulator and no network (python3 stdlib only).
+# the exact failure-message shapes the testbenches emit.
+#
+# fv_negative_control_verdict is the same rule for fv.sh's negative control
+# (issue #213), whose evidence is fv.py's KLT JSON report: the cases work from
+# the committed November 5 negative-control record -- the real failure shape
+# fv.py writes -- and each rejection is a small mutation of it, so a drift in
+# what fv.py records breaks here loudly. Needs no PDK checkout, no klt, no
+# simulator and no network (python3 stdlib only).
 #
 # usage: verification/lib_test.sh
 # Exit status: 0 every case passed; 1 a case failed.
@@ -155,6 +161,80 @@ verdict_case "an unrelated test failure fails" 1 python3 1 "$SCRATCH/unrelated.x
 verdict_case "a multi-word mismatch is not the one-word flip" 1 python3 1 "$SCRATCH/multiword.xml" "$CORE_FP" "unrelated failure"
 verdict_case "an unexpected pass fails" 1 python3 1 "$SCRATCH/passing.xml" "$SMOKE_FP" "undetected"
 verdict_case "runner exit 0 (unexpected pass) fails" 1 python3 0 "$SCRATCH/ok-smoke.xml" "$SMOKE_FP" "runner exit 0"
+
+# ---- fv_negative_control_verdict (fv.sh's negative control; issue #213) ----
+#
+# Same rule, KLT JSON evidence instead of JUnit: fv.py's report.json. The base
+# fixture is the committed negative-control record -- the exact shape fv.py
+# wrote on 2026-11-05 -- and every case is that record or a small mutation of
+# it, so the pin is against real recorded evidence, not a hand-written shape.
+
+FV_RECORD="$SELF_REPO/verification/records/2026-11-05/klt-fv-core-archtest-negative-control.json"
+FV_FP=': 1/[0-9]+ signature words differ'
+
+fv_mutate() {  # outfile python-statement (applied to a copy of the record)
+  python3 - "$FV_RECORD" "$1" "$2" <<'EOF'
+import json, sys
+report = json.load(open(sys.argv[1]))
+exec(sys.argv[3], {"report": report})
+json.dump(report, open(sys.argv[2], "w"), indent=2)
+EOF
+}
+
+fv_mutate "$SCRATCH/fv-ok.json" "pass"
+fv_mutate "$SCRATCH/fv-timeout.json" \
+  'report["results"][0]["response"]["tests"][0]["error_message"] = "I-add-01: no store to tohost within 1 cycles"'
+fv_mutate "$SCRATCH/fv-multiword.json" \
+  'm = report["results"][0]["response"]["tests"][0]; m["error_message"] = m["error_message"].replace("1/588", "2/588", 1)'
+fv_mutate "$SCRATCH/fv-nomsg.json" \
+  'del report["results"][0]["response"]["tests"][0]["error_message"]'
+fv_mutate "$SCRATCH/fv-pass.json" \
+  'r = report["results"][0]["response"]; t = r["tests"][0]; report["tests_failed"] = 0; report["results"][0]["exit_code"] = 0; r["status"] = "pass"; r["passed_count"] = 1; r["failed_count"] = 0; t["status"] = "passed"; t.pop("error_type", None); t.pop("error_message", None)'
+fv_mutate "$SCRATCH/fv-error.json" \
+  'report["results"][0]["response"]["status"] = "error"'
+fv_mutate "$SCRATCH/fv-noresults.json" \
+  'report["results"] = []'
+printf '{"results": [{"test": "I-add-01"' >"$SCRATCH/fv-broken.json"
+
+# Run fv_negative_control_verdict on ($1..$4 = python rc report fp) in a fresh
+# bash that sources the real lib.sh under set -euo pipefail, as fv.sh does.
+# Exit status is the verdict's.
+run_fv_verdict() {
+  VERIFY_LIB="$SELF_REPO/verification/lib.sh" bash -c '
+    set -euo pipefail
+    . "$VERIFY_LIB"
+    fv_negative_control_verdict "$1" "$2" "$3" "$4"
+  ' fv_negative_control_verdict "$1" "$2" "$3" "$4"
+}
+
+fv_case() {  # label want_rc python rc report fp [want_reason]
+  local got=0 out
+  out="$(run_fv_verdict "$3" "$4" "$5" "$6" 2>&1)" || got=$?
+  if [ "$got" -eq "$2" ]; then ok "$1"; else no "$1: want exit $2, got $got"; fi
+  if [ $# -ge 7 ]; then
+    case "$out" in
+      *"$7"*) ok "$1: names the reason" ;;
+      *) no "$1: expected reason \"$7\", got: $out" ;;
+    esac
+  fi
+}
+
+echo
+echo "# 7. the recorded one-word mismatch satisfies the FV control"
+fv_case "the committed record's flipped word is detected" 0 python3 1 "$SCRATCH/fv-ok.json" "$FV_FP" "intended mismatch detected"
+
+echo
+echo "# 8. any other FV outcome never reads as a pass"
+fv_case "the tohost timeout is not the mismatch" 1 python3 1 "$SCRATCH/fv-timeout.json" "$FV_FP" "unrelated failure"
+fv_case "a multi-word mismatch is not the one-word flip" 1 python3 1 "$SCRATCH/fv-multiword.json" "$FV_FP" "unrelated failure"
+fv_case "a failed test with no message fails" 1 python3 1 "$SCRATCH/fv-nomsg.json" "$FV_FP" "unrelated failure"
+fv_case "an all-pass report fails" 1 python3 1 "$SCRATCH/fv-pass.json" "$FV_FP" "undetected"
+fv_case "a klt infrastructure error fails" 1 python3 1 "$SCRATCH/fv-error.json" "$FV_FP" "infrastructure error"
+fv_case "a report naming no test result fails" 1 python3 1 "$SCRATCH/fv-noresults.json" "$FV_FP" "names no test result"
+fv_case "a malformed report fails" 1 python3 1 "$SCRATCH/fv-broken.json" "$FV_FP" "does not read as JSON"
+fv_case "no report fails" 1 python3 1 "$SCRATCH/no-such-fv-report.json" "$FV_FP" "no report at"
+fv_case "fv.py exit 17 (startup death) fails" 1 python3 17 "$SCRATCH/fv-ok.json" "$FV_FP" "fv.py exit 17"
+fv_case "fv.py exit 0 (unexpected pass) fails" 1 python3 0 "$SCRATCH/fv-ok.json" "$FV_FP" "fv.py exit 0"
 
 echo
 if [ "$FAIL" -eq 0 ]; then
