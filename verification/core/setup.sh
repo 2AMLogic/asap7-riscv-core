@@ -6,11 +6,26 @@
 # against a pin and a mismatch deletes it and exits 1. Re-running is a no-op
 # once everything is in place.
 #
-#   verification/core/setup.sh
+#   verification/core/setup.sh            every input above, including the
+#                                         cell models for run.sh --core --gate
+#   verification/core/setup.sh --rtl      only the inputs the RTL runs read
+#                                         (run.sh --core, fv.sh); skips the
+#                                         cell models, which only gate-level
+#                                         simulation reads (#200), so a cold
+#                                         RTL start cannot fail on that
+#                                         download
 #
 # Pins: verification/tool-versions.txt (arch-test, Sail, GCC), spec/core.md
 # (sv2v, same pin as flow/core/synth.sh), reuse.lock.json (CVE2 closure).
 set -euo pipefail
+
+RTL_ONLY=0
+for arg in "$@"; do
+  case "$arg" in
+    --rtl) RTL_ONLY=1 ;;
+    *) echo "usage: setup.sh [--rtl]" >&2; exit 2 ;;
+  esac
+done
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO="$(cd "$HERE/../.." && pwd)"
@@ -88,43 +103,54 @@ fi
 # Which groups to fetch is derived from the pin file rather than restated here:
 # one asap7_cells_<GRP>_sha256 key per group, taken in pin-file order. That file
 # is the evidence record, so it is the single source of truth for the set, and
-# paths.env below hands the same list to the Python side.
+# paths.env below hands the same list to the Python side. Skipped by --rtl: the
+# two RTL entry points never read these files.
 CELLS_COMMIT="$(pin asap7_cells_commit)"
 CELLS_DIR="$BUILD/asap7-cells/$CELLS_COMMIT"
-mkdir -p "$CELLS_DIR"
 mapfile -t CELL_GROUPS < <(sed -n 's/^asap7_cells_\(.*\)_sha256=.*/\1/p' "$PINS")
 # Fail closed the way pin() does on a missing key: an empty set would fetch
 # nothing and leave the gate-level run with no cell models at all.
 [ "${#CELL_GROUPS[@]}" -gt 0 ] \
   || die "no asap7_cells_<group>_sha256 pins in verification/tool-versions.txt"
-for grp in "${CELL_GROUPS[@]}"; do
-  f="$CELLS_DIR/asap7sc7p5t_$grp.v"
-  want="$(pin "asap7_cells_${grp}_sha256")"
-  if [ ! -f "$f" ] || [ "$(sha256sum "$f" | cut -d' ' -f1)" != "$want" ]; then
-    fetch_checked "https://raw.githubusercontent.com/The-OpenROAD-Project/asap7sc7p5t_28/$CELLS_COMMIT/Verilog/asap7sc7p5t_$grp.v" \
-      "$f" "$want" || exit 1
-  fi
-done
+# Whitespace-free by construction: group names match [A-Z0-9_]+ in the pins.
+CELL_GROUPS_CSV="$(IFS=,; printf '%s' "${CELL_GROUPS[*]}")"
+if [ "$RTL_ONLY" = 0 ]; then
+  mkdir -p "$CELLS_DIR"
+  for grp in "${CELL_GROUPS[@]}"; do
+    f="$CELLS_DIR/asap7sc7p5t_$grp.v"
+    want="$(pin "asap7_cells_${grp}_sha256")"
+    if [ ! -f "$f" ] || [ "$(sha256sum "$f" | cut -d' ' -f1)" != "$want" ]; then
+      fetch_checked "https://raw.githubusercontent.com/The-OpenROAD-Project/asap7sc7p5t_28/$CELLS_COMMIT/Verilog/asap7sc7p5t_$grp.v" \
+        "$f" "$want" || exit 1
+    fi
+  done
+fi
 
 # Paths for the other scripts. Values must be whitespace-free: paths() in
 # archtest_common.py splits this file on all whitespace, not on newlines.
-CELL_GROUPS_CSV="$(IFS=,; printf '%s' "${CELL_GROUPS[*]}")"
 # Publish the pins the gate-level record cites, read through pin() so a missing
 # or renamed key fails here at setup time instead of as a KeyError in
 # runner.py after the whole run has finished.
 RISCV_ARCH_TEST_COMMIT="$(pin riscv_arch_test_commit)"
 SAIL_RISCV_RELEASE="$(pin sail_riscv_release)"
-cat >"$BUILD/paths.env" <<EOF
+# The same keys are published in both modes (the cell metadata is pin-derived,
+# no download needed), and the file is renamed into place, so an --rtl setup
+# run in a checkout where a gate run is in progress can neither drop the keys
+# that run still reads nor expose a truncated file (#209).
+PATHS_TMP="$(mktemp "$BUILD/paths.env.XXXXXX")"
+cat >"$PATHS_TMP" <<EOF
 AT=$AT
 SAIL=$SAIL_DIR/sail-riscv-Linux-x86_64/bin/sail_riscv_sim
 GCC=$GCC_DIR/$GCC_NAME/bin/riscv-none-elf-gcc
 SV2V=$SV2V_DIR/sv2v-Linux/sv2v
 CLANG=$LLVM_DIR/$LLVM_NAME/bin/clang-$LLVM_MAJOR
 CVE2=$BUILD/cve2/upstream
-CELLS=$CELLS_DIR
-CELL_GROUPS=$CELL_GROUPS_CSV
 RISCV_ARCH_TEST_COMMIT=$RISCV_ARCH_TEST_COMMIT
 SAIL_RISCV_RELEASE=$SAIL_RISCV_RELEASE
+CELLS=$CELLS_DIR
+CELL_GROUPS=$CELL_GROUPS_CSV
 ASAP7_CELLS_COMMIT=$CELLS_COMMIT
 EOF
+chmod 644 "$PATHS_TMP"
+mv -f "$PATHS_TMP" "$BUILD/paths.env"
 echo "setup.sh: ok"
