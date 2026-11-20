@@ -3,7 +3,8 @@
 Place-and-route of an unmodified RV32IMC CVE2 core on ASAP7 (a predictive PDK;
 nothing here is fabricated), used to exercise `klt` on FinFET-era rules.
 
-**Status as of 2026-11-14, `main` @ `f0cbc2f`.** Every result below is a tool
+**Baseline as of 2026-11-14, `main` @ `f0cbc2f`, with later verification and
+synthesis records cited below.** Every result below is a tool
 result against a predictive model; every timing figure is predicted. The label
 queue is in [`WORK_PLAN.md`](WORK_PLAN.md), merge history in
 [`WORK_LOG.md`](WORK_LOG.md), and the item-by-item tracker is issue #6.
@@ -26,7 +27,7 @@ met, 1 not applicable**:
 | 6 Statistical rows | not applicable | `spec/statistical-rows.json`, decision 0008 |
 | 7 Post-layout verification | unmet | #34, behind #28 and #32 |
 | 8 Characterization | unmet | #35, behind #29, #30, #32 |
-| 9 Testbenches shipped | met | `evidence/item9.json`; 72 riscv-arch-test programs, 0 failed, at RTL (`verification/records/2026-11-05/`) and on the gate-level netlist (`verification/records/2026-11-06/`, PR #73) |
+| 9 Testbenches shipped | met | `evidence/item9.json`; 72 riscv-arch-test programs, 0 failed, at RTL (`verification/records/2026-11-05/`) and on the 2026-11-14 netlist (`verification/records/2026-11-15/gate-core-archtest.json`, PR #157) |
 | 10 Repo hygiene | met | `evidence/item10.json` |
 | 11 Power delivery | unmet | #31, behind #28 and #30 |
 
