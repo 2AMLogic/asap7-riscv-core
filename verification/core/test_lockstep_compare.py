@@ -8,7 +8,8 @@ can report, from the issue #206 test plan: a clean run through trap and mret,
 a corrupted write-back (the negative control's injected shape), a wrong pc,
 trap shapes in both directions, missing and extra events, the CSR write
 observation with CVE2's WARL projections, sub-word store normalization,
-compressed-instruction masking and the retirement order check.
+compressed-instruction masking, the retirement order check and timeout
+reporting when no PC is available.
 
 Exit status: 0 every case passed; 1 a case failed.
 """
@@ -143,6 +144,10 @@ for o in dut_stream():
 check(m is not None and m["field"] == "rd_wdata" and m["ordinal"] == 1
       and m["pc"] == 0x1000 and m["rd"] == 8 and m["expected"] == 5 and m["observed"] == 4,
       f"fails on retirement 1 at pc 0x1000, x8, expected 5, observed 4 (got {m})")
+check(m.format_text({0x1000: "li s0,5"}) ==
+      "t: retirement 1 at pc 0x00001000 (li s0,5): rd_wdata: write-back value for x8 "
+      "[expected 0x5 (5), dut 0x4 (4)] [destination x8]",
+      "the write-back diagnostic identifies the instruction, destination and both values")
 
 print("# 3. wrong pc")
 cmp_ = Lockstep("t", REF, TOHOST)
@@ -231,6 +236,16 @@ cmp_ = Lockstep("t", REF, TOHOST)
 cmp_.retirement(obs(cycle=10))
 m = cmp_.retirement(obs(order=3, pc=0x1004, cycle=11))
 check(m is not None and m["field"] == "order", "an order jump is reported")
+
+print("# 9. timeout while waiting for the next retirement")
+cmp_ = Lockstep("t", REF, TOHOST)
+for o in dut_stream()[:2]:
+    cmp_.retirement(o)
+m = cmp_.timeout(50)
+check(m["pc"] is None and m["ordinal"] == 3 and m.format_text({0x1004: "mv zero,s0"}) ==
+      "t: retirement 3 (PC unavailable): timeout: no retiring store to tohost 0x80001000 "
+      "within 50 cycles (2 retirements compared, 8 reference records left)",
+      "timeout without a retiring PC reports the cycle limit and reference progress")
 
 print()
 print(f"test_lockstep_compare: {PASS} passed, {FAIL} failed")

@@ -34,13 +34,7 @@ import cocotb
 from cocotb.clock import Clock
 from cocotb.triggers import RisingEdge, ReadOnly
 
-from lockstep_compare import CSR_NAMES, Lockstep, Mismatch  # noqa: E402 (PYTHONPATH=core)
-
-
-def _fmt(v):
-    if v is None:
-        return "none"
-    return f"{v:#x} ({v})" if isinstance(v, int) else str(v)
+from lockstep_compare import CSR_NAMES, Lockstep  # noqa: E402 (PYTHONPATH=core)
 
 
 class Rvfi:
@@ -137,21 +131,13 @@ async def test_lockstep(dut):
     stats = {"retirements": 0, "cycles": 0, "mismatch": None}
     last_obs = [None]
 
-    def mismatch_text(m):
-        text = (f"{t['name']}: retirement {m['ordinal']} at pc {m['pc']:#010x} "
-                f"({disasm.get(m['pc'], '?')}): {m['field']}: {m['detail']}")
-        if m["expected"] is not None or m["observed"] is not None:
-            text += f" [expected {_fmt(m['expected'])}, dut {_fmt(m['observed'])}]"
-        if m["rd"] is not None:
-            text += f" [destination x{m['rd']}]"
-        return text
-
     def fail(m):
-        stats["mismatch"] = dict(m, text=mismatch_text(m))
+        text = m.format_text(disasm)
+        stats["mismatch"] = dict(m, text=text)
         stats["last_obs"] = last_obs[0]
         with open(os.environ["LOCKSTEP_STATS"], "w") as f:
             json.dump(stats, f)
-        assert False, mismatch_text(m)
+        raise AssertionError(text)
 
     cocotb.start_soon(Clock(dut.clk, 10, unit="ns").start())
     dut.rst_n.value = 0
@@ -183,9 +169,5 @@ async def test_lockstep(dut):
                 f"in lockstep through the retiring store to tohost "
                 f"{t['tohost']:#x} ({cycle} cycles)")
             return
-    fail(Mismatch(kind="timeout", name=t["name"], ordinal=cmp_.n, pc=None,
-                  field="timeout", rd=None,
-                  detail=f"no retiring store to tohost {t['tohost']:#x} within "
-                         f"{max_cycles} cycles ({cmp_.n} retirements compared, "
-                         f"{len(cmp_.ref) - cmp_.idx} reference records left)",
-                  expected=None, observed=None))
+    stats["cycles"] = max_cycles
+    fail(cmp_.timeout(max_cycles))

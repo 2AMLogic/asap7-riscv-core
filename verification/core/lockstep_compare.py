@@ -135,8 +135,27 @@ def _hex(v):
     return "-" if v is None else f"{v:#x}"
 
 
+def _fmt(v):
+    if v is None:
+        return "none"
+    return f"{v:#x} ({v})" if isinstance(v, int) else str(v)
+
+
 class Mismatch(dict):
-    """The first divergence, as reportable data (the bench formats it)."""
+    """The first divergence, as structured data and a diagnostic for the bench."""
+
+    def format_text(self, disasm):
+        pc = self["pc"]
+        where = "(PC unavailable)"
+        if pc is not None:
+            where = f"at pc {pc:#010x} ({disasm.get(pc, '?')})"
+        text = (f"{self['name']}: retirement {self['ordinal']} {where}: "
+                f"{self['field']}: {self['detail']}")
+        if self["expected"] is not None or self["observed"] is not None:
+            text += f" [expected {_fmt(self['expected'])}, dut {_fmt(self['observed'])}]"
+        if self["rd"] is not None:
+            text += f" [destination x{self['rd']}]"
+        return text
 
 
 class Lockstep:
@@ -251,7 +270,7 @@ class Lockstep:
         return None
 
     def finish(self):
-        """End condition after the DUT stopped (timeout or tb done)."""
+        """Report unconsumed reference records at the end of a DUT stream."""
         if self.complete or self.idx >= len(self.ref):
             return None
         r = self.ref[self.idx]
@@ -265,6 +284,15 @@ class Lockstep:
                         expected=None, observed=None)
 
     # -- reporting -------------------------------------------------------------
+
+    def timeout(self, cycles):
+        """Report progress when the cycle limit expires before the tohost store."""
+        return Mismatch(kind="timeout", name=self.name, ordinal=self.n + 1, pc=None,
+                        field="timeout", rd=None,
+                        detail=f"no retiring store to tohost {self.tohost:#x} within "
+                               f"{cycles} cycles ({self.n} retirements compared, "
+                               f"{len(self.ref) - self.idx} reference records left)",
+                        expected=None, observed=None)
 
     def _bad(self, field, obs, what, expected=None, observed=None):
         return Mismatch(kind="lockstep-divergence", name=self.name, ordinal=self.n,

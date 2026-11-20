@@ -106,12 +106,16 @@ value, and every reference CSR write against the observed committed value
 projected through CVE2's WARL (mtvec/mepc/mcause bit masking, mstatus
 implemented fields, mret keeping MPP at M because CVE2 has no U-mode). A
 synchronous exception is a retirement gap in the reference and an
-`rvfi_trap` retirement on the DUT; the run ends only when the retiring
-`tohost` store has been matched and consumed on both sides — a DUT
-retirement past the reference, a stop with reference records left, or a
-cycle timeout each fail, naming the ELF, ordinal, PC, disassembly and the
-expected and observed values. Sample mismatch (the negative control's
-injected corruption, observed on one bit of retirement 1's write-back):
+`rvfi_trap` retirement on the DUT. The run passes when both sides consume
+the retiring `tohost` store. A divergent or extra retirement reports the
+ELF, ordinal, PC, disassembly and, for a value mismatch, the expected and
+observed values. If the DUT stops retiring, the cycle limit still expires.
+The timeout names the ELF and next retirement ordinal, marks the PC as
+unavailable, and reports the elapsed cycles, retirements compared and
+reference records left. Disassembly requires a retiring instruction.
+
+The negative control flips one bit of retirement 1's write-back and reports
+this mismatch.
 
 ```text
 lockstep-prog: retirement 1 at pc 0x80000080 (li s0,5): rd_wdata: write-back value for x8 [expected 0x5 (5), dut 0x4 (4)] [destination x8]
