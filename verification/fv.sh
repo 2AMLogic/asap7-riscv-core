@@ -3,7 +3,9 @@
 #
 #   verification/fv.sh [OUT_DIR]                    exit 0 only if every test passes
 #   verification/fv.sh --negative-control [OUT_DIR] flipped signature word; exit 0
-#                                                   only if the run FAILS
+#                                                   only if the report evidences that
+#                                                   one-word mismatch (any other
+#                                                   failure stays a failure)
 #
 # klt comes from the pinned release (klayout_tools in verification/tool-versions.txt),
 # fetched with uvx into a throwaway env; cocotb is the verification/requirements.txt
@@ -39,10 +41,16 @@ mkdir -p "$OUT"
 export KLT_CMD="uvx --python $PY_VER --from klayout-tools==$KLT_VER --with $COCOTB klt"
 cd "$HERE/core"
 if [ "$NEGATIVE" = 1 ]; then
+  # A reused OUT_DIR must not satisfy the verdict below with a previous run's
+  # report: only evidence fv.py writes during this invocation counts, so drop
+  # any stale report before the run (fv.py writes none if it dies early).
+  rm -f "$OUT/report.json"
   rc=0; python3 -I fv.py "$OUT" --negative-control || rc=$?
-  [ "$rc" = 1 ] && [ -f "$OUT/report.json" ] || die "negative control: expected a reported test failure, got exit $rc"
-  python3 -I -c 'import json,sys; r=json.load(open(sys.argv[1])); sys.exit(0 if r["tests_failed"]>=1 and all(x["response"].get("status")!="error" for x in r["results"]) else 1)' "$OUT/report.json" \
-    || die "negative control: no genuine test failure in $OUT/report.json"
+  # core/test_archtest.py flips exactly one expected signature word, so the
+  # injected mismatch is a one-word signature diff in the failed test_signature
+  # assertion fv.py records -- the same fingerprint run.sh's core control pins.
+  fv_negative_control_verdict python3 "$rc" "$OUT/report.json" \
+    ': 1/[0-9]+ signature words differ'
   leak_guard "$OUT/report.json"
   echo "negative control: run failed as expected"
   exit 0

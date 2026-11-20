@@ -129,7 +129,7 @@
         "role": "testbench",
         "path": "verification/lib.sh",
         "passed": true,
-        "content_hash": "sha256:c79b29743b6e1b9281b26936cd684f1903bbabe0383c8edcd31e8b30a8ec78a9"
+        "content_hash": "sha256:f30b7a69dfe6a4ae22c40ac443072f5bac67c82abd1a27db36652b2d9fd26328"
       },
       {
         "check": "present",
