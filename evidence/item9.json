@@ -164,7 +164,7 @@
         "role": "testbench",
         "path": "verification/tool-versions.txt",
         "passed": true,
-        "content_hash": "sha256:4a8eba6a76ef39d4431d271a9a3b35ebb2167fcb236643852823782c84acc667"
+        "content_hash": "sha256:dae0758a8578b49314b377fd6eeea87dd6bbec709b3385683b77f6ec69169167"
       },
       {
         "check": "command",
