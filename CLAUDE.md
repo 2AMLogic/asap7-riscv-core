@@ -82,7 +82,7 @@ on ASAP7, designed and verified by AI agents. **Digital.**
 
     This re-attest runs `attest/item9.json`'s `local_only` cold start
     (`verification/run.sh --core`, timeout 1800 s), so it needs a host with
-    `iverilog`, `verilator 5.050`, `python 3.12` and network egress — it
+    `iverilog`, `python 3.12` and network egress — it
     cannot be done in a sweep worktree (cf. #107, #112).
 
   `--python 3.12` is load-bearing for both: `uvx` puts its own environment
