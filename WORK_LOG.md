@@ -3,6 +3,10 @@
 Chronological record of merged PRs and closed issues, maintained by the Guide
 triage role. Newest first.
 
+### 2026-11-20
+
+- **PR #197**: feat(flow): publish the latch-mapped 2026-11-20 core netlist and re-attest item 1
+
 ### 2026-11-19
 
 - **PR #192**: docs: correct shared-archtest 0012 citation claim in spec/README.md
@@ -131,7 +135,7 @@ triage role. Newest first.
 
 ### 2026-11-05
 
-- **Issue #17**: smoke re-run on klt 0.9.0 into `flow/smoke/records/2026-11-05/`: `par` `ok` with DEF/GDS for the counter; DRC deck re-pinned (decision 0012, `sha256:14f146f0…`, 267 categories); DRC on the counter layout reports 549 violations (routing-layer auxiliary grid rules) and LVS reports `mismatch` (19 topology errors); ERC `not_checked`; STA stays predicted.
+- The klt 0.9.0 smoke run for #17 produced DEF and GDS for the counter (`par` reported `ok`). With the re-pinned DRC deck (decision 0012, `sha256:14f146f0…`, 267 categories), DRC reported 549 routing-layer auxiliary grid violations. LVS reported `mismatch` with 19 topology errors. ERC reported `not_checked`. STA remains predicted. [Smoke run records](flow/smoke/records/2026-11-05/)
 - **PR #63**: feat: run core arch-test suite through klt functional-verification
 - **Issue #59** (closed): Run the riscv-arch-test core suite through klt functional-verification and commit the report
 - **PR #61**: feat: add SIMPLE RVT FF Liberty comparison script and record
