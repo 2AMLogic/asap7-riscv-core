@@ -5,6 +5,8 @@ triage role. Newest first.
 
 ### 2026-11-20
 
+- **PR #210**: feat(verification): generate a pinned Spike retirement trace for the core test ELFs
+- **Issue #205** (closed): Generate a pinned Spike retirement trace for the CVE2 test ELFs
 - **PR #203**: fix(flow): compare parsed SIMPLE FF and TT cell dictionaries directly
 - **Issue #202** (closed): Compare parsed SIMPLE FF and TT timing tables directly
 - **PR #201**: fix(flow): allocate every self-test fixture under a parent-owned scratch root
