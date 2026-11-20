@@ -5,6 +5,8 @@ triage role. Newest first.
 
 ### 2026-11-20
 
+- **PR #218**: feat(verification): compare every CVE2 retirement with Spike in cocotb
+- **Issue #206** (closed): Compare CVE2 RVFI retirements with Spike in the cocotb core suite
 - **PR #215**: fix(verification): pin fv.sh's negative control to the injected mismatch
 - **Issue #213** (closed): fv.sh's negative control accepts any genuine test failure, not the injected mismatch
 - **PR #212**: fix(verification): require JUnit evidence for negative-control exits
