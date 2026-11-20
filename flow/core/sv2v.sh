@@ -11,10 +11,16 @@
 #       set, downloads the pinned release into <build-dir>/sv2v/<pin>/
 #       (sha256-checked). Always asserts the version. Exits 1 on any failure.
 #
-#   flow/core/sv2v.sh convert <sv2v> <upstream-dir> <wrapper.sv> <top> <out.v>
+#   flow/core/sv2v.sh convert <sv2v> <upstream-dir> <wrapper.sv> <top> <out.v> [-D<define>...]
 #       Converts the CVE2 closure under <upstream-dir> plus the wrapper.
 #       -DSYNTHESIS drops the simulation-only DPI export block in cve2_if_stage.sv.
 #       Same command as sky130-riscv-soc scripts/convert-cve2.sh, plus the wrapper.
+#       Any extra -D<define> args (6th onward) are passed through to sv2v after
+#       -DSYNTHESIS: the lockstep lane (verification/core/lockstep.py, issue #206)
+#       converts the same closure with -DRVFI, which exposes the core's RVFI
+#       retirement port and the per-CSR verification-only observation in
+#       cve2_cs_registers.sv to the simulator. The attested netlist conversion
+#       (5 args) is unchanged.
 _SV2V_REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 # shellcheck source=fetch_checked.sh
 . "$_SV2V_REPO/fetch_checked.sh"
@@ -69,13 +75,14 @@ sv2v_ensure() {
     || { echo "sv2v.sh: sv2v reports '$SV2V_VERSION', spec/core.md pins $PIN_SV2V" >&2; exit 1; }
 }
 
-sv2v_convert() {  # sv2v upstream-dir wrapper top out
+sv2v_convert() {  # sv2v upstream-dir wrapper top out.v [-D<define>...]
   local sv2v="$1" up="$2" wrapper="$3" top="$4" out="$5"
+  shift 5
   local prim=vendor/lowrisc_ip/ip/prim/rtl
   (
     cd "$up"
     mapfile -t REST < <(ls rtl/*.sv | grep -v -e cve2_pkg.sv -e cve2_core.sv -e cve2_top.sv | sort)
-    "$sv2v" -DSYNTHESIS -I "$prim" -I rtl -I vendor/lowrisc_ip/dv/sv/dv_utils \
+    "$sv2v" -DSYNTHESIS "$@" -I "$prim" -I rtl -I vendor/lowrisc_ip/dv/sv/dv_utils \
       "$prim/prim_assert.sv" rtl/cve2_pkg.sv "$prim/prim_ram_1p_pkg.sv" \
       "${REST[@]}" rtl/cve2_core.sv rtl/cve2_top.sv "$wrapper" \
       --top "$top" -w "$out"
@@ -85,8 +92,8 @@ sv2v_convert() {  # sv2v upstream-dir wrapper top out
 if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
   set -euo pipefail
   case "${1:-}" in
-    convert) [[ $# -eq 6 ]] || { echo "usage: sv2v.sh convert <sv2v> <upstream-dir> <wrapper.sv> <top> <out.v>" >&2; exit 2; }
-             sv2v_convert "$2" "$3" "$4" "$5" "$6" ;;
-    *) echo "usage: sv2v.sh convert <sv2v> <upstream-dir> <wrapper.sv> <top> <out.v>" >&2; exit 2 ;;
+    convert) [[ $# -ge 6 ]] || { echo "usage: sv2v.sh convert <sv2v> <upstream-dir> <wrapper.sv> <top> <out.v> [-D<define>...]" >&2; exit 2; }
+             sv2v_convert "$2" "$3" "$4" "$5" "$6" "${@:7}" ;;
+    *) echo "usage: sv2v.sh convert <sv2v> <upstream-dir> <wrapper.sv> <top> <out.v> [-D<define>...]" >&2; exit 2 ;;
   esac
 fi

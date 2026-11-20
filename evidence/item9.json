@@ -31,7 +31,7 @@
         "role": "testbench",
         "path": "flow/core/sv2v.sh",
         "passed": true,
-        "content_hash": "sha256:549ad8e5f3ceb63d25ee6beeeb3257031f7bd73abc75ce89ca50975470d6f67f"
+        "content_hash": "sha256:6dd726be04d06b5565863df257635d8853a188e18de4dc914e33bf7393c888b5"
       },
       {
         "check": "present",

@@ -3,13 +3,17 @@
 PDK-free simulation harness: cocotb + Icarus Verilog, with a Verilator lint
 step. It contains no ASAP7 files.
 
-Two benches:
+Two benches, plus a lockstep lane:
 
 - **Default mode** (`verification/run.sh`): `smoke/counter.sv`, a trivial
   placeholder counter that proves the flow. It makes no claim about the core.
 - **Core mode** (`verification/run.sh --core`): the pinned riscv-arch-test
   RV32 I, M and C programs on `rtl/cve2_rv32imc_wrapper.sv` (the unmodified,
   sv2v-converted CVE2 closure), see [Core mode](#core-mode).
+- **Lockstep mode** (`verification/lockstep.sh`): the same corpus plus a
+  longer program with every RVFI retirement compared against the pinned
+  Spike reference while the simulation runs, see
+  [Lockstep mode](#lockstep-mode-rvfi-vs-spike-per-retirement).
 
 ## Cold-start invocation
 
@@ -70,6 +74,70 @@ test ELFs from the pinned Spike. It is deliberately **not** part of `setup.sh` o
 does not, and nothing attested depends on it. Run `spike_setup.sh` once, then
 `python3 -I verification/core/spike_trace.py`. `spike_trace.py` accepts only the
 mtvec shape CVE2 can represent when traces are compared (see its docstring).
+
+## Lockstep mode (RVFI vs Spike, per retirement)
+
+```sh
+verification/lockstep.sh                    # exit 0 only if every program matches
+verification/lockstep.sh --negative-control # exit 0 only if the corrupted write-back
+                                            # fails the comparison at the exact
+                                            # retirement, pc, destination and value
+```
+
+Runs the same 72-program corpus as core mode plus the deterministic longer
+program `core/lockstep_prog.S` (921 retirements: 16- and 32-bit instructions,
+multi-cycle mul/div idle cycles, x0 writes, repeated PCs in a 64-iteration
+loop, sub-word loads/stores, mtvec/mscratch write + read-back, an `ebreak`
+synchronous trap delivered to the handler with `mcause`/`mepc` read-back and
+`mret`, and the retiring store to `tohost`), comparing **every RVFI
+retirement against the pinned Spike reference while the simulation runs**
+(issue #206, part of #204). The closure is converted through
+`flow/core/sv2v.sh convert ... -DRVFI` — the same entry point as the attested
+netlist, with one extra define — which exposes the core's RVFI retirement
+port and CVE2's own verification-only CSR write observation
+(`rvfi_<name>_csr_wmask/_wdata` in `cve2_cs_registers.sv`) without adding a
+port to the wrapper or the testbench.
+
+Per retirement the comparator (`core/lockstep_compare.py`, offline self-test
+`core/test_lockstep_compare.py`) checks order continuity, PC, instruction
+bits masked to the reference length, privilege mode, integer destination
+index and write-back value, load/store presence and address, the stored
+value, and every reference CSR write against the observed committed value
+projected through CVE2's WARL (mtvec/mepc/mcause bit masking, mstatus
+implemented fields, mret keeping MPP at M because CVE2 has no U-mode). A
+synchronous exception is a retirement gap in the reference and an
+`rvfi_trap` retirement on the DUT; the run ends only when the retiring
+`tohost` store has been matched and consumed on both sides — a DUT
+retirement past the reference, a stop with reference records left, or a
+cycle timeout each fail, naming the ELF, ordinal, PC, disassembly and the
+expected and observed values. Sample mismatch (the negative control's
+injected corruption, observed on one bit of retirement 1's write-back):
+
+```text
+lockstep-prog: retirement 1 at pc 0x80000080 (li s0,5): rd_wdata: write-back value for x8 [expected 0x5 (5), dut 0x4 (4)] [destination x8]
+```
+
+The negative control runs the longer program clean (must pass, 921
+retirements) and then with one bit of that write-back flipped **in the
+observation path only** — the DUT is untouched — and requires the failure
+above, so an unrelated failure cannot satisfy it.
+
+This lane is deliberately a separate job, not part of `verification/run.sh`,
+its item 9 attestation, or CI (#204 allows documenting it as one): it needs
+the pinned Spike (a C++ build via `core/spike_setup.sh`, with dtc and Boost
+prerequisites) on top of the core-mode inputs. Measured on the sweep host
+(8 vCPU, spike prebuilt): full corpus 73 programs in ~100 s of simulation
+(plus ~30 s sv2v conversion + Icarus build), negative control ~15 s;
+`spike_setup.sh` is a one-time ~10 min build. Committed records:
+`records/2026-11-20/lockstep-core-archtest.json` (73 programs, 0 failed)
+and `records/2026-11-20/lockstep-core-archtest-negative-control.json`.
+
+What it claims: RTL simulation of the `-DRVFI` conversion of the pinned
+closure retires exactly the instruction stream the pinned Spike retires for
+the same ELFs, event for event, on the programs actually run (the corpus
+list above plus `lockstep_prog.S`). ASAP7 is a predictive PDK; nothing here
+is fabricated or measured.
+
 
 The negative control flips one expected word of the first program; the run
 must fail on exactly that — the same `negative_control_verdict` rule as the

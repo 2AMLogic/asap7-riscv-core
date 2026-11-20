@@ -1,0 +1,15 @@
+{
+  "suite": "spike-lockstep-negative-control",
+  "date_utc": "2026-11-20T14:36:22Z",
+  "program": "verification/core/lockstep_prog.S",
+  "control": {
+    "outcome": "detected",
+    "ordinal": 1,
+    "pc": 2147483776,
+    "rd": 8,
+    "expected": 5,
+    "observed": 4,
+    "message": "lockstep-prog: retirement 1 at pc 0x80000080 (li\ts0,5): rd_wdata: write-back value for x8 [expected 0x5 (5), dut 0x4 (4)] [destination x8]",
+    "clean_retirements": 921
+  }
+}
