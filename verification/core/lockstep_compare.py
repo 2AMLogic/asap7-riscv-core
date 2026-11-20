@@ -30,9 +30,15 @@ cve2_cs_registers.sv at the reuse.lock.json commit):
   rvfi_insn is compared masked to the reference length.
 - Sub-word stores: rvfi_mem_wdata is the raw rs2 value, not lane-shifted -
   cve2_core.sv taps lsu_wdata (id_stage's rf_rdata_b_fwd) for the RVFI
-  capture, upstream of the byte-lane shift the LSU applies to the bus - so
-  the observed value is masked to the store's width (wmask popcount) and
-  compared to the reference value as is.
+  capture, upstream of the byte-lane shift the LSU applies to the bus - and
+  rvfi_mem_wmask is decoded from lsu_type unshifted (0x1/0x3/0xf for
+  byte/halfword/word), so both are pinned by the matched instruction: the
+  observed mask must equal the width decoded from the encoding, and the
+  observed value is masked to that width and compared to the reference value
+  as is. A decoded store must carry exactly one reference store effect; a
+  record with several (a split store, which Spike would only commit under
+  Zicclsm - not enabled in the harness ISA) is rejected with its effect
+  count rather than partially compared.
 - CSR effects: RVFI has no general CSR write channel, so the committed effect
   is checked with CVE2's own verification-only observation in
   cve2_cs_registers.sv (`RVFI_CONNECT`: rvfi_<name>_csr_wmask/_wdata pulse for
@@ -56,7 +62,9 @@ cve2_cs_registers.sv at the reuse.lock.json commit):
   rvfi_mem_mask_int from lsu_type with no memory-op gate, so rmask (and
   mem_addr, which is muxed from the ALU result) carry operand garbage on
   non-memory instructions. rvfi_mem_wmask IS gated by the bus write
-  (data_we_o), so for a decoded store the wmask/addr/value are compared, and
+  (data_we_o), so for a decoded store the wmask (pinned by the encoding,
+  above), the single address and the raw value's low 8/16/32 bits are
+  compared, and
   for a decoded load the rmask must be nonzero and the address must match.
   The loaded value is checked as the load's rd_wdata (RVFI reports the
   architecturally loaded value there), not as rvfi_mem_rdata.
@@ -129,6 +137,20 @@ def _is_mem(enc):
     if q == 2:
         return f3 == 2, f3 == 6          # c.lwsp / c.swsp
     return False, False
+
+
+def _store_mask(enc):
+    """The RVFI write mask the reference store encoding pins: cve2_core.sv
+    decodes rvfi_mem_mask_int from lsu_type unshifted (2'b00/2'b01/2'b10 ->
+    0xf/0x3/0x1 for word/halfword/byte) and gates it with the bus write, so
+    for any legal store the driven mask is a function of the encoding alone -
+    never of the address offset. None when <enc> is not a store the harness
+    ISA can retire (the caller only invokes this on a decoded store)."""
+    if enc & 3 == 3:
+        return {0: 0x1, 1: 0x3, 2: 0xF}.get((enc >> 12) & 7)  # sb/sh/sw (f3)
+    if (enc & 3) in (0, 2) and (enc >> 13) & 7 == 6:          # c.sw / c.swsp
+        return 0xF
+    return None
 
 
 def _hex(v):
@@ -236,15 +258,24 @@ class Lockstep:
             return self._bad("store" if r["stores"] else "extra-store", obs,
                              "reference " + want)
         if is_store:
-            addrs = {a for a, _ in r["stores"]}
-            if obs["mem_addr"] not in addrs:
+            if len(r["stores"]) != 1:
+                return self._bad("store-record", obs,
+                                 f"a decoded scalar store carrying {len(r['stores'])} "
+                                 "reference store effects; exactly one is required",
+                                 1, len(r["stores"]))
+            s_addr, s_val = r["stores"][0]
+            if obs["mem_addr"] != s_addr:
                 return self._bad("store-addr", obs, "store address",
-                                 r["stores"][0][0], obs["mem_addr"])
-            w = obs["mem_wdata"] & ((1 << (8 * _popcount(obs["mem_wmask"]))) - 1)
-            if len(r["stores"]) == 1 and w != r["stores"][0][1]:
+                                 s_addr, obs["mem_addr"])
+            want_mask = _store_mask(r["enc"])
+            if obs["mem_wmask"] != want_mask:
+                return self._bad("store-wmask", obs, "rvfi_mem_wmask "
+                                 "(pinned by the decoded store width)",
+                                 want_mask, obs["mem_wmask"])
+            w = obs["mem_wdata"] & ((1 << (8 * _popcount(want_mask))) - 1)
+            if w != s_val:
                 return self._bad("store-value", obs,
-                                 f"stored value at {r['stores'][0][0]:#x}",
-                                 r["stores"][0][1], w)
+                                 f"stored value at {s_addr:#x}", s_val, w)
 
         for num, name, val in r["csr"]:
             if num not in OBSERVED_CSRS:
