@@ -3,7 +3,8 @@
 Place-and-route of an unmodified RV32IMC CVE2 core on ASAP7 (a predictive PDK;
 nothing here is fabricated), used to exercise `klt` on FinFET-era rules.
 
-**Status as of 2026-11-14, `main` @ `f0cbc2f`.** Every result below is a tool
+**Baseline as of 2026-11-14, `main` @ `f0cbc2f`, with later verification and
+synthesis records cited below.** Every result below is a tool
 result against a predictive model; every timing figure is predicted. The label
 queue is in [`WORK_PLAN.md`](WORK_PLAN.md), merge history in
 [`WORK_LOG.md`](WORK_LOG.md), and the item-by-item tracker is issue #6.
@@ -18,7 +19,7 @@ met, 1 not applicable**:
 
 | Item | State | Evidence or owner |
 |---|---|---|
-| 1 Design sources | met | `evidence/item1.json`; netlist `flow/core/records/2026-11-03/netlist.v` (20,441 instances, PR #45) |
+| 1 Design sources | met | `evidence/item1.json`; netlist `flow/core/records/2026-11-20/netlist.v` (29,785 instances; tie-cell and latch-mapped) |
 | 2 Layout | unmet | #28, blocked |
 | 3 DRC clean | unmet | #29, behind #28 |
 | 4 LVS clean | unmet | #30, behind #28 |
@@ -26,7 +27,7 @@ met, 1 not applicable**:
 | 6 Statistical rows | not applicable | `spec/statistical-rows.json`, decision 0008 |
 | 7 Post-layout verification | unmet | #34, behind #28 and #32 |
 | 8 Characterization | unmet | #35, behind #29, #30, #32 |
-| 9 Testbenches shipped | met | `evidence/item9.json`; 72 riscv-arch-test programs, 0 failed, at RTL (`verification/records/2026-11-05/`) and on the gate-level netlist (`verification/records/2026-11-06/`, PR #73) |
+| 9 Testbenches shipped | met | `evidence/item9.json`; 72 riscv-arch-test programs, 0 failed, at RTL (`verification/records/2026-11-05/`) and on the 2026-11-14 netlist (`verification/records/2026-11-15/gate-core-archtest.json`, PR #157) |
 | 10 Repo hygiene | met | `evidence/item10.json` |
 | 11 Power delivery | unmet | #31, behind #28 and #30 |
 
@@ -39,21 +40,27 @@ content hash in `spec/core.md` (decisions
 `0012-pin-klt-0-9-0-and-ratify-asap7-drc-deck` and 0013 — two records share the
 number 0012, which #90 tracks).
 
-Three facts in the committed core synthesis record shape what follows:
+Three facts in the committed core synthesis record (`2026-11-20`, whose
+netlist is the accepted one item 1 binds to) shape what follows:
 
-1. It was produced by `klt 0.8.0` (`flow/core/records/2026-11-03/tool-versions.txt`);
-   `spec/core.md` has since moved the pin to `0.9.0` for DRC, LVS and the smoke
-   flow only — `klt signoff` stays at `0.8.0` (decision 0008) and no pin is
-   named for core synthesis, so re-running synthesis on `0.9.0` may itself need
-   a decision record.
-2. `synth.json` warns that `cell_library 'asap7sc7p5t_28_RVT'` has no verified
-   mapping for `setundef -zero/hilomap`, and `netlist.v` contains 14 x-valued
-   constant assigns. The pinned `klt place-and-route` refuses those, which is
-   what blocks #28 (klayout-tools #5074). The released 0.9.0 package's tie-cell
-   table has entries for `asap7sc7p5t_rvt` and `asap7sc7p5t_28_R`, and none for
-   the key `flow/core/synth.sh` passes.
-3. `synth.json` counts one `$_DLATCH_N_` instance: a generic latch not mapped
-   to a library cell.
+1. It was produced by `klt 0.9.0`
+   (`flow/core/records/2026-11-20/tool-versions.txt`) — the same release
+   `spec/core.md` pins for DRC, LVS and the smoke flow (decision 0012), so the
+   cross-version caveat of the `2026-11-03` record (synthesized on 0.8.0) is
+   settled. `klt signoff` stays at `0.8.0` (decision 0008).
+2. `netlist.v` drives its constants with tie cells (2497 `TIEHIx1_ASAP7_75t_R`
+   + 6847 `TIELOx1_ASAP7_75t_R`) and contains no x-valued constant assigns
+   (the `2026-11-03` netlist had 14), so the constant-assign refusal that
+   blocked #28 (klayout-tools #5074) no longer applies to it. The remaining
+   `unsupported_cell_library` warning in `synth.json` concerns ABC `-constr`
+   (driving cell/output load), load-driven sizing/buffering and ABC timing —
+   skipped capabilities, not a mapping gap.
+3. The one inferred latch (`cve2_clock_gate`) is mapped to a library cell:
+   `synth.json` counts one `DLLx1_ASAP7_75t_R` instance and zero
+   `$_DLATCH_N_`, via the `latch_map.negative` mapping `flow/core/synth.sh`
+   passes. What still keeps #28 behind a per-library override is the CTS
+   buffer-cell table: `klt` 0.9.0's `place_and_route._CTS_BUFFER_CELLS` has
+   no ASAP7 entry.
 
 ## Queue state and sequencing
 

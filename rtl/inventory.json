@@ -11,7 +11,7 @@
   ],
   "derived": [
     {
-      "path": "flow/core/records/2026-11-03/netlist.v",
+      "path": "flow/core/records/2026-11-20/netlist.v",
       "generator": "flow/core/synth.sh (klt synthesize)",
       "check": {"argv": ["flow/core/synth.sh", "--check"], "local_only": true}
     }
