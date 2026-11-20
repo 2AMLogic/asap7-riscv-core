@@ -114,8 +114,8 @@ jobs:
       # the gate whose absence let evidence/item9.json rot through three merged
       # PRs with CI green (issue #88). The cold start in attest/item9.json
       # (verification/run.sh --core) is local_only, so it is skipped here and
-      # listed as [SKIP] — only a real run on a host with iverilog, verilator
-      # and network egress can refresh it.
+      # listed as [SKIP] — only a real run on a host with iverilog,
+      # python 3.12 and network egress can refresh it.
       #
       # Re-attesting item 9 is a TWO-step change, and both steps belong in the
       # same commit (spec/decisions/0014-item-9-check-gate-and-lib-sh-attestation.md;
@@ -156,7 +156,7 @@ jobs:
           echo "  uvx --python 3.12 --from \"klayout-tools==0.8.0\" klt signoff \\"
           echo "      --attest 9 --inventory attest/item9.json -o evidence/item9.json"
           echo "The re-attest runs attest/item9.json's local_only cold start (verification/run.sh --core),"
-          echo "so it needs a host with iverilog, verilator 5.050, python 3.12 and network egress."
+          echo "so it needs a host with iverilog, python 3.12 and network egress."
           echo "The drift above is keyed on attestation.checks.<index>; those indices map to:"
           jq -r '.attestation.checks | to_entries[] | "  attestation.checks.\(.key)  ->  \(.value.path // "\(.value.check) \(.value.name // (if .value.argv then (.value.argv | join(" ")) else null end) // .value.role // "?")")"' \
              evidence/item9.json || true
