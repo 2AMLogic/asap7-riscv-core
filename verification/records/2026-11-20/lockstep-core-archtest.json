@@ -1,0 +1,540 @@
+{
+  "suite": "spike-lockstep",
+  "mode": "RTL simulation of the sv2v-converted CVE2 closure with -DRVFI, every RVFI retirement compared against the pinned Spike reference in lockstep (first divergence reported)",
+  "date_utc": "2026-11-20T14:38:11Z",
+  "tests_run": 73,
+  "tests_failed": 0,
+  "failures": [],
+  "excluded": {
+    "C-cebreak-01": "diagnosed, not a bench-glue fault: the suite's trap prolog (riscv-arch-test README, target requirement 1) needs a fully writable mtvec. CVE2 forces mtvec = {base[31:8], 6'b0, MODE=2'b01}, so the prolog's read-back never equals its trampoline address and it falls back to copying the 16-word trampoline over the reset mtvec value, using that raw value (0x80000001, MODE bit included) as a word pointer. The copy lands one byte off, 0x80000000 holds 0x00006f00, and c.ebreak vectors into a fetch loop at 0x80000000..0x80000008 so tohost is never written. See spec/decisions/0011-c-cebreak-01-mtvec-not-writable.md."
+  },
+  "longer_program": {
+    "source": "verification/core/lockstep_prog.S",
+    "source_sha256": "1ce4cfd7dd7517234aee15e99bfdeed5d3306bd54448ebd0d37c3a5a5e6ed44b",
+    "retirements": 921,
+    "retired_in_sim": 921
+  },
+  "runtime_seconds": 98.3,
+  "tools": {
+    "iverilog": "Icarus Verilog version 13.0 (stable) (v13_0)",
+    "cocotb": "2.0.1",
+    "spike_commit": "e53c8ccf3448ae459877ed3236cb39b2a1d493bf",
+    "sv2v_defines": [
+      "SYNTHESIS",
+      "RVFI"
+    ]
+  },
+  "tests": [
+    {
+      "test": "I-add-01",
+      "retirements": 3212,
+      "cycles": 3804,
+      "seconds": 1.6,
+      "status": "pass"
+    },
+    {
+      "test": "I-addi-01",
+      "retirements": 2139,
+      "cycles": 2704,
+      "seconds": 1.2,
+      "status": "pass"
+    },
+    {
+      "test": "I-and-01",
+      "retirements": 3187,
+      "cycles": 3775,
+      "seconds": 1.6,
+      "status": "pass"
+    },
+    {
+      "test": "I-andi-01",
+      "retirements": 2144,
+      "cycles": 2710,
+      "seconds": 1.2,
+      "status": "pass"
+    },
+    {
+      "test": "I-auipc-01",
+      "retirements": 393,
+      "cycles": 461,
+      "seconds": 0.5,
+      "status": "pass"
+    },
+    {
+      "test": "I-beq-01",
+      "retirements": 5519,
+      "cycles": 7903,
+      "seconds": 3.1,
+      "status": "pass"
+    },
+    {
+      "test": "I-bge-01",
+      "retirements": 5567,
+      "cycles": 8549,
+      "seconds": 3.4,
+      "status": "pass"
+    },
+    {
+      "test": "I-bgeu-01",
+      "retirements": 6806,
+      "cycles": 10426,
+      "seconds": 4.1,
+      "status": "pass"
+    },
+    {
+      "test": "I-blt-01",
+      "retirements": 5481,
+      "cycles": 8358,
+      "seconds": 3.4,
+      "status": "pass"
+    },
+    {
+      "test": "I-bltu-01",
+      "retirements": 6798,
+      "cycles": 10416,
+      "seconds": 4.0,
+      "status": "pass"
+    },
+    {
+      "test": "I-bne-01",
+      "retirements": 5520,
+      "cycles": 8958,
+      "seconds": 3.6,
+      "status": "pass"
+    },
+    {
+      "test": "I-fence-01",
+      "retirements": 77,
+      "cycles": 84,
+      "seconds": 0.4,
+      "status": "pass"
+    },
+    {
+      "test": "I-jal-01",
+      "retirements": 491,
+      "cycles": 675,
+      "seconds": 1.5,
+      "status": "pass"
+    },
+    {
+      "test": "I-jalr-01",
+      "retirements": 469,
+      "cycles": 605,
+      "seconds": 0.6,
+      "status": "pass"
+    },
+    {
+      "test": "I-lb-align-01",
+      "retirements": 270,
+      "cycles": 340,
+      "seconds": 0.6,
+      "status": "pass"
+    },
+    {
+      "test": "I-lbu-align-01",
+      "retirements": 262,
+      "cycles": 330,
+      "seconds": 0.5,
+      "status": "pass"
+    },
+    {
+      "test": "I-lh-align-01",
+      "retirements": 264,
+      "cycles": 332,
+      "seconds": 0.5,
+      "status": "pass"
+    },
+    {
+      "test": "I-lhu-align-01",
+      "retirements": 262,
+      "cycles": 330,
+      "seconds": 0.5,
+      "status": "pass"
+    },
+    {
+      "test": "I-lui-01",
+      "retirements": 198,
+      "cycles": 265,
+      "seconds": 0.5,
+      "status": "pass"
+    },
+    {
+      "test": "I-lw-align-01",
+      "retirements": 264,
+      "cycles": 332,
+      "seconds": 0.5,
+      "status": "pass"
+    },
+    {
+      "test": "I-or-01",
+      "retirements": 3212,
+      "cycles": 3803,
+      "seconds": 1.6,
+      "status": "pass"
+    },
+    {
+      "test": "I-ori-01",
+      "retirements": 2135,
+      "cycles": 2699,
+      "seconds": 1.2,
+      "status": "pass"
+    },
+    {
+      "test": "I-sb-align-01",
+      "retirements": 585,
+      "cycles": 659,
+      "seconds": 0.6,
+      "status": "pass"
+    },
+    {
+      "test": "I-sh-align-01",
+      "retirements": 592,
+      "cycles": 667,
+      "seconds": 0.6,
+      "status": "pass"
+    },
+    {
+      "test": "I-sll-01",
+      "retirements": 469,
+      "cycles": 562,
+      "seconds": 0.6,
+      "status": "pass"
+    },
+    {
+      "test": "I-slli-01",
+      "retirements": 373,
+      "cycles": 465,
+      "seconds": 0.5,
+      "status": "pass"
+    },
+    {
+      "test": "I-slt-01",
+      "retirements": 3192,
+      "cycles": 3780,
+      "seconds": 1.6,
+      "status": "pass"
+    },
+    {
+      "test": "I-slti-01",
+      "retirements": 2136,
+      "cycles": 2700,
+      "seconds": 1.2,
+      "status": "pass"
+    },
+    {
+      "test": "I-sltiu-01",
+      "retirements": 2620,
+      "cycles": 3323,
+      "seconds": 1.4,
+      "status": "pass"
+    },
+    {
+      "test": "I-sltu-01",
+      "retirements": 3881,
+      "cycles": 4607,
+      "seconds": 1.8,
+      "status": "pass"
+    },
+    {
+      "test": "I-sra-01",
+      "retirements": 472,
+      "cycles": 566,
+      "seconds": 0.6,
+      "status": "pass"
+    },
+    {
+      "test": "I-srai-01",
+      "retirements": 373,
+      "cycles": 464,
+      "seconds": 0.5,
+      "status": "pass"
+    },
+    {
+      "test": "I-srl-01",
+      "retirements": 484,
+      "cycles": 580,
+      "seconds": 0.6,
+      "status": "pass"
+    },
+    {
+      "test": "I-srli-01",
+      "retirements": 381,
+      "cycles": 475,
+      "seconds": 0.5,
+      "status": "pass"
+    },
+    {
+      "test": "I-sub-01",
+      "retirements": 3231,
+      "cycles": 3827,
+      "seconds": 1.6,
+      "status": "pass"
+    },
+    {
+      "test": "I-sw-align-01",
+      "retirements": 573,
+      "cycles": 645,
+      "seconds": 0.6,
+      "status": "pass"
+    },
+    {
+      "test": "I-xor-01",
+      "retirements": 3210,
+      "cycles": 3802,
+      "seconds": 1.6,
+      "status": "pass"
+    },
+    {
+      "test": "I-xori-01",
+      "retirements": 2155,
+      "cycles": 2725,
+      "seconds": 1.2,
+      "status": "pass"
+    },
+    {
+      "test": "M-div-01",
+      "retirements": 3213,
+      "cycles": 24242,
+      "seconds": 3.8,
+      "status": "pass"
+    },
+    {
+      "test": "M-divu-01",
+      "retirements": 3898,
+      "cycles": 29817,
+      "seconds": 4.6,
+      "status": "pass"
+    },
+    {
+      "test": "M-mul-01",
+      "retirements": 3196,
+      "cycles": 4958,
+      "seconds": 1.9,
+      "status": "pass"
+    },
+    {
+      "test": "M-mulh-01",
+      "retirements": 3200,
+      "cycles": 5544,
+      "seconds": 1.9,
+      "status": "pass"
+    },
+    {
+      "test": "M-mulhsu-01",
+      "retirements": 3506,
+      "cycles": 6102,
+      "seconds": 2.0,
+      "status": "pass"
+    },
+    {
+      "test": "M-mulhu-01",
+      "retirements": 3892,
+      "cycles": 6792,
+      "seconds": 2.2,
+      "status": "pass"
+    },
+    {
+      "test": "M-rem-01",
+      "retirements": 3200,
+      "cycles": 24048,
+      "seconds": 3.8,
+      "status": "pass"
+    },
+    {
+      "test": "M-remu-01",
+      "retirements": 3892,
+      "cycles": 29739,
+      "seconds": 4.6,
+      "status": "pass"
+    },
+    {
+      "test": "C-cadd-01",
+      "retirements": 3187,
+      "cycles": 3776,
+      "seconds": 1.6,
+      "status": "pass"
+    },
+    {
+      "test": "C-caddi-01",
+      "retirements": 1443,
+      "cycles": 1822,
+      "seconds": 1.0,
+      "status": "pass"
+    },
+    {
+      "test": "C-caddi16sp-01",
+      "retirements": 303,
+      "cycles": 376,
+      "seconds": 0.5,
+      "status": "pass"
+    },
+    {
+      "test": "C-caddi4spn-01",
+      "retirements": 130,
+      "cycles": 154,
+      "seconds": 0.5,
+      "status": "pass"
+    },
+    {
+      "test": "C-cand-01",
+      "retirements": 3197,
+      "cycles": 3787,
+      "seconds": 1.7,
+      "status": "pass"
+    },
+    {
+      "test": "C-candi-01",
+      "retirements": 1444,
+      "cycles": 1824,
+      "seconds": 1.0,
+      "status": "pass"
+    },
+    {
+      "test": "C-cbeqz-01",
+      "retirements": 616,
+      "cycles": 913,
+      "seconds": 0.7,
+      "status": "pass"
+    },
+    {
+      "test": "C-cbnez-01",
+      "retirements": 584,
+      "cycles": 1026,
+      "seconds": 0.8,
+      "status": "pass"
+    },
+    {
+      "test": "C-cj-01",
+      "retirements": 152,
+      "cycles": 231,
+      "seconds": 0.6,
+      "status": "pass"
+    },
+    {
+      "test": "C-cjal-01",
+      "retirements": 222,
+      "cycles": 289,
+      "seconds": 0.5,
+      "status": "pass"
+    },
+    {
+      "test": "C-cjalr-01",
+      "retirements": 352,
+      "cycles": 434,
+      "seconds": 0.6,
+      "status": "pass"
+    },
+    {
+      "test": "C-cjr-01",
+      "retirements": 351,
+      "cycles": 434,
+      "seconds": 0.6,
+      "status": "pass"
+    },
+    {
+      "test": "C-cli-01",
+      "retirements": 136,
+      "cycles": 172,
+      "seconds": 0.4,
+      "status": "pass"
+    },
+    {
+      "test": "C-clui-01",
+      "retirements": 170,
+      "cycles": 205,
+      "seconds": 0.5,
+      "status": "pass"
+    },
+    {
+      "test": "C-clw-01",
+      "retirements": 153,
+      "cycles": 185,
+      "seconds": 0.4,
+      "status": "pass"
+    },
+    {
+      "test": "C-clwsp-01",
+      "retirements": 259,
+      "cycles": 325,
+      "seconds": 0.5,
+      "status": "pass"
+    },
+    {
+      "test": "C-cmv-01",
+      "retirements": 365,
+      "cycles": 454,
+      "seconds": 0.6,
+      "status": "pass"
+    },
+    {
+      "test": "C-cnop-01",
+      "retirements": 99,
+      "cycles": 117,
+      "seconds": 0.4,
+      "status": "pass"
+    },
+    {
+      "test": "C-cor-01",
+      "retirements": 3207,
+      "cycles": 3801,
+      "seconds": 1.6,
+      "status": "pass"
+    },
+    {
+      "test": "C-cslli-01",
+      "retirements": 367,
+      "cycles": 457,
+      "seconds": 0.6,
+      "status": "pass"
+    },
+    {
+      "test": "C-csrai-01",
+      "retirements": 368,
+      "cycles": 459,
+      "seconds": 0.6,
+      "status": "pass"
+    },
+    {
+      "test": "C-csrli-01",
+      "retirements": 363,
+      "cycles": 452,
+      "seconds": 0.6,
+      "status": "pass"
+    },
+    {
+      "test": "C-csub-01",
+      "retirements": 3171,
+      "cycles": 3756,
+      "seconds": 1.6,
+      "status": "pass"
+    },
+    {
+      "test": "C-csw-01",
+      "retirements": 586,
+      "cycles": 660,
+      "seconds": 0.6,
+      "status": "pass"
+    },
+    {
+      "test": "C-cswsp-01",
+      "retirements": 581,
+      "cycles": 654,
+      "seconds": 0.6,
+      "status": "pass"
+    },
+    {
+      "test": "C-cxor-01",
+      "retirements": 3188,
+      "cycles": 3775,
+      "seconds": 1.6,
+      "status": "pass"
+    },
+    {
+      "test": "lockstep-prog",
+      "retirements": 921,
+      "cycles": 6178,
+      "seconds": 1.3,
+      "status": "pass"
+    }
+  ]
+}
