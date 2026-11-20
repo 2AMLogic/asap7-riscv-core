@@ -5,6 +5,9 @@ triage role. Newest first.
 
 ### 2026-11-20
 
+- **Issue #219** (closed): Require Verilator only for smoke lint in verification/run.sh
+- **PR #221**: fix(verification): require Verilator only for the smoke lint path
+- **Issue #204** (closed): Lockstep check against Spike: compare every retired instruction in cocotb
 - **PR #218**: feat(verification): compare every CVE2 retirement with Spike in cocotb
 - **Issue #206** (closed): Compare CVE2 RVFI retirements with Spike in the cocotb core suite
 - **PR #215**: fix(verification): pin fv.sh's negative control to the injected mismatch
