@@ -107,6 +107,19 @@ jobs:
         with:
           python-version: ${{ steps.pins.outputs.python }}
 
+      # The lockstep comparator is the verification product, and its offline
+      # self-test needs no simulator, no PDK and no network - the same tier
+      # as the shell self-tests above, and for the same reason: nothing else
+      # in CI would notice a comparator regression. The path is explicit,
+      # not a test_*.py glob, because a glob would also pick up the cocotb
+      # benches and the Spike trace suite, which need a simulator; an
+      # explicit path makes a missing or renamed script fail the step
+      # instead of silently skipping (#230). Runs before the simulator
+      # restore/build: it is sub-second, and the suite's exit status is the
+      # gate on every run, cache hit or miss.
+      - name: Offline lockstep comparator self-test
+        run: python3 -I verification/core/test_lockstep_compare.py
+
       - name: Restore pinned simulators
         id: cache
         uses: actions/cache@v4
