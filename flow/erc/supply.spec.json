@@ -1,0 +1,52 @@
+{
+  "stackup": [
+    {"name": "gate", "layer": "7/0", "role": "gate", "active_layer": "11/0"},
+    {"name": "lig", "layer": "16/0"},
+    {"name": "lisd", "layer": "17/0"},
+    {"name": "m1", "layer": "19/0", "label_layer": "19/251"},
+    {"name": "m2", "layer": "20/0", "label_layer": "20/251"},
+    {"name": "m3", "layer": "30/0"},
+    {"name": "m4", "layer": "40/0", "label_layer": "40/251"},
+    {"name": "m5", "layer": "50/0"},
+    {"name": "m6", "layer": "60/0", "label_layer": "60/251"}
+  ],
+  "vias": [
+    {"name": "lig_lisd", "layer": "16/0", "between": ["lig", "lisd"]},
+    {"name": "v0_lig", "layer": "18/0", "between": ["lig", "m1"]},
+    {"name": "v0_lisd", "layer": "18/0", "between": ["lisd", "m1"]},
+    {"name": "v1", "layer": "21/0", "between": ["m1", "m2"]},
+    {"name": "v2", "layer": "25/0", "between": ["m2", "m3"]},
+    {"name": "v3", "layer": "35/0", "between": ["m3", "m4"]},
+    {"name": "v4", "layer": "45/0", "between": ["m4", "m5"]},
+    {"name": "v5", "layer": "55/0", "between": ["m5", "m6"]}
+  ],
+  "nets": [
+    {"name": "VDD", "kind": "supply"},
+    {"name": "VSS", "kind": "supply"}
+  ],
+  "ties": [
+    {
+      "name": "nwell",
+      "well_layer": "1/0",
+      "tap_layer": "11/0",
+      "tap_requires": ["12/0"],
+      "connect_to": "lisd",
+      "net": "VDD"
+    },
+    {
+      "name": "psub",
+      "well_layer": null,
+      "well_complement_of": "1/0",
+      "tap_layer": "11/0",
+      "tap_requires": ["13/0"],
+      "connect_to": "lisd",
+      "net": "VSS"
+    }
+  ],
+  "floating_gate_allowed": [
+    {
+      "box": [0.0, 0.0, 4.949, 4.949],
+      "reason": "ASAP7 gates are contacted by LIG directly on the gate and the gate layer is drawn as full-height stripes cut by GCut (10/0); a klt 0.9.0 erc spec cannot subtract the cut, so joining gate to LIG collapses VDD and VSS into one net through the uncut stripes (klayout-tools #4610). This supply run therefore models no gate-to-LIG via: every gate reports floating and is disclosed here, and gate connectivity is graded by klt lvs on the same GDS instead."
+    }
+  ]
+}
