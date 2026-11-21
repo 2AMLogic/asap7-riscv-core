@@ -109,10 +109,18 @@ port to the wrapper or the testbench.
 Per retirement the comparator (`core/lockstep_compare.py`, offline self-test
 `core/test_lockstep_compare.py`) checks order continuity, PC, instruction
 bits masked to the reference length, privilege mode, integer destination
-index and write-back value, load/store presence and address, the stored
-value, and every reference CSR write against the observed committed value
+index and write-back value, load presence and address; for stores the write
+mask pinned by the decoded instruction (unshifted `0x1`/`0x3`/`0xf` for
+`sb`/`sh`/`word` — `sw`, `c.sw`, `c.swsp`; `cve2_core.sv` decodes it from
+`lsu_type` with no lane shift), the single address, and the low 8, 16 or 32
+bits of the raw store value at that decoded width; and every reference CSR
+write against the observed committed value
 projected through CVE2's WARL (mtvec/mepc/mcause bit masking, mstatus
 implemented fields, mret keeping MPP at M because CVE2 has no U-mode). A
+reference record carrying more than one store effect for one decoded store
+is reported as an unsupported record — naming the retirement PC and the
+effect count, expected and observed masks on a mask divergence — rather
+than being partially compared. A
 synchronous exception is a retirement gap in the reference and an
 `rvfi_trap` retirement on the DUT. The run passes when both sides consume
 the retiring `tohost` store. A divergent or extra retirement reports the
