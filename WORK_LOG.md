@@ -5,6 +5,8 @@ triage role. Newest first.
 
 ### 2026-11-20
 
+- **Issue #222** (closed): Item 9 re-attest guidance still names Verilator as a host prerequisite
+- **PR #228**: docs: drop Verilator from item 9 re-attest host prerequisites
 - **Issue #219** (closed): Require Verilator only for smoke lint in verification/run.sh
 - **PR #221**: fix(verification): require Verilator only for the smoke lint path
 - **Issue #204** (closed): Lockstep check against Spike: compare every retired instruction in cocotb
