@@ -32,11 +32,14 @@ met, 1 not applicable**:
 | 11 Power delivery | unmet | #31, behind #28 and #30 |
 
 Also on `main`: the smoke flow on the placeholder counter runs every step on
-the pinned `klayout-tools==0.9.0` (`flow/smoke/records/2026-11-05/`, PR #66).
-`par` is `ok` with DEF and GDS; on that layout DRC reports 549 violations in
-seven rule ids, LVS is `mismatch` (19 topology errors) and ERC is
-`not_checked`. The DRC deck (267 categories) and the LVS deck are pinned by
-content hash in `spec/core.md` (decisions
+the pinned `klayout-tools==0.9.0` (`flow/smoke/records/2026-11-21/`). `par`
+is `ok` with DEF and GDS, LVS is `match` (0 errors, the `flatten_layout`
+recipe) and ERC is `not_checked`; DRC reports 44 violations in five rule ids,
+every marker attributed in `flow/smoke/analysis/2026-11-21-drc.md` — 35
+PDN-stack markers (klayout-tools #6909) and 3 router via-pad tips
+(klayout-tools #4508) wait upstream, and the 6 shipped-cell `BUFx4` markers
+are #29's disclosure question. The DRC deck (267 categories) and the LVS deck
+are pinned by content hash in `spec/core.md` (decisions
 `0012-pin-klt-0-9-0-and-ratify-asap7-drc-deck` and 0013 — two records share the
 number 0012, which #90 tracks).
 
@@ -80,7 +83,7 @@ fallback, 1.5 GHz the stretch).
 - **ERC with an antenna table.** `erc.json` is `not_checked`, with
   `coverage.nothing_checked_reasons` `gate_reference_level` and
   `missing_antenna_pdk`. klayout-tools #4090, which reported this, closed
-  2026-10-24 while the gap persists in the 2026-11-05 record, so the friction
+  2026-10-24 while the gap persists in the 2026-11-21 record, so the friction
   protocol owes a fresh klayout-tools issue. First: can a table be derived from
   the pinned PDK files?
 - **Resolving ASAP7 through `klt pdk`.** `spec/core.md` points the flow at the

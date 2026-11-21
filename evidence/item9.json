@@ -59,7 +59,7 @@
         "role": "testbench",
         "path": "flow/smoke/run.sh",
         "passed": true,
-        "content_hash": "sha256:dc183c76ed9f9ecdac69ab0760363140f9e520ac691e01bce18aad899ef96ff8"
+        "content_hash": "sha256:d22dbcbd3e5636e06c09874e8a11c43014a3eaf21e729d7aac7ca535f3378c13"
       },
       {
         "check": "present",
