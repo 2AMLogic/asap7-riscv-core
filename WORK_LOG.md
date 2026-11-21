@@ -3,6 +3,11 @@
 Chronological record of merged PRs and closed issues, maintained by the Guide
 triage role. Newest first.
 
+### 2026-11-21
+
+- **Issue #223** (closed): Lockstep comparator: store-side checks skip multi-store records and never cross-check mem_wmask width
+- **PR #229**: fix: pin the lockstep store mask to the decoded width and reject multi-store records
+
 ### 2026-11-20
 
 - **Issue #222** (closed): Item 9 re-attest guidance still names Verilator as a host prerequisite
