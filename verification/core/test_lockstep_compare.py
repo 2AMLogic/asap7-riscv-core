@@ -8,8 +8,10 @@ can report, from the issue #206 test plan: a clean run through trap and mret,
 a corrupted write-back (the negative control's injected shape), a wrong pc,
 trap shapes in both directions, missing and extra events, the CSR write
 observation with CVE2's WARL projections, sub-word store normalization,
-compressed-instruction masking, the retirement order check and timeout
-reporting when no PC is available.
+the store-width mask pinned by the encoding (issue #223: all five store
+forms, the shifted-mask and multi-effect rejections), compressed-instruction
+masking, the retirement order check and timeout reporting when no PC is
+available.
 
 Exit status: 0 every case passed; 1 a case failed.
 """
@@ -87,8 +89,10 @@ def dut_stream():
         dict(order=2, pc=0x1004, insn=0x00040013),
         dict(order=3, pc=0x1008, insn=0x0004A503, rd_addr=10, rd_wdata=0xAB,
              mem_rmask=0xF, mem_addr=0x2000),
-        dict(order=4, pc=0x100C, insn=0x00A99223, mem_wmask=0xC, mem_addr=0x2006,
-             mem_wdata=0x1234),  # raw rs2 value: the lane shift is bus-side only
+        dict(order=4, pc=0x100C, insn=0x00A99223, mem_wmask=0x3, mem_addr=0x2006,
+             mem_wdata=0x5A5A1234),  # raw rs2 with its upper bits, wmask unshifted
+             # (cve2_core.sv decodes 0x1/0x3/0xf from lsu_type with no lane
+             # shift; the byte-lane shift is bus-side only)
         dict(order=5, pc=0x1010, insn=0x30529073),
         dict(order=6, pc=0x1014, insn=0x00802A23, mem_wmask=0xF, mem_addr=0x2010,
              mem_wdata=7),
@@ -213,7 +217,92 @@ check(project_csr(MSTATUS, 0x80, MRET_ENC) == 0x1880
       and project_csr(MSTATUS, 0x80) == 0x80,
       "the mret projection sets only MPP; an explicit csrw mstatus compares unprojected MPP")
 
-print("# 7. sub-word store value normalization and instruction masking")
+print("# 7. store decode: the mask is pinned by the encoding, one effect per store")
+# All five legal store forms through one clean run. Addresses and encodings:
+#   sb x1, 0(x2)   -> 0x00110023   sh x1, 2(x2)  -> 0x00111123   sw x2, 0(x4) -> 0x00222023
+#   c.sw x8, 0(x9) -> 0xC400       c.swsp x8, 4(x2) -> 0xC222
+SREF = [
+    ref(pc=0x1000, enc=0x00110023, stores=[(0x2000, 0x7F)]),        # sb
+    ref(pc=0x1004, enc=0x00111123, stores=[(0x2006, 0x1234)]),      # sh at offset 2
+    ref(pc=0x1008, enc=0x00222023, stores=[(0x2008, 0x89ABCDEF)]),  # sw
+    ref(pc=0x100C, enc=0xC400, len=2, stores=[(0x200C, 0x55)]),     # c.sw
+    ref(pc=0x100E, enc=0xC222, len=2, stores=[(0x2010, 0x66)]),     # c.swsp
+    ref(pc=0x1010, enc=0x00C02023, stores=[(TOHOST, 1)]),           # sw tohost
+]
+SDUT = [
+    dict(order=1, pc=0x1000, insn=0x00110023, mem_wmask=0x1, mem_addr=0x2000,
+         mem_wdata=0xAB7F),        # sb: raw rs2 0xAB7F, low byte stored
+    dict(order=2, pc=0x1004, insn=0x00111123, mem_wmask=0x3, mem_addr=0x2006,
+         mem_wdata=0x5A5A1234),    # sh at offset 2: unshifted mask, raw rs2
+    dict(order=3, pc=0x1008, insn=0x00222023, mem_wmask=0xF, mem_addr=0x2008,
+         mem_wdata=0x89ABCDEF),
+    dict(order=4, pc=0x100C, insn=0xC400, mem_wmask=0xF, mem_addr=0x200C,
+         mem_wdata=0x55),
+    dict(order=5, pc=0x100E, insn=0xC222, mem_wmask=0xF, mem_addr=0x2010,
+         mem_wdata=0x66),
+    dict(order=6, pc=0x1010, insn=0x00C02023, mem_wmask=0xF, mem_addr=TOHOST,
+         mem_wdata=1),
+]
+cmp_ = Lockstep("t", SREF, TOHOST)
+m = None
+for s in SDUT:
+    o = obs(**s)
+    m = cmp_.retirement(o) or m
+    if m:
+        break
+check(m is None and cmp_.complete and cmp_.n == 6,
+      "sb, sh (offset 2), sw, c.sw and c.swsp all match with their pinned masks")
+
+
+def one_store(enc, stores, **dut):
+    """A one-store run against <enc>: the reference carries <stores>, the DUT
+    observation carries <dut>; returns the first mismatch (or None)."""
+    r = [ref(pc=0x1000, enc=enc, stores=stores)]
+    o = obs(insn=enc, **dut)
+    return Lockstep("t", r, TOHOST).retirement(o)
+
+
+# The three curated reproductions (issue #223), each a run the old comparator
+# accepted or half-compared: a wmask wider than the decoded store, a wmask of
+# zero on the retiring tohost store, and a reference record with two store
+# effects where only the first address was ever checked.
+m = one_store(0x00110023, [(0x2000, 0x1)], mem_wmask=0xF, mem_addr=0x2000, mem_wdata=0x1)
+check(m is not None and m["field"] == "store-wmask" and m["expected"] == 0x1
+      and m["observed"] == 0xF and m["pc"] == 0x1000,
+      f"an sb with a word wmask is rejected with both masks (got {m})")
+m = one_store(0x00C02023, [(TOHOST, 0)], mem_wmask=0x0, mem_addr=TOHOST, mem_wdata=0)
+check(m is not None and m["field"] == "store-wmask" and m["expected"] == 0xF
+      and m["observed"] == 0x0,
+      "a word store driving no bytes at all is rejected (not completed)")
+m = one_store(0x00C02023, [(TOHOST, 0xAA), (TOHOST + 1, 0xBB)],
+              mem_wmask=0xF, mem_addr=TOHOST, mem_wdata=0)
+check(m is not None and m["field"] == "store-record"
+      and "2" in m["detail"] and m["pc"] == 0x1000,
+      f"a two-effect store record is rejected with its effect count at the pc (got {m})")
+c_ = Lockstep("t", [ref(pc=0x1000, enc=0x00C02023,
+                        stores=[(TOHOST, 0xAA), (TOHOST + 1, 0xBB)])], TOHOST)
+m = c_.retirement(obs(order=1, pc=0x1000, insn=0x00C02023, mem_wmask=0xF,
+                      mem_addr=TOHOST, mem_wdata=0))
+check(m is not None and not c_.complete,
+      "a multi-store tohost record never completes the run")
+
+# The shifted halfword mask (same popcount as 0x3) and the two field-specific
+# divergences that must keep reporting under the tightened decode.
+m = one_store(0x00111123, [(0x2006, 0x1234)], mem_wmask=0xC, mem_addr=0x2006,
+              mem_wdata=0x5A5A1234)
+check(m is not None and m["field"] == "store-wmask" and m["expected"] == 0x3
+      and m["observed"] == 0xC,
+      "a lane-shifted halfword mask is rejected: popcount no longer sizes it")
+m = one_store(0x00110023, [(0x2000, 0x7F)], mem_wmask=0x1, mem_addr=0x2001,
+              mem_wdata=0x7F)
+check(m is not None and m["field"] == "store-addr" and m["expected"] == 0x2000,
+      "a wrong store address still reports its own mismatch")
+m = one_store(0x00110023, [(0x2000, 0x11)], mem_wmask=0x1, mem_addr=0x2000,
+              mem_wdata=0x10)
+check(m is not None and m["field"] == "store-value" and m["expected"] == 0x11
+      and m["observed"] == 0x10,
+      "a wrong stored byte still reports its own mismatch")
+
 cmp_ = Lockstep("t", REF, TOHOST)
 pulses(cmp_)
 m = None
