@@ -5,7 +5,7 @@
   "tier": null,
   "t1_item_count": 11,
   "build_t1_item_count": 11,
-  "t1_met_count": 3,
+  "t1_met_count": 4,
   "t1_not_applicable_count": 1,
   "source_doc": "manifests/design-evidence-tiers.md",
   "source_doc_content_hash": "sha256:a26b90262320d0fbd32b3f549a02b6300832706041797a559d8bf6bdb62efdc7",
@@ -63,10 +63,34 @@
       "partition": null,
       "text": "committed routed GDS/OASIS from place-and-route, reproducibly generated from the gate-level netlist (P&R script/flow committed, not a one-off hand edit). For the same full-custom sub-case, this item is satisfied instead by the Analog column's artifact: committed GDS/OASIS, reproducibly generated or with documented provenance \u2014 hand-drawn layout, not P&R output.",
       "notes": [],
-      "status": "unmet",
-      "reason": "no_evidence",
+      "status": "met",
+      "reason": null,
       "graded_by_build": true,
-      "citation": null
+      "citation": {
+        "file": "evidence/item2.json",
+        "command": null,
+        "kind": "generic",
+        "check_status": "pass",
+        "content_hash": "sha256:abaf794b569e5956e5f4340e1ffc5ae5e6395b087ef7cf91f83591d3cec407e1",
+        "input_verified": true,
+        "exit_status": 0,
+        "artifact_binding": {
+          "t1_item": 2,
+          "path": {
+            "path": "layout/cve2_top.gds",
+            "scope": "repo"
+          },
+          "content_hash": "sha256:abaf794b569e5956e5f4340e1ffc5ae5e6395b087ef7cf91f83591d3cec407e1",
+          "input_verified": true,
+          "summary": "T1 item 2 (Layout): committed routed GDS of cve2_rv32imc_wrapper (the RV32IMC wrapper around unmodified CVE2), placed and routed on ASAP7 by klt place-and-route from the committed gate-level netlist (flow/core/records/2026-11-20/netlist.v); predictive PDK, no timing claimed.",
+          "source": "flow/core/par.sh",
+          "regeneration": {
+            "generator": "flow/core/par.sh --check (klt place-and-route, pinned klayout-tools==0.9.0, seed 1, on flow/core/records/2026-11-20/netlist.v; regenerates the GDS and byte-compares it with layout/cve2_top.gds)",
+            "regenerated_hash": "sha256:abaf794b569e5956e5f4340e1ffc5ae5e6395b087ef7cf91f83591d3cec407e1",
+            "executed_by_klt": false
+          }
+        }
+      }
     },
     {
       "tier": "T1",
