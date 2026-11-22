@@ -1,8 +1,8 @@
 # `klt erc` supply evidence (item 11, structural power delivery)
 
 This directory owns the **supply-scoped** `klt erc` spec for this repo, first
-exercised on the routed counter layout (#226) so the spec and its tool
-dependencies are proven before the core needs them (#31). The smoke flow's own
+exercised on the routed counter layout (#226) to measure what the pinned tool
+can check before the routed-core run (#31). The smoke flow's own
 ERC run (`flow/smoke/run.sh` step 5) stays antenna-scoped and unchanged; the
 two runs are separate evidence, not replacements for each other.
 
@@ -114,29 +114,36 @@ Inputs and tool, as recorded in the report's own provenance:
 - **Islands:** VDD `matched_islands: 1`, VSS `matched_islands: 1` — each supply
   resolves to exactly one labelled electrical island (expected 1, declared
   count default).
-- **Findings:** `erc_finding_count: 0`. Zero `erc.unconnected_net`, zero
-  `erc.supply_short`, zero `erc.missing_tie`.
+- **Findings.** The net-connectivity checks for VDD and VSS produced zero
+  `erc.unconnected_net` findings. The two tie checks produced zero
+  `erc.missing_tie` findings. The report records `erc_finding_count: 0`
+  and `erc_status: clean` for the checks it ran.
 - **Ties actually checked, not skipped:** `erc_coverage.checked` contains
   `erc.missing_tie:["nwell"]` and `erc.missing_tie:["psub"]`,
   `missing_tie_checked: true`, `erc_coverage.skipped` is empty — neither tie is
   degenerate. `psub` is additionally named in `checked_by_well_assertion`
   (its well side is the complement assertion, as disclosed above).
-- **Connectivity verdict:** `erc_status: clean` (graded on `erc_findings`
-  alone, which is exactly the three rule families item 11 names).
-- **Disclosed, not passed:** all 46 `erc.floating_gate` ids are in
+- **Supply-short coverage.** The report lists `erc.supply_short` under
+  `erc_coverage.inapplicable` with reason `substrate_continuity_not_modelled`.
+  The `psub` tie uses `well_complement_of: "1/0"` to locate substrate taps.
+  klt 0.9.0 does not trace electrical paths through that substrate. A short
+  through the declared stackup can produce a finding, as in the gate-to-LIG
+  experiment above. A VDD–VSS short through the substrate remains unchecked,
+  so this run leaves item 11's supply-short clause unmet.
+  [Upstream substrate-continuity issue](https://github.com/2AMLogic/klayout-tools/issues/5334).
+- **Other coverage limits.** All 46 `erc.floating_gate` ids are in
   `erc_coverage.inapplicable` with reason `floating_gate_disclosed`
   (klayout-tools #4610; see above), and the antenna half is `not_checked`
   (klayout-tools #4090).
 
 ### What the core run must add (#31)
 
-- Reuse this spec as-is; the core's `par.json` strap and stripe layers must be
-  re-checked against the stackup (M1–M6 covered here), and the run recorded
-  under `records/<date>/` beside this one.
+- Check the stackup against the core's own `par.json` strap and stripe layers
+  and record the core run under `records/<date>/`. Item 11 needs evidence
+  that the core run evaluated supply shorts through the substrate.
 - Item 11's LVS half is separate: the item-4 LVS report's
   `power_connectivity.status` must be `match`. The pinned klt 0.9.0 cannot
   produce that on the gate-level Verilog FinFET route; the fix in
   klayout-tools#5757 merged 2026-11-17, after the v0.9.2 tag, so it reaches
   this repo only through a later klt release and a pin decision (#31 tracks
-  it). Until then the ERC supply evidence here is the half of item 11 that
-  survives.
+  it).
