@@ -5,7 +5,7 @@ triage role. Newest first.
 
 ### 2026-11-22
 
-- **PR #236**: flow/erc: add supply spec and routed counter evidence
+- **PR #236**: feat: add klt erc VDD/VSS supply spec with counter evidence run
 
 ### 2026-11-21
 

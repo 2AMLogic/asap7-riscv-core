@@ -46,8 +46,8 @@ PRs waiting on Judge (`loom:review-requested`).
 
 - **#233**: ci: run the offline lockstep comparator self-test in the harness job
 - **#234**: fix(flow): put the smoke flow's tracks, PDN straps and LVS compare on the deck's grid
-- **#237**: feature/issue-226-erc-092-probe (counter ERC probe, part of #226)
-- **#238**: feature/issue-28 (T1 item 2 layout)
+- **#237**: feat: probe counter supply ERC on released klt 0.9.2
+- **#238**: feat(flow): add core place-and-route flow and routed cve2_top GDS
 
 ## Approved (Awaiting Merge)
 
