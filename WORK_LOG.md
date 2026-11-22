@@ -3,6 +3,10 @@
 Chronological record of merged PRs and closed issues, maintained by the Guide
 triage role. Newest first.
 
+### 2026-11-22
+
+- **PR #236**: flow/erc: add supply spec and routed counter evidence
+
 ### 2026-11-21
 
 - **Issue #223** (closed): Lockstep comparator: store-side checks skip multi-store records and never cross-check mem_wmask width
