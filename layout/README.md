@@ -14,19 +14,29 @@ are recorded separately.
 
 ## Reproduce
 
-Reproducible from a clean checkout with the pinned ASAP7 checkout of
-`spec/pdk-bringup.md` section 1 (~3 GB, submodules initialised), network
-egress and `uvx` (the pinned `klt` is resolved automatically):
+Reproducible from a clean checkout with:
+
+- the pinned ASAP7 checkout of `spec/pdk-bringup.md` section 1 (~3 GB,
+  `asap7_pdk_r1p7` and `asap7sc7p5t_28` submodules initialised),
+- `openroad` on `$PATH` (required by `klt place-and-route`; build
+  `26Q3-1510-g6cb3f2b704` — commit `6cb3f2b704` of
+  `The-OpenROAD-Project/OpenROAD`, recorded in
+  `flow/core/records/2026-11-22/tool-versions.txt` — produced the committed
+  GDS),
+- `uvx` and network egress (the pinned `klt` `0.9.0` and `py7zr` are resolved
+  automatically; writing a new dated record also queries `yosys -V` on `$PATH`
+  for `tool-versions.txt`):
 
 ```
-flow/core/par.sh <asap7-checkout>            # writes the dated record and this GDS
-flow/core/par.sh <asap7-checkout> --check    # regenerates the GDS and byte-compares
+flow/core/par.sh <asap7-checkout> --check    # regenerates, validates, and byte-compares against HEAD:layout/cve2_top.gds
+flow/core/par.sh <asap7-checkout>            # validates and writes a new dated record + layout/cve2_top.gds
 ```
 
-Two independent full runs (2026-11-22, pinned `klt` 0.9.0, seed 1) produced
-byte-identical GDS streams at the sha256 above. The run's response and its
-tool/input pins are committed beside this file's generator:
-`flow/core/records/2026-11-22/par.json` (`status: ok`, `power.pdn: true`,
+Two independent full runs (2026-11-22, pinned `klt` 0.9.0, OpenROAD
+`26Q3-1510-g6cb3f2b704`, seed 1) produced byte-identical GDS streams at the
+sha256 above. The run's response and its tool/input pins are committed beside
+this file's generator: `flow/core/records/2026-11-22/par.json` (`status: ok`,
+`stage_reached: route`, `power.pdn: true`,
 `power.tapcell_master: TAPCELL_ASAP7_75t_R`) and
 `flow/core/records/2026-11-22/tool-versions.txt`. Predicted areas from that
 response: die 4763.62 µm², core 4465.56 µm², utilisation 63.49 %.

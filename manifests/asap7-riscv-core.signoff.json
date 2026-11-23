@@ -85,7 +85,7 @@
           "summary": "T1 item 2 (Layout): committed routed GDS of cve2_rv32imc_wrapper (the RV32IMC wrapper around unmodified CVE2), placed and routed on ASAP7 by klt place-and-route from the committed gate-level netlist (flow/core/records/2026-11-20/netlist.v); predictive PDK, no timing claimed.",
           "source": "flow/core/par.sh",
           "regeneration": {
-            "generator": "flow/core/par.sh --check (klt place-and-route, pinned klayout-tools==0.9.0, seed 1, on flow/core/records/2026-11-20/netlist.v; regenerates the GDS and byte-compares it with layout/cve2_top.gds)",
+            "generator": "flow/core/par.sh <asap7-checkout> --check (klt place-and-route, pinned klayout-tools==0.9.0, OpenROAD 26Q3-1510-g6cb3f2b704, seed 1, on flow/core/records/2026-11-20/netlist.v; regenerates the GDS, validates the response, and byte-compares it with HEAD:layout/cve2_top.gds)",
             "regenerated_hash": "sha256:abaf794b569e5956e5f4340e1ffc5ae5e6395b087ef7cf91f83591d3cec407e1",
             "executed_by_klt": false
           }

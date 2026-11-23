@@ -4,8 +4,8 @@
 # with the decision 0004 floorplan (60 % utilisation, aspect 1.0, single
 # block, no macro) and the pinned PDK inputs, and writes the routed GDS to
 # layout/cve2_top.gds plus a par record under flow/core/records/<date>/, or,
-# with --check, regenerates the GDS and byte-compares it with the committed
-# layout/cve2_top.gds.
+# with --check, regenerates the GDS, validates the response, and byte-compares
+# it with the committed HEAD:layout/cve2_top.gds.
 #
 # ASAP7 is a predictive PDK; nothing here is fabricated or measured. The
 # flow claims no timing: the clock constraint is passed to the tool and any
@@ -25,13 +25,18 @@
 # origin) and connects[].ongrid snapping the M3/M4 via stubs onto the
 # tracks.
 #
-# usage: flow/core/par.sh <asap7-checkout>            write a new dated record
-#        flow/core/par.sh <asap7-checkout> --check    regenerate and compare
+# usage: flow/core/par.sh <asap7-checkout> --check    regenerate and compare
+#        flow/core/par.sh <asap7-checkout>            write a new dated record
 #        (the checkout may be given as $ASAP7_DIR instead of an argument)
 #
 # <asap7-checkout> is The-OpenROAD-Project/asap7 at the pins in
 # spec/pdk-bringup.md section 1, with the asap7_pdk_r1p7 and asap7sc7p5t_28
 # submodules initialised. The script refuses any other checkout.
+#
+# Prerequisites on $PATH: `openroad` (required by `klt place-and-route`; build
+# `26Q3-1510-g6cb3f2b704` produced the committed layout, recorded in
+# flow/core/records/2026-11-22/tool-versions.txt), `uvx` and `python3`;
+# writing a new record also queries `yosys -V` for tool-versions.txt.
 #
 # Environment:
 #   RECORD_DATE     record directory name (default: today, UTC). The script
@@ -40,10 +45,11 @@
 #                  via uvx)
 #   KEEP_SCRATCH=1  keep the scratch directory
 #
-# Exit status: 0 ok (and, with --check, byte-identical); 1 a step failed,
-# the response carries no power grid, or --check found a difference; 2
-# refused invocation -- including --check finding no committed layout to
-# compare against at all (a refusal, not a difference).
+# Exit status: 0 ok (and, with --check, byte-identical to
+# HEAD:layout/cve2_top.gds); 1 a step failed, the response failed validation,
+# a staged record leaked a host path, or --check found a difference; 2 refused
+# invocation -- including --check finding no committed HEAD:layout/cve2_top.gds
+# to compare against at all (a refusal, not a difference).
 set -euo pipefail
 
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
@@ -85,12 +91,26 @@ check_pin "$ASAP7/asap7_pdk_r1p7" "$PIN_PDK" "submodule asap7_pdk_r1p7"
 klt_cmd "$PIN_KLT"
 setup_scratch corepar
 
-# ---- output directory (never overwrite) ---------------------------------
-if [[ $CHECK == 0 ]]; then
-  new_record_dir core
+# ---- mode gate: immutable --check baseline or append-only precheck ----------
+# Pin RECORD_DATE once so a run crossing UTC midnight checks and writes the
+# same directory, and defer creating $OUT until the staged record passes every
+# check so a rejected run leaves neither a partial record dir nor a replaced
+# layout behind. In --check mode, snapshot the immutable GDS blob at HEAD now
+# so working-tree edits (including a preceding non-check run) cannot self-compare.
+RECORD_DATE="${RECORD_DATE:-$(date -u +%Y-%m-%d)}"
+DATE="$RECORD_DATE"
+OUT="$REPO/flow/core/records/$DATE"
+if [[ $CHECK == 1 ]]; then
+  git -C "$REPO" cat-file -e HEAD:layout/cve2_top.gds 2>/dev/null \
+    || die "no committed HEAD:layout/cve2_top.gds to compare against" 2
+  COMMITTED_GDS="$SCRATCH/committed.gds"
+  git -C "$REPO" cat-file blob HEAD:layout/cve2_top.gds >"$COMMITTED_GDS"
+  [[ -s "$COMMITTED_GDS" ]] \
+    || die "committed HEAD:layout/cve2_top.gds is empty" 2
 else
-  DATE="${RECORD_DATE:-$(date -u +%Y-%m-%d)}"
-  OUT="$REPO/flow/core/records/$DATE"
+  if compgen -G "$OUT/*.json" >/dev/null; then
+    die "records already exist in flow/core/records/$DATE; set RECORD_DATE to a new label (records are append-only evidence)"
+  fi
 fi
 
 # ---- input: the committed gate-level netlist -----------------------------
@@ -172,46 +192,67 @@ echo "par.sh: placing and routing ${TOP} from ${NETLIST_SRC#"$REPO"/}" >&2
 rc=0
 ( cd "$W" && "${KLT[@]}" place-and-route par.req.json "${PDKARGS[@]}" --format json ) \
   >"$SCRATCH/par.out" 2>"$SCRATCH/par.err" || rc=$?
-python3 -I "$REPO/flow/record_lib.py" usable "$SCRATCH/par.out" \
-  || { echo "par.sh: klt place-and-route failed (exit $rc)" >&2; head -c 2000 "$SCRATCH/par.out" "$SCRATCH/par.err" >&2; exit 1; }
+if [[ $rc -ne 0 ]] || ! python3 -I "$REPO/flow/record_lib.py" usable "$SCRATCH/par.out"; then
+  echo "par.sh: klt place-and-route failed (exit $rc)" >&2
+  head -c 2000 "$SCRATCH/par.out" "$SCRATCH/par.err" >&2
+  exit 1
+fi
 
-# ---- outputs ---------------------------------------------------------------
+# ---- outputs & response validation (both modes) -----------------------------
 PR="$W/.klt/place-and-route"
 for f in "$TOP.gds" "$TOP.def" "$TOP.v"; do
   [[ -s "$PR/$f" ]] || die "klt place-and-route produced no $f in its run tree" 1
 done
 
-# ---- compare (--check) or record -------------------------------------------
+# Validate the response before --check compares or record mode publishes:
+# the run must report status "ok" at stage "route", and the item 2 acceptance
+# edge cases require an actual power grid (power.pdn true) and a named
+# tapcell master. A response failing any check is a failed run in both modes.
+if ! RESP_ERR="$(python3 -I - "$SCRATCH/par.out" <<'PY'
+import json, sys
+d = json.load(open(sys.argv[1], encoding="utf-8"))
+if d.get("status", "ok") != "ok":
+    print(f"status is {d.get('status')!r}, expected 'ok'")
+    sys.exit(1)
+if d.get("stage_reached", "route") != "route":
+    print(f"stage_reached is {d.get('stage_reached')!r}, expected 'route'")
+    sys.exit(1)
+power = d.get("power")
+if not isinstance(power, dict) or power.get("pdn") is not True:
+    print("power.pdn is not true in the place-and-route response")
+    sys.exit(1)
+tap = power.get("tapcell_master")
+if not isinstance(tap, str) or not tap.strip():
+    print("no power.tapcell_master in the place-and-route response")
+    sys.exit(1)
+PY
+)"; then
+  die "$RESP_ERR" 1
+fi
+
+# ---- compare (--check) against HEAD:layout/cve2_top.gds ---------------------
 if [[ $CHECK == 1 ]]; then
-  [[ -s "$GDS_OUT" ]] || die "no committed layout/cve2_top.gds to compare against" 2
-  if cmp -s "$PR/$TOP.gds" "$GDS_OUT"; then
-    echo "par.sh: regenerated GDS is byte-identical to layout/cve2_top.gds" \
-         "(sha256:$(sha "$GDS_OUT"))" >&2
+  if cmp -s "$PR/$TOP.gds" "$COMMITTED_GDS"; then
+    echo "par.sh: regenerated GDS is byte-identical to HEAD:layout/cve2_top.gds" \
+         "(sha256:$(sha "$COMMITTED_GDS"))" >&2
     exit 0
   fi
-  echo "par.sh: regenerated GDS DIFFERS from layout/cve2_top.gds" >&2
+  echo "par.sh: regenerated GDS DIFFERS from HEAD:layout/cve2_top.gds" \
+       "(got sha256:$(sha "$PR/$TOP.gds"), committed sha256:$(sha "$COMMITTED_GDS"))" >&2
   exit 1
 fi
 
-cp "$PR/$TOP.gds" "$GDS_OUT"
-
-# The response's power fields are the item 2 acceptance edge cases: the
-# routed artifact must have actually been produced with a power grid
-# (power.pdn true) and a named tapcell master. A response without them is a
-# failed run for this flow, not a recordable outcome.
-PDN="$(python3 -I -c 'import json,sys; print(json.load(open(sys.argv[1]))["power"]["pdn"])' "$SCRATCH/par.out")"
-TAP="$(python3 -I -c 'import json,sys; print(json.load(open(sys.argv[1]))["power"]["tapcell_master"])' "$SCRATCH/par.out")"
-[[ "$PDN" == "True" ]] || die "power.pdn is not true in the place-and-route response" 1
-[[ -n "$TAP" && "$TAP" != "None" ]] || die "no power.tapcell_master in the place-and-route response" 1
-
-# The record is assembled here and redacted and written by
-# flow/record_lib.py, the one path to flow/*/records/ (shared with the other
-# writers).
+# ---- stage & validate record before publishing ------------------------------
+# Assemble par.json and tool-versions.txt in scratch and run record_leak_guard
+# before creating flow/core/records/$DATE or replacing layout/cve2_top.gds, so
+# a redaction miss or tool error never leaves published outputs behind.
+STAGE="$SCRATCH/record"; mkdir -p "$STAGE"
+GDS_SHA="$(sha "$PR/$TOP.gds")"
 record_subs "$SCRATCH/subs.json" "$SCRATCH=<scratch>" "$ASAP7=<asap7-checkout>" "$REPO=<repo>" "$HOME=<home>"
-python3 -I - "$SCRATCH/par.out" "$(sha "$GDS_OUT")" "${NETLIST_SRC#"$REPO"/}" "$(sha "$NETLIST_SRC")" <<'PY' | python3 -I "$REPO/flow/record_lib.py" write "$OUT/par.json" "$SCRATCH/subs.json"
+python3 -I - "$SCRATCH/par.out" "$GDS_SHA" "${NETLIST_SRC#"$REPO"/}" "$(sha "$NETLIST_SRC")" <<'PY' | python3 -I "$REPO/flow/record_lib.py" write "$STAGE/par.json" "$SCRATCH/subs.json"
 import json, sys
 src, gds_sha, netlist_path, netlist_sha = sys.argv[1:5]
-d = json.load(open(src))
+d = json.load(open(src, encoding="utf-8"))
 d["core_flow"] = {
     "note": "Place-and-route of the RV32IMC wrapper's gate-level netlist on ASAP7; "
             "predictive PDK, no timing claimed (STA is a separate flow). Floorplan "
@@ -240,10 +281,17 @@ KLT_V="$("${KLT[@]}" version 2>&1 | head -1 || true)"
   echo "cell_gds:     sha256:$(sha "$ASAP7/asap7sc7p5t_28/GDS/asap7sc7p5t_28_R_220121a.gds")"
   echo "liberty_corner: RVT SS (merged)  sha256:$(sha "$ROOT/lib/${CELL_LIB}_SS.lib")"
   echo "input_netlist: ${NETLIST_SRC#"$REPO"/}  sha256:$(sha "$NETLIST_SRC")"
-  echo "gds:          layout/cve2_top.gds  sha256:$(sha "$GDS_OUT")"
-} >"$OUT/tool-versions.txt"
+  echo "gds:          layout/cve2_top.gds  sha256:$GDS_SHA"
+} >"$STAGE/tool-versions.txt"
 
-# Record and tool-versions.txt are both on disk now: neither may name a host
-# path (records are append-only evidence, so a redaction miss is permanent).
+record_leak_guard "$STAGE"
+
+# ---- publish layout and dated record ----------------------------------------
+new_record_dir core
+mkdir -p "$(dirname "$GDS_OUT")"
+GDS_TMP="$GDS_OUT.tmp.$$"
+cp "$PR/$TOP.gds" "$GDS_TMP" || { rm -f "$GDS_TMP"; rmdir "$OUT" 2>/dev/null || true; exit 1; }
+mv -f "$GDS_TMP" "$GDS_OUT"
+cp "$STAGE/par.json" "$STAGE/tool-versions.txt" "$OUT/"
 record_leak_guard "$OUT"
 echo "par.sh: records -> flow/core/records/$DATE; layout -> layout/cve2_top.gds" >&2

@@ -12,7 +12,8 @@ tool results; nothing here implies fabrication.
   hash-bound; decision 0008). Items 1, 2, 9 and 10 cite evidence envelopes —
   `evidence/item1.json`, `evidence/item2.json` (item 2: the routed GDS
   `layout/cve2_top.gds`, bound by the artifact-anchored generic envelope with
-  a `flow/core/par.sh --check` regeneration claim), `evidence/item9.json` and
+  a `flow/core/par.sh <asap7-checkout> --check` regeneration claim against
+  `HEAD:layout/cve2_top.gds`), `evidence/item9.json` and
   `evidence/item10.json` (item 10: decision 0009). Snapshot as of `1b7d757`,
   2026-11-16: `t1_met_count` is 3 of 11 T1 items; item 2's citation takes it
   to 4 — the rest grade unmet — add citations

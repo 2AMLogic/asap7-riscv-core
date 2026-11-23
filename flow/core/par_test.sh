@@ -1,15 +1,16 @@
 #!/usr/bin/env bash
 # Self-test for flow/core/par.sh, the core place-and-route driver.
 #
-# Needs no PDK, no klt, no network and no netlist: it checks the driver's
-# refusal contract (usage, non-checkout, a checkout at the wrong pin -- the
-# gate that fires before anything is written) and the request template's
-# invariants: the decision 0004 floorplan values, the grid settings
-# inherited from the verified smoke run of PR #234 (floorplan.tracks offsets
-# at the deck grid origin, the explicit on-grid PDN strap recipe with no
-# power.preset -- klayout-tools #7001 -- and connects[].ongrid), the
-# wrapper's clock port, and the fixed seed the reproducibility claim
-# rests on.
+# Needs no PDK, no klt, no OpenROAD, no network and no netlist: it checks the
+# driver's refusal contract (usage, non-checkout, a checkout at the wrong pin
+# -- the gate that fires before anything is written), the request template's
+# invariants (the decision 0004 floorplan values, the grid settings inherited
+# from the verified smoke run of PR #234, the wrapper's clock port, and the
+# fixed seed), and the driver's verification and publication invariants in a
+# scratch fixture repository with stubbed router/provenance tools (--check
+# against HEAD:layout/cve2_top.gds even on a dirty working tree, response
+# validation in both modes, and staging + leak-guarding records before
+# publishing outputs).
 #
 # The template is extracted from the script and rendered with the same
 # values the script assigns, so a drifted setting fails here instead of in
@@ -47,30 +48,39 @@ eq "no argument and no ASAP7_DIR refuses (exit 2)" 2 "$rc"
 out="$W/notgit.err"; rc=0
 ( env -u ASAP7_DIR bash "$PAR" "$W" ) >"$out" 2>&1 || rc=$?
 eq "a directory that is not a git checkout refuses (exit 2)" 2 "$rc"
-grep -q "not a git checkout" "$W/notgit.err" \
-  && ok "non-checkout refusal names the git check" \
-  || no "non-checkout refusal names the git check"
+if grep -q "not a git checkout" "$W/notgit.err"; then
+  ok "non-checkout refusal names the git check"
+else
+  no "non-checkout refusal names the git check"
+fi
 
 git init -q "$W/wrongpin"
 git -C "$W/wrongpin" -c user.email=t@t -c user.name=t commit -q --allow-empty -m x
 out="$W/wrongpin.err"; rc=0
 ( env -u ASAP7_DIR bash "$PAR" "$W/wrongpin" ) >"$out" 2>&1 || rc=$?
 eq "a checkout at the wrong pin refuses (exit 2)" 2 "$rc"
-grep -q "spec/pdk-bringup.md pins" "$W/wrongpin.err" \
-  && ok "wrong-pin refusal names the spec pin" \
-  || no "wrong-pin refusal names the spec pin"
+if grep -q "spec/pdk-bringup.md pins" "$W/wrongpin.err"; then
+  ok "wrong-pin refusal names the spec pin"
+else
+  no "wrong-pin refusal names the spec pin"
+fi
 
 # ---- the request template's invariants --------------------------------------
 # Extract the request heredoc (the one unquoted <<EOF block), render it with
 # the values the script assigns, and load it as JSON.
 req="$W/par.req.rendered.json"
+# shellcheck disable=SC2016  # literal match/replace of unexpanded $W, $TOP, $CELL_LIB
 sed -n '/cat >"\$W\/par.req.json" <<EOF/,/^EOF$/p' "$PAR" | sed '1d;$d' \
   | sed -e 's/\${TOP}/cve2_rv32imc_wrapper/g' -e 's/\$TOP/cve2_rv32imc_wrapper/g' \
         -e 's/\${CELL_LIB}/asap7sc7p5t_28_R/g' -e 's/\$CELL_LIB/asap7sc7p5t_28_R/g' \
   >"$req"
-python3 -I -c 'import json,sys; json.load(open(sys.argv[1]))' "$req" 2>/dev/null \
-  && ok "request template renders to valid JSON" \
-  || { no "request template renders to valid JSON"; echo "1..$((NPASS + NBAD)) pass=$NPASS fail=$NBAD"; exit 1; }
+if python3 -I -c 'import json,sys; json.load(open(sys.argv[1]))' "$req" 2>/dev/null; then
+  ok "request template renders to valid JSON"
+else
+  no "request template renders to valid JSON"
+  echo "1..$((NPASS + NBAD)) pass=$NPASS fail=$NBAD"
+  exit 1
+fi
 
 j() {  # jq-style extraction via python: j <py-expr over d>
   python3 -I -c "import json,sys; d=json.load(open(sys.argv[1])); print($1)" "$req"
@@ -94,6 +104,231 @@ eq "seed is fixed at 1 (reproducibility claim)" "1" "$(j 'd["seed"]')"
 eq "output_dbu_um is 0.00025 (deck measures at 0.25 nm)" "0.00025" "$(j 'd["output_dbu_um"]')"
 eq "target stage is route" "route" "$(j 'd["target_stage"]')"
 eq "tapcell master is named" "TAPCELL_ASAP7_75t_R" "$(j 'd["library"]["tapcell"]["master"]')"
+
+# ---- verification & publication invariants (PDK-free fixture repo) ----------
+BIN="$W/bin"; mkdir -p "$BIN"
+cat >"$BIN/uvx" <<'STUB'
+#!/usr/bin/env bash
+set -euo pipefail
+case "$*" in
+  *--version*) echo "uvx 0.0-stub" ;;
+  *py7zr.__version__*) echo "1.0-stub" ;;
+  *)
+    cat >/dev/null
+    dest="${*: -2:1}"
+    mkdir -p "$dest"
+    for g in AO INVBUF OA SEQ SIMPLE; do
+      printf 'library (stub_%s) {\n  cell (C_%s) {}\n}\n' "$g" "$g" \
+        >"$dest/asap7sc7p5t_${g}_RVT_SS_nldm_stub.lib"
+    done
+    ;;
+esac
+STUB
+cat >"$BIN/yosys" <<'STUB'
+#!/usr/bin/env bash
+echo "Yosys 0.67-stub"
+STUB
+cat >"$BIN/openroad" <<'STUB'
+#!/usr/bin/env bash
+echo "${STUB_OPENROAD_VERSION:-26Q3-1510-g6cb3f2b704}"
+STUB
+cat >"$BIN/stub-klt" <<'STUB'
+#!/usr/bin/env bash
+set -euo pipefail
+if [[ "${1:-}" == "version" ]]; then
+  echo "klt 0.9.0"
+  exit 0
+fi
+if [[ "${1:-}" == "place-and-route" ]]; then
+  mkdir -p .klt/place-and-route
+  printf '%s' "${STUB_GDS_CONTENT:-committed-gds-v1}" > .klt/place-and-route/cve2_rv32imc_wrapper.gds
+  printf 'VERSION 5.8 ;\nEND DESIGN\n' > .klt/place-and-route/cve2_rv32imc_wrapper.def
+  printf 'module cve2_rv32imc_wrapper(input clk_i);\nendmodule\n' > .klt/place-and-route/cve2_rv32imc_wrapper.v
+  printf '%s\n' "${STUB_RESPONSE_JSON:-}"
+  exit "${STUB_KLT_RC:-0}"
+fi
+exit 2
+STUB
+chmod +x "$BIN/uvx" "$BIN/yosys" "$BIN/openroad" "$BIN/stub-klt"
+
+# Minimal pinned ASAP7 checkout + submodules matching the fixture spec.
+FA="$W/asap7"
+mkdir -p "$FA/asap7sc7p5t_28/LIB/NLDM" \
+         "$FA/asap7sc7p5t_28/LEF" \
+         "$FA/asap7sc7p5t_28/GDS" \
+         "$FA/asap7sc7p5t_28/techlef_misc" \
+         "$FA/asap7_pdk_r1p7/cdslib/asap7_TechLib_10"
+for g in AO INVBUF OA SEQ SIMPLE; do
+  printf 'stub7z' >"$FA/asap7sc7p5t_28/LIB/NLDM/asap7sc7p5t_${g}_RVT_SS_nldm_stub.lib.7z"
+done
+printf 'VERSION 5.8 ;\n' >"$FA/asap7sc7p5t_28/LEF/asap7sc7p5t_28_R_1x_220121a.lef"
+printf 'stubcellgds' >"$FA/asap7sc7p5t_28/GDS/asap7sc7p5t_28_R_220121a.gds"
+printf 'VERSION 5.8 ;\n' >"$FA/asap7sc7p5t_28/techlef_misc/asap7_tech_1x_201209.lef"
+printf '# layermap\n' >"$FA/asap7_pdk_r1p7/cdslib/asap7_TechLib_10/asap7_fromAPR.layermap"
+
+for sub in "$FA/asap7sc7p5t_28" "$FA/asap7_pdk_r1p7" "$FA"; do
+  git init -q "$sub"
+  git -C "$sub" -c user.email=t@t -c user.name=t commit -q --allow-empty -m pin
+done
+SHA_UP="$(git -C "$FA" rev-parse HEAD)"
+SHA_CELLS="$(git -C "$FA/asap7sc7p5t_28" rev-parse HEAD)"
+SHA_PDK="$(git -C "$FA/asap7_pdk_r1p7" rev-parse HEAD)"
+
+FX="$W/repo"
+mkdir -p "$FX/flow/core/records/2026-11-20" "$FX/spec" "$FX/layout"
+cp "$REPO/flow/lib.sh" "$REPO/flow/record_lib.py" "$REPO/flow/merge_lib.py" "$FX/flow/"
+cp "$PAR" "$FX/flow/core/par.sh"
+chmod +x "$FX/flow/core/par.sh"
+cat >"$FX/spec/pdk-bringup.md" <<EOF
+| Upstream repo | $SHA_UP |
+| Cell library | $SHA_CELLS |
+| PDK (DRM | $SHA_PDK |
+EOF
+cat >"$FX/spec/core.md" <<'EOF'
+- `klt`: release `klayout-tools==0.9.0` is the pinned release for DRC, LVS and the smoke flow.
+EOF
+printf 'module cve2_rv32imc_wrapper(input clk_i);\nendmodule\n' \
+  >"$FX/flow/core/records/2026-11-20/netlist.v"
+
+git init -q "$FX"
+git -C "$FX" add .
+git -C "$FX" -c user.email=t@t -c user.name=t commit -q -m "fixture without committed layout"
+
+VALID_RESP='{"status":"ok","stage_reached":"route","power":{"pdn":true,"tapcell_master":"TAPCELL_ASAP7_75t_R"}}'
+
+run_par() {  # extra env/args: runs $FX/flow/core/par.sh with stubbed tools
+  PATH="$BIN:$PATH" KLT_CMD="$BIN/stub-klt" env -u ASAP7_DIR "$@"
+}
+
+# 1. --check refuses (exit 2) when HEAD has no committed layout, even if an
+# untracked layout/cve2_top.gds exists in the working tree.
+printf 'untracked-only' >"$FX/layout/cve2_top.gds"
+rc=0
+STUB_GDS_CONTENT="untracked-only" STUB_RESPONSE_JSON="$VALID_RESP" \
+  run_par bash "$FX/flow/core/par.sh" "$FA" --check >"$W/uncommitted.err" 2>&1 || rc=$?
+eq "--check with only an untracked layout/cve2_top.gds refuses (exit 2)" 2 "$rc"
+if grep -q "HEAD:layout/cve2_top.gds" "$W/uncommitted.err"; then
+  ok "--check refusal names HEAD:layout/cve2_top.gds"
+else
+  no "--check refusal names HEAD:layout/cve2_top.gds"
+fi
+
+# Commit the baseline layout at HEAD.
+printf 'committed-gds-v1' >"$FX/layout/cve2_top.gds"
+git -C "$FX" add layout/cve2_top.gds
+git -C "$FX" -c user.email=t@t -c user.name=t commit -q -m "commit baseline layout"
+
+# 2. Clean baseline: --check passes when regenerated GDS matches HEAD and response is valid.
+rc=0
+STUB_GDS_CONTENT="committed-gds-v1" STUB_RESPONSE_JSON="$VALID_RESP" \
+  run_par bash "$FX/flow/core/par.sh" "$FA" --check >"$W/cleancheck.err" 2>&1 || rc=$?
+eq "--check exits 0 when GDS matches HEAD and response is valid" 0 "$rc"
+
+# 3. Dirty-baseline regression: router emits different GDS; running record mode
+# overwrites working-tree layout/cve2_top.gds, and a subsequent --check must
+# still exit 1 against HEAD:layout/cve2_top.gds instead of self-comparing.
+rc=0
+STUB_GDS_CONTENT="router-gds-v2" STUB_RESPONSE_JSON="$VALID_RESP" \
+  run_par bash "$FX/flow/core/par.sh" "$FA" --check >"$W/diff1.err" 2>&1 || rc=$?
+eq "--check on clean tree exits 1 when router emits different GDS" 1 "$rc"
+
+rc=0
+RECORD_DATE=2026-11-22 STUB_GDS_CONTENT="router-gds-v2" STUB_RESPONSE_JSON="$VALID_RESP" \
+  run_par bash "$FX/flow/core/par.sh" "$FA" >"$W/recok.err" 2>&1 || rc=$?
+eq "valid record run exits 0" 0 "$rc"
+eq "valid record run updates working-tree layout/cve2_top.gds" "router-gds-v2" "$(cat "$FX/layout/cve2_top.gds")"
+if [[ -f "$FX/flow/core/records/2026-11-22/par.json" && -f "$FX/flow/core/records/2026-11-22/tool-versions.txt" ]]; then
+  ok "valid record run writes par.json and tool-versions.txt"
+else
+  no "valid record run writes par.json and tool-versions.txt"
+fi
+
+rc=0
+STUB_GDS_CONTENT="router-gds-v2" STUB_RESPONSE_JSON="$VALID_RESP" \
+  run_par bash "$FX/flow/core/par.sh" "$FA" --check >"$W/dirtycheck.err" 2>&1 || rc=$?
+eq "--check after record overwrite still exits 1 against HEAD:layout/cve2_top.gds" 1 "$rc"
+
+rc=0
+STUB_GDS_CONTENT="committed-gds-v1" STUB_RESPONSE_JSON="$VALID_RESP" \
+  run_par bash "$FX/flow/core/par.sh" "$FA" --check >"$W/dirtyheadmatch.err" 2>&1 || rc=$?
+eq "--check with dirty working tree exits 0 when router matches HEAD" 0 "$rc"
+eq "--check leaves dirty working-tree layout untouched" "router-gds-v2" "$(cat "$FX/layout/cve2_top.gds")"
+
+# Restore clean working-tree layout for the rejected-run suite.
+git -C "$FX" checkout -q -- layout/cve2_top.gds
+
+# 4. Rejected runs: power.pdn=false fails in BOTH modes and publishes nothing.
+BAD_PDN='{"status":"ok","stage_reached":"route","power":{"pdn":false,"tapcell_master":"TAPCELL_ASAP7_75t_R"}}'
+rc=0
+RECORD_DATE=2026-11-23 STUB_GDS_CONTENT="bad-pdn-gds" STUB_RESPONSE_JSON="$BAD_PDN" \
+  run_par bash "$FX/flow/core/par.sh" "$FA" >"$W/badpdn_rec.err" 2>&1 || rc=$?
+eq "record mode exits 1 when power.pdn is false" 1 "$rc"
+eq "rejected power.pdn run leaves layout/cve2_top.gds untouched" "committed-gds-v1" "$(cat "$FX/layout/cve2_top.gds")"
+if [[ ! -e "$FX/flow/core/records/2026-11-23" ]]; then
+  ok "rejected power.pdn run creates no record directory"
+else
+  no "rejected power.pdn run creates no record directory"
+fi
+
+rc=0
+STUB_GDS_CONTENT="committed-gds-v1" STUB_RESPONSE_JSON="$BAD_PDN" \
+  run_par bash "$FX/flow/core/par.sh" "$FA" --check >"$W/badpdn_chk.err" 2>&1 || rc=$?
+eq "--check mode also exits 1 when power.pdn is false (even with matching GDS)" 1 "$rc"
+
+# 5. Rejected runs: missing tapcell_master and incomplete stage_reached fail in both modes.
+BAD_TAP='{"status":"ok","stage_reached":"route","power":{"pdn":true,"tapcell_master":null}}'
+rc=0
+RECORD_DATE=2026-11-24 STUB_GDS_CONTENT="bad-tap-gds" STUB_RESPONSE_JSON="$BAD_TAP" \
+  run_par bash "$FX/flow/core/par.sh" "$FA" >"$W/badtap_rec.err" 2>&1 || rc=$?
+eq "record mode exits 1 when power.tapcell_master is null" 1 "$rc"
+eq "rejected tapcell run leaves layout/cve2_top.gds untouched" "committed-gds-v1" "$(cat "$FX/layout/cve2_top.gds")"
+if [[ ! -e "$FX/flow/core/records/2026-11-24" ]]; then
+  ok "rejected tapcell run creates no record directory"
+else
+  no "rejected tapcell run creates no record directory"
+fi
+
+rc=0
+STUB_GDS_CONTENT="committed-gds-v1" STUB_RESPONSE_JSON="$BAD_TAP" \
+  run_par bash "$FX/flow/core/par.sh" "$FA" --check >"$W/badtap_chk.err" 2>&1 || rc=$?
+eq "--check mode also exits 1 when power.tapcell_master is null" 1 "$rc"
+
+BAD_STAGE='{"status":"ok","stage_reached":"cts","power":{"pdn":true,"tapcell_master":"TAPCELL_ASAP7_75t_R"}}'
+rc=0
+STUB_GDS_CONTENT="committed-gds-v1" STUB_RESPONSE_JSON="$BAD_STAGE" \
+  run_par bash "$FX/flow/core/par.sh" "$FA" --check >"$W/badstage_chk.err" 2>&1 || rc=$?
+eq "--check mode exits 1 when stage_reached is not route" 1 "$rc"
+
+# 6. Rejected runs: a host-path leak in the staged record/tool-versions fails
+# before layout/cve2_top.gds is replaced or flow/core/records/<date> is created.
+rc=0
+RECORD_DATE=2026-11-25 STUB_GDS_CONTENT="leaked-run-gds" STUB_RESPONSE_JSON="$VALID_RESP" \
+  STUB_OPENROAD_VERSION="/Users/ops/bin/openroad 26Q3" \
+  run_par bash "$FX/flow/core/par.sh" "$FA" >"$W/leak_tv.err" 2>&1 || rc=$?
+eq "record mode exits 1 when staged tool-versions.txt leaks a host path" 1 "$rc"
+if grep -q "leaks an absolute host path" "$W/leak_tv.err"; then
+  ok "leaked tool-versions.txt dies in record_leak_guard"
+else
+  no "leaked tool-versions.txt dies in record_leak_guard"
+fi
+eq "leaked tool-versions.txt leaves layout/cve2_top.gds untouched" "committed-gds-v1" "$(cat "$FX/layout/cve2_top.gds")"
+if [[ ! -e "$FX/flow/core/records/2026-11-25" ]]; then
+  ok "leaked tool-versions.txt creates no record directory"
+else
+  no "leaked tool-versions.txt creates no record directory"
+fi
+
+LEAK_RESP='{"status":"ok","stage_reached":"route","leaked":"/Users/ops/secret","power":{"pdn":true,"tapcell_master":"TAPCELL_ASAP7_75t_R"}}'
+rc=0
+RECORD_DATE=2026-11-26 STUB_GDS_CONTENT="leaked-json-gds" STUB_RESPONSE_JSON="$LEAK_RESP" \
+  run_par bash "$FX/flow/core/par.sh" "$FA" >"$W/leak_json.err" 2>&1 || rc=$?
+eq "record mode exits 1 when staged par.json leaks a host path" 1 "$rc"
+eq "leaked par.json leaves layout/cve2_top.gds untouched" "committed-gds-v1" "$(cat "$FX/layout/cve2_top.gds")"
+if [[ ! -e "$FX/flow/core/records/2026-11-26" ]]; then
+  ok "leaked par.json creates no record directory"
+else
+  no "leaked par.json creates no record directory"
+fi
 
 echo "1..$((NPASS + NBAD)) pass=$NPASS fail=$NBAD"
 [[ "$NBAD" -eq 0 ]]
