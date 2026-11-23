@@ -5,6 +5,11 @@ triage role. Newest first.
 
 ### 2026-11-23
 
+- **Issue #111** (closed): Remove the vendored design-evidence-tiers.md: 1053 lines identical to the pinned klt's shipped copy, unchecked
+- **PR #251**: docs: drop the vendored design-evidence-tiers.md and its tiers-doc override
+- **Issue #250** (closed): flow/merge_lib.py keeps only the first header, so the SEQ group's delay_template_7x7 is undefined and OpenSTA discards every sequential cell's CLK-to-Q model
+- **Issue #245** (closed): Smoke-record residuals: two cited klayout-tools issues closed after PR #234 was authored; re-check the gaps and refresh the status text
+- **PR #247**: docs: recheck the closed #4508/#7001 upstream dispositions against the pinned 0.9.0 smoke results
 - **PR #234**: fix(flow): put the smoke flow's tracks, PDN straps and LVS compare on the deck's grid
 - **Issue #225** (closed): Smoke flow: apply the classified flow-setting fixes (track offsets, on-grid PDN, LVS flatten recipe) and commit a new counter record
 - **Issue #230** (closed): Run the offline lockstep comparator self-test in harness CI
