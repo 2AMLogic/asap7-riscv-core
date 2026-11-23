@@ -13,10 +13,11 @@ two runs are separate evidence, not replacements for each other.
   `par.json` reports, and two `ties[]` entries (choices below).
 - `records/<date>/erc-supply.json` — the committed report of a run, exactly
   as the klt that produced it wrote it (each record's `provenance.klt_version`
-  names the tool; the flow pin lives in
-  `flow/smoke/records/<date>/tool-versions.txt` and is not changed by this
-  directory). Append-only: a later run adds a new dated directory, never
-  edits one.
+  names the tool; the flow's klt pin is the one ratified in `spec/core.md`
+  (decision 0012), read by `flow/lib.sh`'s `spec_klt_pin`, and is not changed
+  by this directory — a record's own `tool-versions.txt` states what ran for
+  that record, not the pin). Append-only: a later run adds a new dated
+  directory, never edits one.
 
 ## The spec
 
@@ -204,9 +205,12 @@ same counts (9 stackup, 8 vias, 2 nets, 2 ties).
   standard-cell family, not this stream. That exact friction — the message
   does not distinguish a tapped stream from an untapped one, and a shared
   native substrate with no isolated p-well boxes cannot be declared without
-  inventing isolation geometry — is the open
+  inventing isolation geometry — is
   [klayout-tools #6948](https://github.com/2AMLogic/klayout-tools/issues/6948),
-  which supersedes the closed #5334 as the live upstream for this path.
+  which supersedes the closed #5334 as the live upstream for this path. It
+  was open when this run was made and closed completed 2026-11-22T07:54Z,
+  hours afterwards; its fix is in no released klt (no release after v0.9.2
+  as of 2026-11-23), so it does not change the measurement here.
   Asserting `ties[].isolation_boxes` here would claim isolated substrate
   bodies this layout does not have, and `nets[].same_net_as` (the third
   0.9.2 affordance) would suppress a VDD–VSS pair that must stay distinct —
@@ -214,7 +218,8 @@ same counts (9 stackup, 8 vias, 2 nets, 2 ties).
   forbids.
 - **Verdict.** Item 11's substrate-path supply-short clause remains unmet on
   the newest released klt, now with a measured, tool-stated cause (the
-  `missing` list) and an open linked tool issue. A relevant side effect for
+  `missing` list) and a linked tool issue (#6948, since closed and awaiting
+  a release). A relevant side effect for
   #31: 0.9.2's `klt signoff` item 11 (#5346) grades a
   `substrate_isolation_undecidable` citation `unmet` with the run's own
   `missing` list echoed into
@@ -225,8 +230,9 @@ same counts (9 stackup, 8 vias, 2 nets, 2 ties).
 ### What the core run must add (#31) — updated by this probe
 
 - The blocker chain is now: klayout-tools #6948 (evaluate a declared common
-  native substrate on asap7) → a klt release carrying it → a repo pin
-  decision adopting that release. The first two are upstream work; the pin
+  native substrate on asap7; closed completed 2026-11-22, in no release yet)
+  → a klt release carrying it → a repo pin decision adopting that release.
+  The release is upstream work; the pin
   decision is out of this issue's scope (this issue does not change the
   pin). Until all three land, this 0.9.2 record is the evidence ceiling for
   the probe.
