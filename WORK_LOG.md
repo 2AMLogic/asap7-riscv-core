@@ -5,6 +5,8 @@ triage role. Newest first.
 
 ### 2026-11-23
 
+- **PR #237**: feat: probe counter supply ERC on released klt 0.9.2
+
 - **Issue #111** (closed): Remove the vendored design-evidence-tiers.md: 1053 lines identical to the pinned klt's shipped copy, unchecked
 - **PR #251**: docs: drop the vendored design-evidence-tiers.md and its tiers-doc override
 - **Issue #250** (closed): flow/merge_lib.py keeps only the first header, so the SEQ group's delay_template_7x7 is undefined and OpenSTA discards every sequential cell's CLK-to-Q model
