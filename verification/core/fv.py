@@ -34,9 +34,10 @@ def scrub(obj, subs):
     The same walk as flow/record_lib.py's scrub, local to this tree on purpose
     (verification/ does not source the flow helpers); subs are in the
     flow/lib.sh record_subs() order, a path that prefixes another first.
-    A committed record names no host path (manifests/design-evidence-tiers.md,
-    "Provenance hygiene in evidence records"): inputs are pinned by identity,
-    not location, so the walk covers every string value klt echoes back, not
+    A committed record names no host path (the design-evidence-tiers doc
+    shipped by klayout-tools, "Provenance hygiene in evidence records"):
+    inputs are pinned by identity, not location, so the walk covers every
+    string value klt echoes back, not
     just the three environment paths known today. Mapping keys are passed
     through untouched (as in flow/record_lib.py); leak_guard fails the run if
     klt ever keyed a map by an absolute path.

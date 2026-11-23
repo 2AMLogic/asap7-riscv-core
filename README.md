@@ -102,7 +102,7 @@ commits in [`spec/pdk-bringup.md`](spec/pdk-bringup.md) section 1; and
 | Harness lint + cocotb test (placeholder DUT, no claim about the core) | `verification/run.sh` | pinned iverilog, Verilator, Python |
 | Harness negative control (passes only if the broken assertion fails) | `verification/run.sh --negative-control` | same |
 | `flow/smoke/records/2026-11-21/*.json` (ASAP7 smoke flow of record, `par.json` `ok`, `lvs.json` `match`; its DRC residuals are attributed in `flow/smoke/analysis/2026-11-21-drc.md`, not clean) | `RECORD_DATE=<new date> flow/smoke/run.sh <asap7-checkout>` | ASAP7 checkout at the `spec/pdk-bringup.md` pins; network for `uvx`; refuses to write into the existing dated directory |
-| `manifests/asap7-riscv-core.signoff.json` (tier verdict of record) | `uvx --from "klayout-tools==0.8.0" klt signoff --manifest manifests/asap7-riscv-core.json --tiers-doc manifests/design-evidence-tiers.md --format json > manifests/asap7-riscv-core.signoff.json` | network for `uvx` |
+| `manifests/asap7-riscv-core.signoff.json` (tier verdict of record) | `uvx --from "klayout-tools==0.8.0" klt signoff --manifest manifests/asap7-riscv-core.json --format json > manifests/asap7-riscv-core.signoff.json` | network for `uvx` |
 | `evidence/item10.json` (repo-hygiene attestation) | `uvx --python 3.12 --from "klayout-tools==0.8.0" klt signoff --attest 10 --inventory attest/item10.json -o evidence/item10.json` | pinned iverilog and Verilator (the harness checks run) |
 
 `--python 3.12` matters for the `--attest` command: `uvx` puts its own Python
