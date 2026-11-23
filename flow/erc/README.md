@@ -40,10 +40,11 @@ ASAP7 draws gates as full-height stripes cut by `GCut` (10/0) and lands `LIG`
 directly on the gate. A `klt erc` spec on the pinned klt 0.9.0 cannot subtract
 the cut, so a gate-to-LIG via makes the uncut stripes bridge the LIG bars on
 both rails: measured on this layout, that collapses VDD and VSS into one net
-(`erc.supply_short`) and all 46 gates into one net — the documented klayout-tools
-#4610 limitation. The supply run therefore declares no gate-to-metal via and
+(`erc.supply_short`) and all 46 gates into one net — the documented
+klayout-tools#4610 limitation. The supply run therefore declares no
+gate-to-metal via and
 discloses every resulting `erc.floating_gate` through the spec's
-`floating_gate_allowed` key (klayout-tools #4820): the
+`floating_gate_allowed` key (klayout-tools#4820): the
 gates move to `erc_coverage.inapplicable` with reason `floating_gate_disclosed`,
 visible in the report, not silently passed. This is a disclosure of a model
 limitation only — it is not a claim that gate connectivity is proven: the
@@ -99,7 +100,7 @@ uvx --python 3.12 --from "klayout-tools==0.9.0" klt erc --deck asap7 --format js
 ```
 
 Exit code 4 (the report's top-level `status` is `not_checked`) is the antenna
-half: no ASAP7 antenna-ratio table exists on any klt (klayout-tools #4090), so
+half: no ASAP7 antenna-ratio table exists on any klt (klayout-tools#4090), so
 every antenna level is skipped with `missing_antenna_pdk`. It is the same
 verdict shape as the smoke flow's antenna-scoped record and carries no signal
 about the supply half, whose verdict is `erc_status`.
@@ -137,8 +138,8 @@ Inputs and tool, as recorded in the report's own provenance:
   [Upstream substrate-continuity issue](https://github.com/2AMLogic/klayout-tools/issues/5334).
 - **Other coverage limits.** All 46 `erc.floating_gate` ids are in
   `erc_coverage.inapplicable` with reason `floating_gate_disclosed`
-  (klayout-tools #4610; see above), and the antenna half is `not_checked`
-  (klayout-tools #4090).
+  (klayout-tools#4610; see above), and the antenna half is `not_checked`
+  (klayout-tools#4090).
 
 ### What the core run must add (#31)
 
@@ -155,9 +156,9 @@ Inputs and tool, as recorded in the report's own provenance:
 ## The 2026-11-22 probe (klt 0.9.2)
 
 The substrate-continuity ERC work behind the 0.9.0 shortfall above shipped
-in a released klt: #5334 closed as completed with the engine in v0.9.2
-(tag `046ba746`, PyPI 2026-11-14; release cut tracked by klayout-tools
-#5606). This issue is the probe for exactly that capability, so the same
+in a released klt: klayout-tools#5334 closed as completed with the engine
+in v0.9.2 (tag `046ba746`, PyPI 2026-11-14; release cut tracked by
+klayout-tools#5606). This issue is the probe for exactly that capability, so the same
 spec — byte-identical, same sha256 — was re-run on the same committed GDS
 with the newest released klt. The two records differ only in klt; even the
 deck content hash is unchanged, so every delta below is engine-side.
@@ -194,7 +195,7 @@ same counts (9 stackup, 8 vias, 2 nets, 2 ties).
   `substrate_isolation_undecidable` with a `missing` list naming the two
   affordances the engine would accept: drawn substrate tap geometry to join
   through, or a `ties[].isolation_boxes` assertion. Per the 0.9.2 engine
-  (klayout-tools #5343), the substrate path is *evaluated* only where a deck
+  (klayout-tools#5343), the substrate path is *evaluated* only where a deck
   declares `substrate_isolation` (gf180mcu, sky130, sg13g2 do; asap7 does
   not) or the spec asserts it.
 - **Neither affordance is honestly usable on this layout.** The stream does
@@ -206,8 +207,9 @@ same counts (9 stackup, 8 vias, 2 nets, 2 ties).
   does not distinguish a tapped stream from an untapped one, and a shared
   native substrate with no isolated p-well boxes cannot be declared without
   inventing isolation geometry — is
-  [klayout-tools #6948](https://github.com/2AMLogic/klayout-tools/issues/6948),
-  which supersedes the closed #5334 as the live upstream for this path. It
+  [klayout-tools#6948](https://github.com/2AMLogic/klayout-tools/issues/6948),
+  which supersedes the closed klayout-tools#5334 as the live upstream for this
+  path. It
   was open when this run was made and closed completed 2026-11-22T07:54Z,
   hours afterwards; its fix is in no released klt (no release after v0.9.2
   as of 2026-11-23), so it does not change the measurement here.
@@ -218,18 +220,18 @@ same counts (9 stackup, 8 vias, 2 nets, 2 ties).
   forbids.
 - **Verdict.** Item 11's substrate-path supply-short clause remains unmet on
   the newest released klt, now with a measured, tool-stated cause (the
-  `missing` list) and a linked tool issue (#6948, since closed and awaiting
-  a release). A relevant side effect for
-  #31: 0.9.2's `klt signoff` item 11 (#5346) grades a
+  `missing` list) and a linked tool issue (klayout-tools#6948, since closed
+  and awaiting a release). A relevant side effect for
+  #31: 0.9.2's `klt signoff` item 11 (klayout-tools#5346) grades a
   `substrate_isolation_undecidable` citation `unmet` with the run's own
   `missing` list echoed into
   `detail.power_delivery.substrate_isolation_missing` — a core-run citation
-  cannot read `met` on this path until #6948 is resolved and the fix
+  cannot read `met` on this path until klayout-tools#6948 is resolved and the fix
   released and pinned here.
 
 ### What the core run must add (#31) — updated by this probe
 
-- The blocker chain is now: klayout-tools #6948 (evaluate a declared common
+- The blocker chain is now: klayout-tools#6948 (evaluate a declared common
   native substrate on asap7; closed completed 2026-11-22, in no release yet)
   → a klt release carrying it → a repo pin decision adopting that release.
   The release is upstream work; the pin
