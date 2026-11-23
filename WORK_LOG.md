@@ -5,6 +5,8 @@ triage role. Newest first.
 
 ### 2026-11-23
 
+- **PR #270**: refactor: import scrub from fv in lockstep instead of duplicating it
+- **Issue #269** (closed): Consolidate duplicated scrub/sha256 helpers in verification/core
 - **PR #263**: feat(flow/erc): re-run the supply probe on the grid-fixed counter GDS
 - **PR #261**: fix: ignore .loom/account-ranking.codex in the Loom-managed block
 - **PR #255**: feat: probe the unreleased native-substrate ERC fix on the counter
