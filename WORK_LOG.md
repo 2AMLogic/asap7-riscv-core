@@ -5,6 +5,9 @@ triage role. Newest first.
 
 ### 2026-11-23
 
+- **PR #261**: fix: ignore .loom/account-ranking.codex in the Loom-managed block
+- **PR #255**: feat: probe the unreleased native-substrate ERC fix on the counter
+- **Issue #258** (closed): .gitignore does not cover .loom/account-ranking.codex, so every host reads as a contaminated main checkout
 - **PR #257**: docs: qualify bare klayout-tools issue refs in flow/erc/README.md
 - **Issue #253** (closed): flow/erc/README.md: bare #NNNN upstream refs render as links to nonexistent local issues
 - **PR #237**: feat: probe counter supply ERC on released klt 0.9.2
