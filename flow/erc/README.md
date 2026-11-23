@@ -53,11 +53,13 @@ discloses every resulting `erc.floating_gate` through the spec's
 gates move to `erc_coverage.inapplicable` with reason `floating_gate_disclosed`,
 visible in the report, not silently passed. This is a disclosure of a model
 limitation only — it is not a claim that gate connectivity is proven: the
-docs direct that question to `klt lvs`, and the counter's own LVS record
-(`flow/smoke/records/2026-11-15/lvs.json`) is `mismatch` on this same GDS
-(bulk-tie assumption, per-cell supply fragmentation and topology findings,
-classified in `flow/smoke/analysis/2026-11-05-lvs.md`), so gate connectivity
-currently has no passing verdict anywhere.
+docs direct that question to `klt lvs`. The LVS record beside the GDS this
+section's runs measured (`flow/smoke/records/2026-11-15/lvs.json`) is
+`mismatch` (bulk-tie assumption, per-cell supply fragmentation and topology
+findings, classified in `flow/smoke/analysis/2026-11-05-lvs.md`). The newest
+committed record (`flow/smoke/records/2026-11-21/lvs.json`, the grid-fixed
+GDS this probe re-runs below) is `match` — see the 2026-11-23 grid-fix
+section before citing either way.
 
 **Ties.** The tapcell master (`TAPCELL_ASAP7_75t_R`, 20 tapcells + 20 endcaps
 in `par.json`) draws a real double tie: an n-well half (well 1/0 ∩ Nselect
@@ -373,3 +375,101 @@ anyone re-running them on the pinned klt, keeps a spec that tool accepts.
 - The LVS half is unchanged: klayout-tools#5757's `power_connectivity` fix
   is still outside any release (no PyPI version after 0.9.2 as of
   2026-11-23).
+
+## The 2026-11-23 grid-fix re-run (newest committed GDS)
+
+The issue this probe serves names its layout target as the **newest**
+committed routed counter GDS. That moved on 2026-11-23: issue #225's grid
+alignment (PR #234, commit `00248a7`, "put the smoke flow's tracks, PDN
+straps and LVS compare on the deck's grid") landed
+`flow/smoke/records/2026-11-21/` — a new routed counter (GDS sha256
+`07c29a72…`, distinct from the `bb422342…` GDS every record above ran on)
+whose own LVS is `match`, the first matching LVS on any counter record.
+Every prior section's measurements were taken on the pre-grid-fix stream, so
+this section re-runs the unchanged specs on the new one. Nothing about the
+spec changed: the new record's `par.json` reports the same PDN layer set
+(stripes M2–M6, straps M1/M2/M5/M6, `connects` M1–M2/M2–M5/M5–M6, same
+`TAPCELL_ASAP7_75t_R` master, 20 tapcells + 20 endcaps), so the stackup
+re-check confirms `supply.spec.json` as committed (sha256 `5c8033e0…`,
+byte-identical; `--validate-spec` on 0.9.2: 9 stackup, 8 vias, 2 nets,
+2 ties).
+
+Three runs, one per engine the probe already carries, same layout and deck:
+
+```
+uvx --python 3.12 --from "klayout-tools==0.9.0" klt erc --deck asap7 --format json \
+  flow/smoke/records/2026-11-21/layout/counter.gds flow/erc/supply.spec.json \
+  > flow/erc/records/2026-11-23/erc-supply-gridfix-090.json
+uvx --python 3.12 --from "klayout-tools==0.9.2" klt erc --deck asap7 --format json \
+  flow/smoke/records/2026-11-21/layout/counter.gds flow/erc/supply.spec.json \
+  > flow/erc/records/2026-11-23/erc-supply-gridfix-092.json
+uvx --python 3.12 --from "klayout-tools @ git+https://github.com/2AMLogic/klayout-tools@85bb426402746e8f22a183db4ecba5b1e8504dba" klt erc --deck asap7 --format json \
+  flow/smoke/records/2026-11-21/layout/counter.gds flow/erc/supply-common-substrate.spec.json \
+  > flow/erc/records/2026-11-23/erc-supply-gridfix-decl.json
+```
+
+All three exit 4 — the antenna half again (`missing_antenna_pdk`,
+klayout-tools #4090), the same verdict shape as every earlier record. One
+environment drift to disclose: all three resolved KLayout 0.30.14 (the
+released-klt records of 2026-11-21/-22 ran 0.30.13); deck, layout and spec
+hashes are recorded per run in each report's own provenance, and the
+released-tool verdicts below are identical in kind to the same engines on
+the old GDS, so the drift carries no observed signal.
+
+| what | value |
+| --- | --- |
+| layout | `flow/smoke/records/2026-11-21/layout/counter.gds`, sha256 `07c29a72…` (new) |
+| spec | `090`/`092`: `supply.spec.json`, sha256 `5c8033e0…`; `decl`: `supply-common-substrate.spec.json`, sha256 `866115fa…` (both as committed, unchanged) |
+| deck | `asap7` (released, sha256 `5c58a50e…` — unchanged) |
+| klt | `090`: 0.9.0 (git `5dbbad05…`); `092`: 0.9.2 (git `046ba746…`); `decl`: `0.9.3.dev3067+g85bb42640274` — all KLayout 0.30.14 |
+
+### Read against tiers item 11
+
+- **Identical verdict shapes to the same engines on the pre-grid-fix GDS.**
+  On all three runs VDD and VSS each resolve to exactly one labelled
+  electrical island (`matched_islands: 1`), `erc_finding_count: 0`,
+  `erc_status: clean`, both ties checked (`erc.missing_tie:["nwell"]`,
+  `erc.missing_tie:["psub"]`; `psub` again in `checked_by_well_assertion`)
+  and `erc_coverage.skipped` empty. The grid alignment did not disturb the
+  supply connectivity the spec measures.
+- **Floating-gate disclosure grew with the stream:** 48 gates are disclosed
+  `floating_gate_disclosed` (46 on the old GDS) — the grid-fixed placement
+  is a different stream (130 components / 68 fillers in the new
+  `par.json`, 131/69 in the old), not a regression in the disclosure
+  mechanism.
+- **The substrate-path ceiling is unchanged on released klts:** `092`
+  reports `erc.supply_short` `substrate_isolation_undecidable` with the
+  same pre-fix `missing` list ("no drawn substrate tap geometry to join
+  through … or assert ties[].isolation_boxes"); `090` reports
+  `substrate_continuity_not_modelled`. The live upstream chain is exactly
+  the one the pre-release probe section records: klayout-tools #6948 fix
+  (main @ `85bb426402`, unreleased) → release → pin decision.
+- **On the fix-commit engine with the declaration, the substrate path is
+  checked on the new stream too:** `erc.supply_short` and
+  `erc.supply_short.substrate` are in `erc_coverage.checked` (substrate in
+  `checked_by_assertion`), zero findings, and provenance derives the same
+  body structure as the old GDS — one substrate body `vsubs` tied by
+  `psub` and **five** drawn n-well row strips tied by `nwell`. The
+  increment-3 falsification control is not repeated here; it exercised the
+  engine's tap measurement, which is layout-independent in mechanism.
+
+### What the core run must add (#31) — updated by this re-run
+
+- Nothing in the supply chain changed: #6948's fix is verified on both
+  committed routed streams (pre- and post-grid-fix) and still awaits a
+  release (PyPI ends at 0.9.2 as of 2026-11-23) and the repo pin decision.
+  The core run reuses whichever spec the pin decision lands on and
+  re-checks the stackup against the core's own `par.json`.
+- **The LVS half has news, and it is on the #5757 question's flank, not its
+  path:** the new record's `lvs.json` is `match`, with
+  `power_connectivity.status: "unchecked"` and a new tool-stated reason —
+  on the FinFET gate-level route each library cell is expanded to its
+  transistor-level CDL body, "so supply connectivity takes part in the
+  ordinary compare (a 'match' evidences it) and the stub-form power-pin
+  check does not apply". A core-run citation of item 11's LVS half can now
+  lean on a matching ordinary compare; whether the grader accepts
+  `power_connectivity: unchecked` with that reason, or still requires the
+  stub-form `match` only #5757's unreleased fix produces, is a question for
+  the core run — klt 0.9.2's item-11 grader is the arbiter, and no release
+  past 0.9.2 exists as of this run.
+
