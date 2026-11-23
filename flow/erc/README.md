@@ -379,8 +379,8 @@ anyone re-running them on the pinned klt, keeps a spec that tool accepts.
 ## The 2026-11-23 grid-fix re-run (newest committed GDS)
 
 The issue this probe serves names its layout target as the **newest**
-committed routed counter GDS. That moved on 2026-11-23: issue #258's grid
-alignment (PR #261, commit `00248a7`, "put the smoke flow's tracks, PDN
+committed routed counter GDS. That moved on 2026-11-23: issue #225's grid
+alignment (PR #234, commit `00248a7`, "put the smoke flow's tracks, PDN
 straps and LVS compare on the deck's grid") landed
 `flow/smoke/records/2026-11-21/` — a new routed counter (GDS sha256
 `07c29a72…`, distinct from the `bb422342…` GDS every record above ran on)
