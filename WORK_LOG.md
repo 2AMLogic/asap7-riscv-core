@@ -5,6 +5,8 @@ triage role. Newest first.
 
 ### 2026-11-23
 
+- **PR #257**: docs: qualify bare klayout-tools issue refs in flow/erc/README.md
+- **Issue #253** (closed): flow/erc/README.md: bare #NNNN upstream refs render as links to nonexistent local issues
 - **PR #237**: feat: probe counter supply ERC on released klt 0.9.2
 
 - **Issue #111** (closed): Remove the vendored design-evidence-tiers.md: 1053 lines identical to the pinned klt's shipped copy, unchecked
