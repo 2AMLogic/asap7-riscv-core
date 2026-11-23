@@ -498,5 +498,134 @@ expect_counted_die "a good first corner does not excuse the next (TT found 0)" \
   0 TT "$(fake_libdir FF 5)" FF TT
 
 echo
+echo "# 13. merge_lib.py unions header template groups across inputs"
+# Liberty table groups reference their template by name, and each group file
+# defines its templates in its own header -- first-header-wins dropped every
+# later input's templates together with the tables referencing them (OpenSTA
+# logs STA-1253 and leaves the arc with no delay model; the ASAP7 SEQ 220123
+# group names its delay template delay_template_7x7 while the 211120/220122
+# groups name theirs delay_template_7x7_x1). The union-by-name rule and the
+# same-name/different-content refusal are klt merge_liberty's, ported here
+# (klayout-tools#4242).
+MRG="$(mktemp -d "$SCRATCH/mrg.XXXXXX")"
+mrc_merge() {  # rc-capturing run of the merger; rc in mrc, combined out in mout
+  mrc=0
+  mout="$(python3 -I "$SELF_REPO/flow/merge_lib.py" "$@" 2>&1)" || mrc=$?
+}
+mheader() {  # merged.lib -> its header: everything before the first cell (
+  sed -n '1,/^[[:space:]]*cell[[:space:]]*(/p' "$1" | sed '$d'
+}
+cat >"$MRG/a.lib" <<'LIB'
+library (group_a) {
+  time_unit : "1ps";
+  lu_table_template (delay_template_7x7_x1) {
+    variable_1 : input_net_transition;
+    index_1 ("0.1, 0.2");
+  }
+  cell (CELL_A) {
+    area : 1;
+    pin (Z) {
+      direction : output;
+      timing () {
+        related_pin : "A";
+        cell_rise (delay_template_7x7_x1) { values ("1"); }
+      }
+    }
+  }
+}
+LIB
+cat >"$MRG/b.lib" <<'LIB'
+library (group_b) {
+  time_unit : "1ps";
+  lu_table_template (delay_template_7x7) {
+    variable_1 : input_net_transition;
+    index_1 ("0.1, 0.2");
+  }
+  cell (CELL_B) {
+    area : 1;
+    pin (Z) {
+      direction : output;
+      timing () {
+        related_pin : "A";
+        cell_rise (delay_template_7x7) { values ("2"); }
+      }
+    }
+  }
+}
+LIB
+cat >"$MRG/b2.lib" <<'LIB'
+library (group_b2) {
+  time_unit : "1ps";
+    lu_table_template(delay_template_7x7_x1) {
+variable_1 : input_net_transition;
+      index_1 ("0.1, 0.2");
+    }
+  cell (CELL_B2) {
+    area : 1;
+    pin (Z) { direction : output; }
+  }
+}
+LIB
+cat >"$MRG/c.lib" <<'LIB'
+library (group_c) {
+  time_unit : "1ps";
+  lu_table_template (delay_template_7x7_x1) {
+    variable_1 : input_net_transition;
+    index_1 ("0.3, 0.4");
+  }
+  cell (CELL_C) {
+    area : 1;
+    pin (Z) { direction : output; }
+  }
+}
+LIB
+cat >"$MRG/d.lib" <<'LIB'
+library (group_d) {
+  time_unit : "1ps";
+  cell (CELL_D) {
+    area : 1;
+    pin (Z) { direction : output; }
+  }
+}
+LIB
+
+# Differing template names: both definitions end up in the merged header.
+mrc_merge "$MRG/ab.lib" merged "$MRG/a.lib" "$MRG/b.lib"
+eq "union: differing template names merge cleanly" "0" "$mrc"
+eq "union: the first input's template stays in the header" "1" \
+  "$(mheader "$MRG/ab.lib" | grep -c 'lu_table_template (delay_template_7x7_x1)')"
+eq "union: the later input's template is added to the header" "1" \
+  "$(mheader "$MRG/ab.lib" | grep -c 'lu_table_template (delay_template_7x7)')"
+eq "union: every input's cells follow" "2" "$(grep -c '^  cell (CELL_' "$MRG/ab.lib")"
+eq "union: the library is renamed" "1" "$(grep -c '^library (merged) {' "$MRG/ab.lib")"
+
+# Identical duplicate: same name, same content modulo whitespace -- accepted,
+# and defined once, not twice.
+mrc_merge "$MRG/ab2.lib" merged2 "$MRG/a.lib" "$MRG/b2.lib"
+eq "duplicate: an identical whitespace-differing template is accepted" "0" "$mrc"
+eq "duplicate: the template is defined exactly once" "1" \
+  "$(grep -c 'lu_table_template *(delay_template_7x7_x1)' "$MRG/ab2.lib")"
+
+# Same name, different content: refused, naming the template and both files.
+mrc_merge "$MRG/ac.lib" merged3 "$MRG/a.lib" "$MRG/c.lib"
+if [[ $mrc -ne 0 ]] && grep -qF 'delay_template_7x7_x1' <<<"$mout" \
+   && grep -qF "$MRG/a.lib" <<<"$mout" && grep -qF "$MRG/c.lib" <<<"$mout"; then
+  ok "conflict: same name with different content dies naming the template and both files"
+else
+  no "conflict: rc=$mrc out='$mout'"
+fi
+if [[ -e "$MRG/ac.lib" ]]; then
+  no "conflict: a refused merge still wrote its output file"
+else
+  ok "conflict: no output file is written"
+fi
+
+# An input whose header defines no templates at all merges as before.
+mrc_merge "$MRG/ad.lib" merged4 "$MRG/a.lib" "$MRG/d.lib"
+eq "no-template input: merges cleanly" "0" "$mrc"
+eq "no-template input: the first header's template survives" "1" \
+  "$(grep -c 'lu_table_template *(delay_template_7x7_x1)' "$MRG/ad.lib")"
+
+echo
 echo "flow/lib_test.sh: $PASS passed, $FAIL failed"
 [[ $FAIL -eq 0 ]]
