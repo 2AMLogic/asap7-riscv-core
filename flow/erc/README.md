@@ -10,7 +10,12 @@ two runs are separate evidence, not replacements for each other.
 
 - `supply.spec.json` — the supply spec: VDD and VSS as `nets[]` entries with
   `"kind": "supply"`, a stackup covering every PDN layer the counter's
-  `par.json` reports, and two `ties[]` entries (choices below).
+  `par.json` reports, and two `ties[]` entries (choices below). Every released
+  klt (0.9.0 and 0.9.2) accepts it; it stays byte-identical.
+- `supply-common-substrate.spec.json` — the same spec plus a top-level
+  `"common_native_substrate": true` declaration, for engines carrying the
+  klayout-tools #7143 fix (see the 2026-11-23 section). Released klts reject
+  the key, so it is a separate file, not an edit of the base spec.
 - `records/<date>/erc-supply.json` — the committed report of a run, exactly
   as the klt that produced it wrote it (each record's `provenance.klt_version`
   names the tool; the flow's klt pin is the one ratified in `spec/core.md`
@@ -241,3 +246,130 @@ same counts (9 stackup, 8 vias, 2 nets, 2 ties).
 - The LVS half is unchanged: klayout-tools#5757's `power_connectivity` fix
   is still outside any release — no PyPI version after 0.9.2 as of
   2026-11-22 (the fix merged 2026-11-17, after the 0.9.2 tag).
+
+## The 2026-11-23 pre-release probe (klt main @ `85bb426402`)
+
+The #6948 fix landed on klayout-tools main as PR #7143, "fix(erc): evaluate a
+declared native substrate through drawn taps" (merge commit `85bb426402`,
+2026-11-22T07:54Z, hours after the 0.9.2 record above). No klt release
+carries it (PyPI still ends at 0.9.2 as of 2026-11-23), and its own test
+table and the #6948 curator verification used only synthetic flat-top
+fixtures — never a placed-and-routed standard-cell stream with the taps
+drawn inside `TAPCELL` instances. Before #31 waits on a release-and-pin
+cycle, this probe answers the prior question on the real counter stream:
+does the fix actually lift the substrate-path supply-short clause here?
+
+Two runs, same engine (a throwaway `uvx` environment built from the merge
+commit; the host tool and the repo pin are untouched). The **control** keeps
+the byte-identical base spec; the **declaration run** uses
+`supply-common-substrate.spec.json`, which adds only a top-level
+`"common_native_substrate": true`:
+
+```
+uvx --python 3.12 --from "klayout-tools @ git+https://github.com/2AMLogic/klayout-tools@85bb426402746e8f22a183db4ecba5b1e8504dba" klt erc --deck asap7 --format json \
+  flow/smoke/records/2026-11-15/layout/counter.gds flow/erc/supply-common-substrate.spec.json \
+  > flow/erc/records/2026-11-23/erc-supply.json
+# control: the same command with the base spec
+uvx --python 3.12 --from "klayout-tools @ git+https://github.com/2AMLogic/klayout-tools@85bb426402746e8f22a183db4ecba5b1e8504dba" klt erc --deck asap7 --format json \
+  flow/smoke/records/2026-11-15/layout/counter.gds flow/erc/supply.spec.json \
+  > flow/erc/records/2026-11-23/erc-supply-control.json
+```
+
+Both exit 4 — the antenna half again (`missing_antenna_pdk`, klayout-tools
+#4090), the same verdict shape as every earlier record. One environment
+drift to disclose: the git environment resolved KLayout 0.30.14, where the
+released-klt runs used 0.30.13. Deck and layout hashes are unchanged and the
+control's connectivity verdicts are identical to 0.9.2's, so the drift
+carries no observed signal, but it is stated here rather than left silent.
+
+| what | value |
+| --- | --- |
+| klt | `0.9.3.dev3067+g85bb42640274` (git `85bb426402…`, KLayout 0.30.14) |
+| layout | `flow/smoke/records/2026-11-15/layout/counter.gds`, sha256 `bb422342…` (unchanged) |
+| spec | declaration run: `supply-common-substrate.spec.json`, sha256 `866115fa…`; control: `supply.spec.json`, sha256 `5c8033e0…` (both as committed) |
+| deck | `asap7` (released, sha256 `5c58a50e…` — unchanged) |
+
+### Control: engine-only delta
+
+The base-spec run reproduces the 0.9.2 connectivity verdicts exactly — VDD
+and VSS one island each, zero findings, both ties checked, nothing skipped,
+`erc.supply_short` still `substrate_isolation_undecidable` — but the
+`missing` list is rewritten and now names the affordance the fix added:
+`"declare ties[].isolation_boxes for isolated regions, or
+common_native_substrate: true for a shared native substrate"`. So the
+engine-side change alone changes nothing for this stream; only the
+declaration does.
+
+### Declaration run: the substrate path is now checked
+
+With `common_native_substrate: true`, `erc.supply_short` and
+`erc.supply_short.substrate` both move into `erc_coverage.checked`, and the
+substrate check is listed in `checked_by_assertion` — a disclosed,
+assertion-backed check, the same epistemic tier the tiers document already
+accepts for `psub`'s `checked_by_well_assertion`. Zero findings
+(`erc_status: clean`), VDD and VSS still one island each, ties still
+checked, nothing skipped. Provenance records the declaration
+(`common_native_substrate: true`) and the derived body structure: one
+substrate body `vsubs` tied by `psub`, and the five drawn n-well strips tied
+by `nwell` — the same five row strips the 2026-11-21 grounding measured by
+hand.
+
+**Why this declaration is honest where the 0.9.2 affordances were not.**
+`isolation_boxes` would assert isolated substrate bodies this layout does
+not have, and `same_net_as` would suppress a VDD–VSS pair that must stay
+distinct — both change the physical assertion to buy a pass. The
+native-substrate declaration asserts the opposite of isolation: one shared
+substrate body under the whole top cell, which is the physical arrangement
+of this bulk process (drawn wells cover the measured 16.1%; the substrate is
+the complement). It asserts nothing about whether VDD and VSS are shorted —
+it is exactly what lets the engine *test* that they are not. Upstream's own
+falsification table shows a tapped common-substrate rail short is reported
+(exit 3), and the stream-side control below confirms the taps are measured,
+not assumed.
+
+**Falsification control (not committed; same layout and engine otherwise).**
+Flipping the `psub` tie's declared `net` from VSS to VDD in the variant spec
+turns the run to exit 3 with one `erc.missing_tie` violation: "well/tub tap
+is not connected to declared net 'VDD'" — the 20 drawn substrate taps are
+measured as connected to their VSS rails, so the declaration-enabled check
+follows the drawn tap-to-rail connection and does not pass by construction.
+On the base spec the same flip was a no-op for the substrate question (the
+check never ran there).
+
+**Released klts reject the key.** `klt erc --validate-spec` and the run
+itself on both 0.9.0 and 0.9.2 refuse `common_native_substrate` with the
+structured error "unknown field … a key from a newer klt release" (exit 1).
+That is why the declaration lives in a separate spec file and
+`supply.spec.json` stays byte-identical: every record before this one, and
+anyone re-running them on the pinned klt, keeps a spec that tool accepts.
+
+### Read against tiers item 11
+
+- On the engine carrying the #6948 fix, the counter now satisfies the
+  supply-short clause's measurable form: both supplies one island each,
+  zero `erc.unconnected_net`, `erc.supply_short` (metal and substrate) and
+  `erc.missing_tie` findings, ties checked, and the substrate short check
+  *evaluated* rather than skipped — with its assertion disclosed in the
+  report itself. Upstream's item-11 grader (klayout-tools #5346) grades
+  this shape `met` with `by_assertion: true`.
+- This is **pre-release evidence**, not a pin-tool record: the engine is a
+  git commit, outside every released klt. The 0.9.2 record remains the
+  released evidence ceiling, and the probe's remaining wait is unchanged in
+  kind — release, then pin decision — but it is now de-risked: the fix is
+  verified against a real routed stream, instance-internal `TAPCELL` taps
+  included, before either step.
+- The antenna half is unchanged (`not_checked`, klayout-tools #4090) and
+  out of this supply-scoped run's scope, as before.
+
+### What the core run must add (#31) — updated by this probe
+
+- The chain is unchanged but its first link is now verified on a real
+  stream: klayout-tools #6948 (closed completed; fix on main @ `85bb426402`,
+  unreleased) → a klt release carrying it → a repo pin decision adopting
+  that release. When the pin decision lands, the core run should use the
+  variant spec (`supply-common-substrate.spec.json` becomes the spec; the
+  two files merge at that point) and check the stackup against the core's
+  own `par.json` strap and stripe layers.
+- The LVS half is unchanged: klayout-tools#5757's `power_connectivity` fix
+  is still outside any release (no PyPI version after 0.9.2 as of
+  2026-11-23).
