@@ -11,9 +11,13 @@ two runs are separate evidence, not replacements for each other.
 - `supply.spec.json` — the supply spec: VDD and VSS as `nets[]` entries with
   `"kind": "supply"`, a stackup covering every PDN layer the counter's
   `par.json` reports, and two `ties[]` entries (choices below).
-- `records/<date>/erc-supply.json` — the committed report of a run, exactly as
-  the pinned klt produced it (append-only; a later run adds a new dated
-  directory, never edits one).
+- `records/<date>/erc-supply.json` — the committed report of a run, exactly
+  as the klt that produced it wrote it (each record's `provenance.klt_version`
+  names the tool; the flow's klt pin is the one ratified in `spec/core.md`
+  (decision 0012), read by `flow/lib.sh`'s `spec_klt_pin`, and is not changed
+  by this directory — a record's own `tool-versions.txt` states what ran for
+  that record, not the pin). Append-only: a later run adds a new dated
+  directory, never edits one.
 
 ## The spec
 
@@ -147,3 +151,91 @@ Inputs and tool, as recorded in the report's own provenance:
   klayout-tools#5757 merged 2026-11-17, after the v0.9.2 tag, so it reaches
   this repo only through a later klt release and a pin decision (#31 tracks
   it).
+
+## The 2026-11-22 probe (klt 0.9.2)
+
+The substrate-continuity ERC work behind the 0.9.0 shortfall above shipped
+in a released klt: #5334 closed as completed with the engine in v0.9.2
+(tag `046ba746`, PyPI 2026-11-14; release cut tracked by klayout-tools
+#5606). This issue is the probe for exactly that capability, so the same
+spec — byte-identical, same sha256 — was re-run on the same committed GDS
+with the newest released klt. The two records differ only in klt; even the
+deck content hash is unchanged, so every delta below is engine-side.
+
+```
+uvx --python 3.12 --from "klayout-tools==0.9.2" klt erc --deck asap7 --format json \
+  flow/smoke/records/2026-11-15/layout/counter.gds flow/erc/supply.spec.json \
+  > flow/erc/records/2026-11-22/erc-supply.json
+```
+
+Exit code 4, same verdict shape as the 0.9.0 run (the antenna half; see
+below). One CLI change on 0.9.2: `--validate-spec` no longer combines with
+`--deck` (it reads no layout), so the spec was validated bare — still valid,
+same counts (9 stackup, 8 vias, 2 nets, 2 ties).
+
+| what | value |
+| --- | --- |
+| klt | 0.9.2 (`klayout-tools==0.9.2`, git `046ba746…`, KLayout 0.30.13) |
+| layout | `flow/smoke/records/2026-11-15/layout/counter.gds`, sha256 `bb422342…` (unchanged) |
+| spec | `flow/erc/supply.spec.json`, sha256 `5c8033e0…` (unchanged) |
+| deck | `asap7` (released, sha256 `5c58a50e…` — unchanged) |
+
+### Read against tiers item 11
+
+- **Unchanged from 0.9.0:** VDD and VSS each resolve to one labelled island
+  (`matched_islands: 1`); zero findings (`erc_status: clean`,
+  `erc_finding_count: 0`); both ties checked with an empty `skipped` and
+  `psub` still named in `checked_by_well_assertion`; all 46 gates disclosed
+  `floating_gate_disclosed`; and the antenna half still skips every level
+  `missing_antenna_pdk` (no ASAP7 antenna-ratio table on 0.9.2 either), so
+  the top-level `status` stays `not_checked` with exit 4.
+- **The supply-short disclosure was upgraded, not lifted.** 0.9.0's blanket
+  `substrate_continuity_not_modelled` is replaced by
+  `substrate_isolation_undecidable` with a `missing` list naming the two
+  affordances the engine would accept: drawn substrate tap geometry to join
+  through, or a `ties[].isolation_boxes` assertion. Per the 0.9.2 engine
+  (klayout-tools #5343), the substrate path is *evaluated* only where a deck
+  declares `substrate_isolation` (gf180mcu, sky130, sg13g2 do; asap7 does
+  not) or the spec asserts it.
+- **Neither affordance is honestly usable on this layout.** The stream does
+  draw substrate tap geometry — the 20 `TAPCELL_ASAP7_75t_R` masters carry
+  the contacted n-well and p-substrate ties measured above — yet the engine
+  still reports "no drawn substrate tap geometry to join through"; its
+  parenthetical ("asap7 cells draw no substrate or well tie") describes the
+  standard-cell family, not this stream. That exact friction — the message
+  does not distinguish a tapped stream from an untapped one, and a shared
+  native substrate with no isolated p-well boxes cannot be declared without
+  inventing isolation geometry — is
+  [klayout-tools #6948](https://github.com/2AMLogic/klayout-tools/issues/6948),
+  which supersedes the closed #5334 as the live upstream for this path. It
+  was open when this run was made and closed completed 2026-11-22T07:54Z,
+  hours afterwards; its fix is in no released klt (no release after v0.9.2
+  as of 2026-11-23), so it does not change the measurement here.
+  Asserting `ties[].isolation_boxes` here would claim isolated substrate
+  bodies this layout does not have, and `nets[].same_net_as` (the third
+  0.9.2 affordance) would suppress a VDD–VSS pair that must stay distinct —
+  both change the physical assertion to buy a pass, which this issue
+  forbids.
+- **Verdict.** Item 11's substrate-path supply-short clause remains unmet on
+  the newest released klt, now with a measured, tool-stated cause (the
+  `missing` list) and a linked tool issue (#6948, since closed and awaiting
+  a release). A relevant side effect for
+  #31: 0.9.2's `klt signoff` item 11 (#5346) grades a
+  `substrate_isolation_undecidable` citation `unmet` with the run's own
+  `missing` list echoed into
+  `detail.power_delivery.substrate_isolation_missing` — a core-run citation
+  cannot read `met` on this path until #6948 is resolved and the fix
+  released and pinned here.
+
+### What the core run must add (#31) — updated by this probe
+
+- The blocker chain is now: klayout-tools #6948 (evaluate a declared common
+  native substrate on asap7; closed completed 2026-11-22, in no release yet)
+  → a klt release carrying it → a repo pin decision adopting that release.
+  The release is upstream work; the pin
+  decision is out of this issue's scope (this issue does not change the
+  pin). Until all three land, this 0.9.2 record is the evidence ceiling for
+  the probe.
+- The LVS half is unchanged: klayout-tools#5757's `power_connectivity` fix
+  is still outside any release — no PyPI version after 0.9.2 as of
+  2026-11-22 (the fix merged 2026-11-17, after the 0.9.2 tag).
