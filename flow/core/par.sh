@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Core place-and-route flow (T1 item 2): runs `klt place-and-route` of the
-# committed gate-level netlist (the newest flow/core/records/<date>/netlist.v)
+# committed gate-level netlist (the newest flow/core/records/<date>/netlist.v
+# at HEAD, read from Git, never from the working tree)
 # with the decision 0004 floorplan (60 % utilisation, aspect 1.0, single
 # block, no macro) and the pinned PDK inputs, and writes the routed GDS to
 # layout/cve2_top.gds plus a par record under flow/core/records/<date>/, or,
@@ -114,11 +115,24 @@ else
 fi
 
 # ---- input: the committed gate-level netlist -----------------------------
-NETREC="$(newest_record_with "$REPO/flow/core/records" netlist.v)" \
-  || die "no committed netlist to place: nothing under flow/core/records/ holds a netlist.v"
-NETLIST_SRC="${NETREC}netlist.v"
+# Captured once from one Git revision: the newest committed
+# flow/core/records/<date>/netlist.v at INPUT_REV, read as a blob. The working
+# tree is never consulted, so an untracked or edited netlist cannot become the
+# routed input, and the bytes hashed for the records are the bytes the router
+# receives (a pristine copy is hashed; the router gets a second copy).
+INPUT_REV="$(git -C "$REPO" rev-parse --verify 'HEAD^{commit}')" \
+  || die "cannot resolve HEAD to select the committed netlist" 2
+NETLIST_SRC="$(git -C "$REPO" ls-tree -r --name-only "$INPUT_REV" -- flow/core/records/ \
+  | grep -E '^flow/core/records/[^/]+/netlist\.v$' | LC_ALL=C sort | tail -n 1)" || true
+[[ -n "$NETLIST_SRC" ]] \
+  || die "no committed netlist to place: no flow/core/records/<date>/netlist.v at HEAD"
 W="$SCRATCH/work"; mkdir -p "$W"
-cp "$NETLIST_SRC" "$W/${TOP}_synth.v"
+NETLIST_IN="$SCRATCH/input-netlist.v"
+git -C "$REPO" cat-file blob "$INPUT_REV:$NETLIST_SRC" >"$NETLIST_IN" \
+  || die "cannot read $NETLIST_SRC at $INPUT_REV" 1
+[[ -s "$NETLIST_IN" ]] || die "committed $NETLIST_SRC is empty" 1
+NETLIST_SHA="$(sha "$NETLIST_IN")"
+cp "$NETLIST_IN" "$W/${TOP}_synth.v"
 
 # ---- PDK overlay in scratch (the checkout is read only) ------------------
 # The same overlay the smoke flow builds (flow/smoke/run.sh): merged RVT SS
@@ -188,7 +202,7 @@ EOF
 # output_dbu_um 0.00025: the ASAP7 deck measures FinFET geometry at 0.25 nm;
 # the merged GDS defaults to 1 nm and klt lvs would refuse it
 # (klayout-tools #4482 added the knob).
-echo "par.sh: placing and routing ${TOP} from ${NETLIST_SRC#"$REPO"/}" >&2
+echo "par.sh: placing and routing ${TOP} from $NETLIST_SRC at ${INPUT_REV:0:12}" >&2
 rc=0
 ( cd "$W" && "${KLT[@]}" place-and-route par.req.json "${PDKARGS[@]}" --format json ) \
   >"$SCRATCH/par.out" 2>"$SCRATCH/par.err" || rc=$?
@@ -211,10 +225,10 @@ done
 if ! RESP_ERR="$(python3 -I - "$SCRATCH/par.out" <<'PY'
 import json, sys
 d = json.load(open(sys.argv[1], encoding="utf-8"))
-if d.get("status", "ok") != "ok":
+if d.get("status") != "ok":
     print(f"status is {d.get('status')!r}, expected 'ok'")
     sys.exit(1)
-if d.get("stage_reached", "route") != "route":
+if d.get("stage_reached") != "route":
     print(f"stage_reached is {d.get('stage_reached')!r}, expected 'route'")
     sys.exit(1)
 power = d.get("power")
@@ -249,7 +263,7 @@ fi
 STAGE="$SCRATCH/record"; mkdir -p "$STAGE"
 GDS_SHA="$(sha "$PR/$TOP.gds")"
 record_subs "$SCRATCH/subs.json" "$SCRATCH=<scratch>" "$ASAP7=<asap7-checkout>" "$REPO=<repo>" "$HOME=<home>"
-python3 -I - "$SCRATCH/par.out" "$GDS_SHA" "${NETLIST_SRC#"$REPO"/}" "$(sha "$NETLIST_SRC")" <<'PY' | python3 -I "$REPO/flow/record_lib.py" write "$STAGE/par.json" "$SCRATCH/subs.json"
+python3 -I - "$SCRATCH/par.out" "$GDS_SHA" "$NETLIST_SRC" "$NETLIST_SHA" <<'PY' | python3 -I "$REPO/flow/record_lib.py" write "$STAGE/par.json" "$SCRATCH/subs.json"
 import json, sys
 src, gds_sha, netlist_path, netlist_sha = sys.argv[1:5]
 d = json.load(open(src, encoding="utf-8"))
@@ -280,18 +294,43 @@ KLT_V="$("${KLT[@]}" version 2>&1 | head -1 || true)"
   echo "cell_lef:     sha256:$(sha "$ASAP7/asap7sc7p5t_28/LEF/asap7sc7p5t_28_R_1x_220121a.lef")"
   echo "cell_gds:     sha256:$(sha "$ASAP7/asap7sc7p5t_28/GDS/asap7sc7p5t_28_R_220121a.gds")"
   echo "liberty_corner: RVT SS (merged)  sha256:$(sha "$ROOT/lib/${CELL_LIB}_SS.lib")"
-  echo "input_netlist: ${NETLIST_SRC#"$REPO"/}  sha256:$(sha "$NETLIST_SRC")"
+  echo "input_netlist: $NETLIST_SRC  sha256:$NETLIST_SHA  (blob at HEAD ${INPUT_REV:0:12})"
   echo "gds:          layout/cve2_top.gds  sha256:$GDS_SHA"
 } >"$STAGE/tool-versions.txt"
 
 record_leak_guard "$STAGE"
 
-# ---- publish layout and dated record ----------------------------------------
-new_record_dir core
-mkdir -p "$(dirname "$GDS_OUT")"
+# ---- publish dated record and layout ----------------------------------------
+# Order matters for retryability: the record files are written first (exclusive
+# create, so nothing existing is overwritten and a directory squatting on a
+# target path is an error), the leak guard runs over the published record, and
+# layout/cve2_top.gds is replaced last by one atomic rename. Any failure before
+# that rename removes exactly what this run created, leaving the previous
+# layout in place and the record directory free for a retry.
+CREATED=()
 GDS_TMP="$GDS_OUT.tmp.$$"
-cp "$PR/$TOP.gds" "$GDS_TMP" || { rm -f "$GDS_TMP"; rmdir "$OUT" 2>/dev/null || true; exit 1; }
-mv -f "$GDS_TMP" "$GDS_OUT"
-cp "$STAGE/par.json" "$STAGE/tool-versions.txt" "$OUT/"
-record_leak_guard "$OUT"
+OUT_MADE=0
+[[ -d "$OUT" ]] || OUT_MADE=1
+publish_rollback() {
+  local f
+  rm -f "$GDS_TMP"
+  for f in ${CREATED[@]+"${CREATED[@]}"}; do rm -f "$f"; done
+  if [[ $OUT_MADE == 1 ]]; then rmdir "$OUT" 2>/dev/null || true; fi
+  return 0
+}
+publish() {
+  local f
+  mkdir -p "$OUT" "$(dirname "$GDS_OUT")" || return 1
+  cp "$PR/$TOP.gds" "$GDS_TMP" || return 1
+  for f in par.json tool-versions.txt; do
+    ( set -o noclobber; cat "$STAGE/$f" >"$OUT/$f" ) || return 1
+    CREATED+=("$OUT/$f")
+  done
+  ( record_leak_guard "$OUT" ) || return 1
+  mv -f "$GDS_TMP" "$GDS_OUT" || return 1
+}
+if ! publish; then
+  publish_rollback
+  die "publishing the record and layout failed; nothing was left published (the previous layout is untouched), retry the run" 1
+fi
 echo "par.sh: records -> flow/core/records/$DATE; layout -> layout/cve2_top.gds" >&2
