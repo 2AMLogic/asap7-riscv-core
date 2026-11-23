@@ -5,6 +5,8 @@ triage role. Newest first.
 
 ### 2026-11-23
 
+- **PR #234**: fix(flow): put the smoke flow's tracks, PDN straps and LVS compare on the deck's grid
+- **Issue #225** (closed): Smoke flow: apply the classified flow-setting fixes (track offsets, on-grid PDN, LVS flatten recipe) and commit a new counter record
 - **Issue #230** (closed): Run the offline lockstep comparator self-test in harness CI
 - **PR #233**: ci: run the offline lockstep comparator self-test in the harness job
 
