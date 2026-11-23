@@ -267,7 +267,9 @@ the byte-identical base spec; the **declaration run** uses
 uvx --python 3.12 --from "klayout-tools @ git+https://github.com/2AMLogic/klayout-tools@85bb426402746e8f22a183db4ecba5b1e8504dba" klt erc --deck asap7 --format json \
   flow/smoke/records/2026-11-15/layout/counter.gds flow/erc/supply-common-substrate.spec.json \
   > flow/erc/records/2026-11-23/erc-supply.json
-# control: same command with flow/erc/supply.spec.json \
+# control: the same command with the base spec
+uvx --python 3.12 --from "klayout-tools @ git+https://github.com/2AMLogic/klayout-tools@85bb426402746e8f22a183db4ecba5b1e8504dba" klt erc --deck asap7 --format json \
+  flow/smoke/records/2026-11-15/layout/counter.gds flow/erc/supply.spec.json \
   > flow/erc/records/2026-11-23/erc-supply-control.json
 ```
 
