@@ -12,7 +12,9 @@ FinFET node for research and teaching; no fab manufactures it. This block is
 this repo is a tool result against a predictive model — there is no silicon,
 no shuttle and no measurement at the end of the ladder.
 
-**Status: core synthesized to an ASAP7 gate-level netlist; P&R blocked upstream** (see [`spec/core.md`](spec/core.md) and [decision 0007](spec/decisions/0007-adopt-core-pin.md)). An ASAP7 smoke flow exists and place-and-route now runs end to end on the placeholder counter (`flow/smoke/records/2026-11-21/`, `par.json` `ok`, `lvs.json` `match`); its DRC result is not clean — 44 markers in five rule ids, each attributed in [`flow/smoke/analysis/2026-11-21-drc.md`](flow/smoke/analysis/2026-11-21-drc.md): at the pinned `klt` 0.9.0, 35 PDN-stack markers (28 `V4.M4.EN.1`, 7 `V4.M5.EN.2`) wait upstream on klayout-tools #6909 (open), 3 router via-pad tips (1 `M1.S.4`, 2 `M1.S.5`) on klayout-tools #7397 — the #4508 the addendum cited closed 2026-11-22 with its fix merged to unreleased main, and the [2026-11-23 recheck](flow/smoke/analysis/2026-11-23-upstream-disposition-recheck.md) measured that the merged repair leaves these three markers unchanged (they are pad–wire pairs outside its pad–pad scope) — and 6 shipped-cell markers are #29's disclosure question; the same recheck verified upstream's RVT preset fix (#7001 → #7231, likewise unreleased), so both ride the next klt release and the pin bump #246 tracks (see [decision 0012, the `klt` 0.9.0 and ASAP7 DRC deck pin](spec/decisions/0012-pin-klt-0-9-0-and-ratify-asap7-drc-deck.md) — **proposed**, not yet ratified). The core is synthesized: committed ASAP7 gate-level netlists of `cve2_rv32imc_wrapper` exist (`flow/core/records/2026-11-03/` and, newest, `flow/core/records/2026-11-14/`, Yosys, `status: ok`), and the `riscv-arch-test` suite runs against the `2026-11-14` netlist zero-delay with 72 of 72 tests passing and one test excluded by [decision 0011](spec/decisions/0011-c-cebreak-01-mtvec-not-writable.md) (`verification/records/2026-11-15/`; `verification/records/2026-11-06/` is the retained record of the same suite against the superseded `2026-11-03` netlist). The core is not yet placed or routed — `layout/` holds no core GDS.
+**Status: core synthesized to an ASAP7 gate-level netlist** (see [`spec/core.md`](spec/core.md) and [decision 0007](spec/decisions/0007-adopt-core-pin.md)). An ASAP7 smoke flow exists and place-and-route now runs end to end on the placeholder counter (`flow/smoke/records/2026-11-21/`, `par.json` `ok`, `lvs.json` `match`); its DRC result is not clean — 44 markers in five rule ids, each attributed in [`flow/smoke/analysis/2026-11-21-drc.md`](flow/smoke/analysis/2026-11-21-drc.md): at the pinned `klt` 0.9.0, 35 PDN-stack markers (28 `V4.M4.EN.1`, 7 `V4.M5.EN.2`) wait upstream on klayout-tools #6909 (open), 3 router via-pad tips (1 `M1.S.4`, 2 `M1.S.5`) on klayout-tools #7397 — the #4508 the addendum cited closed 2026-11-22 with its fix merged to unreleased main, and the [2026-11-23 recheck](flow/smoke/analysis/2026-11-23-upstream-disposition-recheck.md) measured that the merged repair leaves these three markers unchanged (they are pad–wire pairs outside its pad–pad scope) — and 6 shipped-cell markers are #29's disclosure question; the same recheck verified upstream's RVT preset fix (#7001 → #7231, likewise unreleased), so both ride the next klt release and the pin bump #246 tracks (see [decision 0012, the `klt` 0.9.0 and ASAP7 DRC deck pin](spec/decisions/0012-pin-klt-0-9-0-and-ratify-asap7-drc-deck.md) — **proposed**, not yet ratified).
+
+The newest committed synthesis record for `cve2_rv32imc_wrapper` is the [2026-11-20 latch-mapped netlist](flow/core/records/2026-11-20/) (Yosys, `status: ok`). The recorded zero-delay `riscv-arch-test` run used the `2026-11-14` netlist with 72 of 72 tests passing and one test excluded by [decision 0011](spec/decisions/0011-c-cebreak-01-mtvec-not-writable.md) (`verification/records/2026-11-15/`; `verification/records/2026-11-06/` is the retained record of the same suite against the superseded `2026-11-03` netlist).
 
 **Built agent-native.** Every specification, decision record, testbench, and
 line of documentation here is produced by AI agents working from a ratified
@@ -67,9 +69,11 @@ routed → DRC/LVS-clean → post-route multi-corner STA closed at the target.
 position: synthesized** — PDK brought up under `klt` (see
 `spec/pdk-bringup.md`), spec ratified, the architectural tests passing on the
 core in simulation and at gate level, and a committed ASAP7 gate-level
-netlist. The next rung, placed and routed, is not reached: P&R of the core is
-blocked upstream on
-[klayout-tools#5074](https://github.com/2AMLogic/klayout-tools/issues/5074).
+netlist. The 2026-11-20 netlist uses tie cells for constants, resolving the
+input problem reported in [klayout-tools#5074](https://github.com/2AMLogic/klayout-tools/issues/5074).
+The next rung requires a routed core GDS on `main`.
+[PR #238](https://github.com/2AMLogic/asap7-riscv-core/pull/238) carries the
+place-and-route flow and layout for review.
 
 ## Repo layout
 

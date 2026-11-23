@@ -5,6 +5,7 @@ triage role. Newest first.
 
 ### 2026-11-23
 
+- **PR #263**: feat(flow/erc): re-run the supply probe on the grid-fixed counter GDS
 - **PR #261**: fix: ignore .loom/account-ranking.codex in the Loom-managed block
 - **PR #255**: feat: probe the unreleased native-substrate ERC fix on the counter
 - **Issue #258** (closed): .gitignore does not cover .loom/account-ranking.codex, so every host reads as a contaminated main checkout
