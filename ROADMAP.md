@@ -32,13 +32,29 @@ met, 1 not applicable**:
 | 11 Power delivery | unmet | #31, behind #28 and #30 |
 
 Also on `main`: the smoke flow on the placeholder counter runs every step on
-the pinned `klayout-tools==0.9.0` (`flow/smoke/records/2026-11-05/`, PR #66).
-`par` is `ok` with DEF and GDS; on that layout DRC reports 549 violations in
-seven rule ids, LVS is `mismatch` (19 topology errors) and ERC is
-`not_checked`. The DRC deck (267 categories) and the LVS deck are pinned by
-content hash in `spec/core.md` (decisions
+the pinned `klayout-tools==0.9.0` (`flow/smoke/records/2026-11-21/`). `par`
+is `ok` with DEF and GDS, LVS is `match` (0 errors, the `flatten_layout`
+recipe) and ERC is `not_checked`; DRC reports 44 violations in five rule ids,
+every marker attributed in `flow/smoke/analysis/2026-11-21-drc.md` — 35
+PDN-stack markers (klayout-tools #6909) and 3 router via-pad tips (1
+`M1.S.4`, 2 `M1.S.5`; klayout-tools #7397 — see the recheck below) wait
+upstream, and the 6 shipped-cell `BUFx4` markers
+are #29's disclosure question. The DRC deck (267 categories) and the LVS deck
+are pinned by content hash in `spec/core.md` (decisions
 `0012-pin-klt-0-9-0-and-ratify-asap7-drc-deck` and 0013 — two records share the
 number 0012, which #90 tracks).
+
+The addendum's upstream citations were accurate at its date and moved after
+it: #4508 and #7001 closed on 2026-11-22, both with fixes merged to
+unreleased main (newest tag `v0.9.2` predates them; upstream #6930 tracks
+the next tag). The 2026-11-23 recheck
+(`flow/smoke/analysis/2026-11-23-upstream-disposition-recheck.md`)
+measured both against this repo's pin: the merged pad-tip repair leaves
+this counter's 3 router tips — 1 `M1.S.4`, 2 `M1.S.5` — unchanged (they
+are pad–wire pairs outside the repair's pad–pad scope, so the open
+successor is klayout-tools #7397, not the closed #4508), while the RVT
+preset fix works at main — a verified later-version fix routed to the pin
+bump #246 tracks. The 35 PDN-stack markers still wait on the open #6909.
 
 Three facts in the committed core synthesis record (`2026-11-20`, whose
 netlist is the accepted one item 1 binds to) shape what follows:
@@ -80,7 +96,7 @@ fallback, 1.5 GHz the stretch).
 - **ERC with an antenna table.** `erc.json` is `not_checked`, with
   `coverage.nothing_checked_reasons` `gate_reference_level` and
   `missing_antenna_pdk`. klayout-tools #4090, which reported this, closed
-  2026-10-24 while the gap persists in the 2026-11-05 record, so the friction
+  2026-10-24 while the gap persists in the 2026-11-21 record, so the friction
   protocol owes a fresh klayout-tools issue. First: can a table be derived from
   the pinned PDK files?
 - **Resolving ASAP7 through `klt pdk`.** `spec/core.md` points the flow at the

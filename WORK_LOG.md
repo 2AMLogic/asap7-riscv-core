@@ -3,6 +3,17 @@
 Chronological record of merged PRs and closed issues, maintained by the Guide
 triage role. Newest first.
 
+### 2026-11-23
+
+- **PR #234**: fix(flow): put the smoke flow's tracks, PDN straps and LVS compare on the deck's grid
+- **Issue #225** (closed): Smoke flow: apply the classified flow-setting fixes (track offsets, on-grid PDN, LVS flatten recipe) and commit a new counter record
+- **Issue #230** (closed): Run the offline lockstep comparator self-test in harness CI
+- **PR #233**: ci: run the offline lockstep comparator self-test in the harness job
+
+### 2026-11-22
+
+- **PR #236**: feat: add klt erc VDD/VSS supply spec with counter evidence run
+
 ### 2026-11-21
 
 - **Issue #223** (closed): Lockstep comparator: store-side checks skip multi-store records and never cross-check mem_wmask width

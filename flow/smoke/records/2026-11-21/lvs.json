@@ -1,0 +1,2588 @@
+{
+  "body_verification": {
+    "device_classes": [],
+    "device_count": 0,
+    "finding_count": 0,
+    "findings": [],
+    "reason": null,
+    "status": "verified"
+  },
+  "category_counts": {
+    "device.finfet_bulk_tied": 36,
+    "net.supply_fragmented": 18,
+    "reference.gate_level_pin_case_folded": 2,
+    "topology.flattened": 2
+  },
+  "category_error_counts": {},
+  "constant_nets_applied": null,
+  "counts": {
+    "devices": {
+      "layout": 418,
+      "matched": 418,
+      "reference": 418
+    },
+    "nets": {
+      "layout": 230,
+      "matched": 230,
+      "reference": 230
+    },
+    "pins": {
+      "layout": 2,
+      "matched": 13,
+      "reference": 11
+    }
+  },
+  "device_classes": [
+    "nfet",
+    "pfet",
+    "resistor"
+  ],
+  "device_parameter_coverage": [],
+  "engine": "klayout",
+  "environment": {
+    "engine": "klayout",
+    "engine_version": "0.30.13",
+    "extracted_netlist": null,
+    "layout_sha256": "07c29a72d40815f1c44ce5afb6a46467e4de474f022d967d4f43c4ab4f513d01",
+    "netgen_binary": null,
+    "reference_sha256": "f54c3c4bbefb0cce97b07a0a7b73cafc409539ad658f1e00644a93281d254c45"
+  },
+  "error_count": 0,
+  "hints_applied": null,
+  "layout": {
+    "path": "flow/smoke/records/2026-11-21/layout/counter.gds",
+    "scope": "repo"
+  },
+  "mismatch_count": 58,
+  "mismatches": [
+    {
+      "category": "device.finfet_bulk_tied",
+      "circuit": null,
+      "description": "options.finfet_bulk joined the nmos bulk net 'vsubs' onto layout net 'VSS' on 16 device(s) before comparing -- the bulk connectivity is a caller assertion, not geometry read from the layout",
+      "details": {
+        "bulk_net": "vsubs",
+        "circuit": "DFFASRHQNx1_ASAP7_75t_R",
+        "device_classes": [
+          "nmos_rvt"
+        ],
+        "device_count": 16,
+        "net": "VSS",
+        "polarity": "nmos",
+        "status": "joined"
+      },
+      "device": null,
+      "instance": null,
+      "net": null,
+      "property": null,
+      "severity": "warning",
+      "side": "layout",
+      "subcircuit": null
+    },
+    {
+      "category": "device.finfet_bulk_tied",
+      "circuit": null,
+      "description": "options.finfet_bulk joined the pmos bulk net 'VDD' onto layout net 'VDD' on 16 device(s) before comparing -- the bulk connectivity is a caller assertion, not geometry read from the layout",
+      "details": {
+        "bulk_net": "VDD",
+        "circuit": "DFFASRHQNx1_ASAP7_75t_R",
+        "device_classes": [
+          "pmos_rvt"
+        ],
+        "device_count": 16,
+        "net": "VDD",
+        "polarity": "pmos",
+        "status": "joined"
+      },
+      "device": null,
+      "instance": null,
+      "net": null,
+      "property": null,
+      "severity": "warning",
+      "side": "layout",
+      "subcircuit": null
+    },
+    {
+      "category": "device.finfet_bulk_tied",
+      "circuit": null,
+      "description": "options.finfet_bulk joined the nmos bulk net 'vsubs' onto layout net 'VSS' on 16 device(s) before comparing -- the bulk connectivity is a caller assertion, not geometry read from the layout",
+      "details": {
+        "bulk_net": "vsubs",
+        "circuit": "DFFASRHQNx1_ASAP7_75t_R$VAR1",
+        "device_classes": [
+          "nmos_rvt"
+        ],
+        "device_count": 16,
+        "net": "VSS",
+        "polarity": "nmos",
+        "status": "joined"
+      },
+      "device": null,
+      "instance": null,
+      "net": null,
+      "property": null,
+      "severity": "warning",
+      "side": "layout",
+      "subcircuit": null
+    },
+    {
+      "category": "device.finfet_bulk_tied",
+      "circuit": null,
+      "description": "options.finfet_bulk joined the pmos bulk net 'VDD' onto layout net 'VDD' on 16 device(s) before comparing -- the bulk connectivity is a caller assertion, not geometry read from the layout",
+      "details": {
+        "bulk_net": "VDD",
+        "circuit": "DFFASRHQNx1_ASAP7_75t_R$VAR1",
+        "device_classes": [
+          "pmos_rvt"
+        ],
+        "device_count": 16,
+        "net": "VDD",
+        "polarity": "pmos",
+        "status": "joined"
+      },
+      "device": null,
+      "instance": null,
+      "net": null,
+      "property": null,
+      "severity": "warning",
+      "side": "layout",
+      "subcircuit": null
+    },
+    {
+      "category": "device.finfet_bulk_tied",
+      "circuit": null,
+      "description": "options.finfet_bulk joined the nmos bulk net 'vsubs' onto layout net 'VSS' on 1 device(s) before comparing -- the bulk connectivity is a caller assertion, not geometry read from the layout",
+      "details": {
+        "bulk_net": "vsubs",
+        "circuit": "TIEHIx1_ASAP7_75t_R",
+        "device_classes": [
+          "nmos_rvt"
+        ],
+        "device_count": 1,
+        "net": "VSS",
+        "polarity": "nmos",
+        "status": "joined"
+      },
+      "device": null,
+      "instance": null,
+      "net": null,
+      "property": null,
+      "severity": "warning",
+      "side": "layout",
+      "subcircuit": null
+    },
+    {
+      "category": "device.finfet_bulk_tied",
+      "circuit": null,
+      "description": "options.finfet_bulk joined the pmos bulk net 'VDD' onto layout net 'VDD' on 1 device(s) before comparing -- the bulk connectivity is a caller assertion, not geometry read from the layout",
+      "details": {
+        "bulk_net": "VDD",
+        "circuit": "TIEHIx1_ASAP7_75t_R",
+        "device_classes": [
+          "pmos_rvt"
+        ],
+        "device_count": 1,
+        "net": "VDD",
+        "polarity": "pmos",
+        "status": "joined"
+      },
+      "device": null,
+      "instance": null,
+      "net": null,
+      "property": null,
+      "severity": "warning",
+      "side": "layout",
+      "subcircuit": null
+    },
+    {
+      "category": "device.finfet_bulk_tied",
+      "circuit": null,
+      "description": "options.finfet_bulk joined the nmos bulk net 'vsubs' onto layout net 'VSS' on 5 device(s) before comparing -- the bulk connectivity is a caller assertion, not geometry read from the layout",
+      "details": {
+        "bulk_net": "vsubs",
+        "circuit": "XNOR2xp5_ASAP7_75t_R",
+        "device_classes": [
+          "nmos_rvt"
+        ],
+        "device_count": 5,
+        "net": "VSS",
+        "polarity": "nmos",
+        "status": "joined"
+      },
+      "device": null,
+      "instance": null,
+      "net": null,
+      "property": null,
+      "severity": "warning",
+      "side": "layout",
+      "subcircuit": null
+    },
+    {
+      "category": "device.finfet_bulk_tied",
+      "circuit": null,
+      "description": "options.finfet_bulk joined the pmos bulk net 'VDD' onto layout net 'VDD' on 5 device(s) before comparing -- the bulk connectivity is a caller assertion, not geometry read from the layout",
+      "details": {
+        "bulk_net": "VDD",
+        "circuit": "XNOR2xp5_ASAP7_75t_R",
+        "device_classes": [
+          "pmos_rvt"
+        ],
+        "device_count": 5,
+        "net": "VDD",
+        "polarity": "pmos",
+        "status": "joined"
+      },
+      "device": null,
+      "instance": null,
+      "net": null,
+      "property": null,
+      "severity": "warning",
+      "side": "layout",
+      "subcircuit": null
+    },
+    {
+      "category": "device.finfet_bulk_tied",
+      "circuit": null,
+      "description": "options.finfet_bulk joined the nmos bulk net 'vsubs' onto layout net 'VSS' on 3 device(s) before comparing -- the bulk connectivity is a caller assertion, not geometry read from the layout",
+      "details": {
+        "bulk_net": "vsubs",
+        "circuit": "NOR3xp33_ASAP7_75t_R",
+        "device_classes": [
+          "nmos_rvt"
+        ],
+        "device_count": 3,
+        "net": "VSS",
+        "polarity": "nmos",
+        "status": "joined"
+      },
+      "device": null,
+      "instance": null,
+      "net": null,
+      "property": null,
+      "severity": "warning",
+      "side": "layout",
+      "subcircuit": null
+    },
+    {
+      "category": "device.finfet_bulk_tied",
+      "circuit": null,
+      "description": "options.finfet_bulk joined the pmos bulk net 'VDD' onto layout net 'VDD' on 3 device(s) before comparing -- the bulk connectivity is a caller assertion, not geometry read from the layout",
+      "details": {
+        "bulk_net": "VDD",
+        "circuit": "NOR3xp33_ASAP7_75t_R",
+        "device_classes": [
+          "pmos_rvt"
+        ],
+        "device_count": 3,
+        "net": "VDD",
+        "polarity": "pmos",
+        "status": "joined"
+      },
+      "device": null,
+      "instance": null,
+      "net": null,
+      "property": null,
+      "severity": "warning",
+      "side": "layout",
+      "subcircuit": null
+    },
+    {
+      "category": "device.finfet_bulk_tied",
+      "circuit": null,
+      "description": "options.finfet_bulk joined the nmos bulk net 'vsubs' onto layout net 'VSS' on 1 device(s) before comparing -- the bulk connectivity is a caller assertion, not geometry read from the layout",
+      "details": {
+        "bulk_net": "vsubs",
+        "circuit": "INVx1_ASAP7_75t_R$VAR1",
+        "device_classes": [
+          "nmos_rvt"
+        ],
+        "device_count": 1,
+        "net": "VSS",
+        "polarity": "nmos",
+        "status": "joined"
+      },
+      "device": null,
+      "instance": null,
+      "net": null,
+      "property": null,
+      "severity": "warning",
+      "side": "layout",
+      "subcircuit": null
+    },
+    {
+      "category": "device.finfet_bulk_tied",
+      "circuit": null,
+      "description": "options.finfet_bulk joined the pmos bulk net 'VDD' onto layout net 'VDD' on 1 device(s) before comparing -- the bulk connectivity is a caller assertion, not geometry read from the layout",
+      "details": {
+        "bulk_net": "VDD",
+        "circuit": "INVx1_ASAP7_75t_R$VAR1",
+        "device_classes": [
+          "pmos_rvt"
+        ],
+        "device_count": 1,
+        "net": "VDD",
+        "polarity": "pmos",
+        "status": "joined"
+      },
+      "device": null,
+      "instance": null,
+      "net": null,
+      "property": null,
+      "severity": "warning",
+      "side": "layout",
+      "subcircuit": null
+    },
+    {
+      "category": "device.finfet_bulk_tied",
+      "circuit": null,
+      "description": "options.finfet_bulk joined the nmos bulk net 'vsubs' onto layout net 'VSS' on 1 device(s) before comparing -- the bulk connectivity is a caller assertion, not geometry read from the layout",
+      "details": {
+        "bulk_net": "vsubs",
+        "circuit": "INVx1_ASAP7_75t_R",
+        "device_classes": [
+          "nmos_rvt"
+        ],
+        "device_count": 1,
+        "net": "VSS",
+        "polarity": "nmos",
+        "status": "joined"
+      },
+      "device": null,
+      "instance": null,
+      "net": null,
+      "property": null,
+      "severity": "warning",
+      "side": "layout",
+      "subcircuit": null
+    },
+    {
+      "category": "device.finfet_bulk_tied",
+      "circuit": null,
+      "description": "options.finfet_bulk joined the pmos bulk net 'VDD' onto layout net 'VDD' on 1 device(s) before comparing -- the bulk connectivity is a caller assertion, not geometry read from the layout",
+      "details": {
+        "bulk_net": "VDD",
+        "circuit": "INVx1_ASAP7_75t_R",
+        "device_classes": [
+          "pmos_rvt"
+        ],
+        "device_count": 1,
+        "net": "VDD",
+        "polarity": "pmos",
+        "status": "joined"
+      },
+      "device": null,
+      "instance": null,
+      "net": null,
+      "property": null,
+      "severity": "warning",
+      "side": "layout",
+      "subcircuit": null
+    },
+    {
+      "category": "device.finfet_bulk_tied",
+      "circuit": null,
+      "description": "options.finfet_bulk joined the nmos bulk net 'vsubs' onto layout net 'VSS' on 5 device(s) before comparing -- the bulk connectivity is a caller assertion, not geometry read from the layout",
+      "details": {
+        "bulk_net": "vsubs",
+        "circuit": "XNOR2xp5_ASAP7_75t_R$VAR1",
+        "device_classes": [
+          "nmos_rvt"
+        ],
+        "device_count": 5,
+        "net": "VSS",
+        "polarity": "nmos",
+        "status": "joined"
+      },
+      "device": null,
+      "instance": null,
+      "net": null,
+      "property": null,
+      "severity": "warning",
+      "side": "layout",
+      "subcircuit": null
+    },
+    {
+      "category": "device.finfet_bulk_tied",
+      "circuit": null,
+      "description": "options.finfet_bulk joined the pmos bulk net 'VDD' onto layout net 'VDD' on 5 device(s) before comparing -- the bulk connectivity is a caller assertion, not geometry read from the layout",
+      "details": {
+        "bulk_net": "VDD",
+        "circuit": "XNOR2xp5_ASAP7_75t_R$VAR1",
+        "device_classes": [
+          "pmos_rvt"
+        ],
+        "device_count": 5,
+        "net": "VDD",
+        "polarity": "pmos",
+        "status": "joined"
+      },
+      "device": null,
+      "instance": null,
+      "net": null,
+      "property": null,
+      "severity": "warning",
+      "side": "layout",
+      "subcircuit": null
+    },
+    {
+      "category": "device.finfet_bulk_tied",
+      "circuit": null,
+      "description": "options.finfet_bulk joined the nmos bulk net 'vsubs' onto layout net 'VSS' on 2 device(s) before comparing -- the bulk connectivity is a caller assertion, not geometry read from the layout",
+      "details": {
+        "bulk_net": "vsubs",
+        "circuit": "BUFx4_ASAP7_75t_R",
+        "device_classes": [
+          "nmos_rvt"
+        ],
+        "device_count": 2,
+        "net": "VSS",
+        "polarity": "nmos",
+        "status": "joined"
+      },
+      "device": null,
+      "instance": null,
+      "net": null,
+      "property": null,
+      "severity": "warning",
+      "side": "layout",
+      "subcircuit": null
+    },
+    {
+      "category": "device.finfet_bulk_tied",
+      "circuit": null,
+      "description": "options.finfet_bulk joined the pmos bulk net 'VDD' onto layout net 'VDD' on 2 device(s) before comparing -- the bulk connectivity is a caller assertion, not geometry read from the layout",
+      "details": {
+        "bulk_net": "VDD",
+        "circuit": "BUFx4_ASAP7_75t_R",
+        "device_classes": [
+          "pmos_rvt"
+        ],
+        "device_count": 2,
+        "net": "VDD",
+        "polarity": "pmos",
+        "status": "joined"
+      },
+      "device": null,
+      "instance": null,
+      "net": null,
+      "property": null,
+      "severity": "warning",
+      "side": "layout",
+      "subcircuit": null
+    },
+    {
+      "category": "device.finfet_bulk_tied",
+      "circuit": null,
+      "description": "options.finfet_bulk joined the nmos bulk net 'vsubs' onto layout net 'VSS' on 4 device(s) before comparing -- the bulk connectivity is a caller assertion, not geometry read from the layout",
+      "details": {
+        "bulk_net": "vsubs",
+        "circuit": "NOR4xp25_ASAP7_75t_R",
+        "device_classes": [
+          "nmos_rvt"
+        ],
+        "device_count": 4,
+        "net": "VSS",
+        "polarity": "nmos",
+        "status": "joined"
+      },
+      "device": null,
+      "instance": null,
+      "net": null,
+      "property": null,
+      "severity": "warning",
+      "side": "layout",
+      "subcircuit": null
+    },
+    {
+      "category": "device.finfet_bulk_tied",
+      "circuit": null,
+      "description": "options.finfet_bulk joined the pmos bulk net 'VDD' onto layout net 'VDD' on 4 device(s) before comparing -- the bulk connectivity is a caller assertion, not geometry read from the layout",
+      "details": {
+        "bulk_net": "VDD",
+        "circuit": "NOR4xp25_ASAP7_75t_R",
+        "device_classes": [
+          "pmos_rvt"
+        ],
+        "device_count": 4,
+        "net": "VDD",
+        "polarity": "pmos",
+        "status": "joined"
+      },
+      "device": null,
+      "instance": null,
+      "net": null,
+      "property": null,
+      "severity": "warning",
+      "side": "layout",
+      "subcircuit": null
+    },
+    {
+      "category": "device.finfet_bulk_tied",
+      "circuit": null,
+      "description": "options.finfet_bulk joined the nmos bulk net 'vsubs' onto layout net 'VSS' on 2 device(s) before comparing -- the bulk connectivity is a caller assertion, not geometry read from the layout",
+      "details": {
+        "bulk_net": "vsubs",
+        "circuit": "NOR2xp33_ASAP7_75t_R",
+        "device_classes": [
+          "nmos_rvt"
+        ],
+        "device_count": 2,
+        "net": "VSS",
+        "polarity": "nmos",
+        "status": "joined"
+      },
+      "device": null,
+      "instance": null,
+      "net": null,
+      "property": null,
+      "severity": "warning",
+      "side": "layout",
+      "subcircuit": null
+    },
+    {
+      "category": "device.finfet_bulk_tied",
+      "circuit": null,
+      "description": "options.finfet_bulk joined the pmos bulk net 'VDD' onto layout net 'VDD' on 2 device(s) before comparing -- the bulk connectivity is a caller assertion, not geometry read from the layout",
+      "details": {
+        "bulk_net": "VDD",
+        "circuit": "NOR2xp33_ASAP7_75t_R",
+        "device_classes": [
+          "pmos_rvt"
+        ],
+        "device_count": 2,
+        "net": "VDD",
+        "polarity": "pmos",
+        "status": "joined"
+      },
+      "device": null,
+      "instance": null,
+      "net": null,
+      "property": null,
+      "severity": "warning",
+      "side": "layout",
+      "subcircuit": null
+    },
+    {
+      "category": "device.finfet_bulk_tied",
+      "circuit": null,
+      "description": "options.finfet_bulk joined the nmos bulk net 'vsubs' onto layout net 'VSS' on 5 device(s) before comparing -- the bulk connectivity is a caller assertion, not geometry read from the layout",
+      "details": {
+        "bulk_net": "vsubs",
+        "circuit": "NAND5xp2_ASAP7_75t_R",
+        "device_classes": [
+          "nmos_rvt"
+        ],
+        "device_count": 5,
+        "net": "VSS",
+        "polarity": "nmos",
+        "status": "joined"
+      },
+      "device": null,
+      "instance": null,
+      "net": null,
+      "property": null,
+      "severity": "warning",
+      "side": "layout",
+      "subcircuit": null
+    },
+    {
+      "category": "device.finfet_bulk_tied",
+      "circuit": null,
+      "description": "options.finfet_bulk joined the pmos bulk net 'VDD' onto layout net 'VDD' on 5 device(s) before comparing -- the bulk connectivity is a caller assertion, not geometry read from the layout",
+      "details": {
+        "bulk_net": "VDD",
+        "circuit": "NAND5xp2_ASAP7_75t_R",
+        "device_classes": [
+          "pmos_rvt"
+        ],
+        "device_count": 5,
+        "net": "VDD",
+        "polarity": "pmos",
+        "status": "joined"
+      },
+      "device": null,
+      "instance": null,
+      "net": null,
+      "property": null,
+      "severity": "warning",
+      "side": "layout",
+      "subcircuit": null
+    },
+    {
+      "category": "device.finfet_bulk_tied",
+      "circuit": null,
+      "description": "options.finfet_bulk joined the nmos bulk net 'vsubs' onto layout net 'VSS' on 4 device(s) before comparing -- the bulk connectivity is a caller assertion, not geometry read from the layout",
+      "details": {
+        "bulk_net": "vsubs",
+        "circuit": "AOI31xp33_ASAP7_75t_R",
+        "device_classes": [
+          "nmos_rvt"
+        ],
+        "device_count": 4,
+        "net": "VSS",
+        "polarity": "nmos",
+        "status": "joined"
+      },
+      "device": null,
+      "instance": null,
+      "net": null,
+      "property": null,
+      "severity": "warning",
+      "side": "layout",
+      "subcircuit": null
+    },
+    {
+      "category": "device.finfet_bulk_tied",
+      "circuit": null,
+      "description": "options.finfet_bulk joined the pmos bulk net 'VDD' onto layout net 'VDD' on 4 device(s) before comparing -- the bulk connectivity is a caller assertion, not geometry read from the layout",
+      "details": {
+        "bulk_net": "VDD",
+        "circuit": "AOI31xp33_ASAP7_75t_R",
+        "device_classes": [
+          "pmos_rvt"
+        ],
+        "device_count": 4,
+        "net": "VDD",
+        "polarity": "pmos",
+        "status": "joined"
+      },
+      "device": null,
+      "instance": null,
+      "net": null,
+      "property": null,
+      "severity": "warning",
+      "side": "layout",
+      "subcircuit": null
+    },
+    {
+      "category": "device.finfet_bulk_tied",
+      "circuit": null,
+      "description": "options.finfet_bulk joined the nmos bulk net 'vsubs' onto layout net 'VSS' on 4 device(s) before comparing -- the bulk connectivity is a caller assertion, not geometry read from the layout",
+      "details": {
+        "bulk_net": "vsubs",
+        "circuit": "OA21x2_ASAP7_75t_R",
+        "device_classes": [
+          "nmos_rvt"
+        ],
+        "device_count": 4,
+        "net": "VSS",
+        "polarity": "nmos",
+        "status": "joined"
+      },
+      "device": null,
+      "instance": null,
+      "net": null,
+      "property": null,
+      "severity": "warning",
+      "side": "layout",
+      "subcircuit": null
+    },
+    {
+      "category": "device.finfet_bulk_tied",
+      "circuit": null,
+      "description": "options.finfet_bulk joined the pmos bulk net 'VDD' onto layout net 'VDD' on 4 device(s) before comparing -- the bulk connectivity is a caller assertion, not geometry read from the layout",
+      "details": {
+        "bulk_net": "VDD",
+        "circuit": "OA21x2_ASAP7_75t_R",
+        "device_classes": [
+          "pmos_rvt"
+        ],
+        "device_count": 4,
+        "net": "VDD",
+        "polarity": "pmos",
+        "status": "joined"
+      },
+      "device": null,
+      "instance": null,
+      "net": null,
+      "property": null,
+      "severity": "warning",
+      "side": "layout",
+      "subcircuit": null
+    },
+    {
+      "category": "device.finfet_bulk_tied",
+      "circuit": null,
+      "description": "options.finfet_bulk joined the nmos bulk net 'vsubs' onto layout net 'VSS' on 1 device(s) before comparing -- the bulk connectivity is a caller assertion, not geometry read from the layout",
+      "details": {
+        "bulk_net": "vsubs",
+        "circuit": "TIEHIx1_ASAP7_75t_R$VAR1",
+        "device_classes": [
+          "nmos_rvt"
+        ],
+        "device_count": 1,
+        "net": "VSS",
+        "polarity": "nmos",
+        "status": "joined"
+      },
+      "device": null,
+      "instance": null,
+      "net": null,
+      "property": null,
+      "severity": "warning",
+      "side": "layout",
+      "subcircuit": null
+    },
+    {
+      "category": "device.finfet_bulk_tied",
+      "circuit": null,
+      "description": "options.finfet_bulk joined the pmos bulk net 'VDD' onto layout net 'VDD' on 1 device(s) before comparing -- the bulk connectivity is a caller assertion, not geometry read from the layout",
+      "details": {
+        "bulk_net": "VDD",
+        "circuit": "TIEHIx1_ASAP7_75t_R$VAR1",
+        "device_classes": [
+          "pmos_rvt"
+        ],
+        "device_count": 1,
+        "net": "VDD",
+        "polarity": "pmos",
+        "status": "joined"
+      },
+      "device": null,
+      "instance": null,
+      "net": null,
+      "property": null,
+      "severity": "warning",
+      "side": "layout",
+      "subcircuit": null
+    },
+    {
+      "category": "device.finfet_bulk_tied",
+      "circuit": null,
+      "description": "options.finfet_bulk joined the nmos bulk net 'vsubs' onto layout net 'VSS' on 2 device(s) before comparing -- the bulk connectivity is a caller assertion, not geometry read from the layout",
+      "details": {
+        "bulk_net": "vsubs",
+        "circuit": "BUFx4_ASAP7_75t_R$VAR1",
+        "device_classes": [
+          "nmos_rvt"
+        ],
+        "device_count": 2,
+        "net": "VSS",
+        "polarity": "nmos",
+        "status": "joined"
+      },
+      "device": null,
+      "instance": null,
+      "net": null,
+      "property": null,
+      "severity": "warning",
+      "side": "layout",
+      "subcircuit": null
+    },
+    {
+      "category": "device.finfet_bulk_tied",
+      "circuit": null,
+      "description": "options.finfet_bulk joined the pmos bulk net 'VDD' onto layout net 'VDD' on 2 device(s) before comparing -- the bulk connectivity is a caller assertion, not geometry read from the layout",
+      "details": {
+        "bulk_net": "VDD",
+        "circuit": "BUFx4_ASAP7_75t_R$VAR1",
+        "device_classes": [
+          "pmos_rvt"
+        ],
+        "device_count": 2,
+        "net": "VDD",
+        "polarity": "pmos",
+        "status": "joined"
+      },
+      "device": null,
+      "instance": null,
+      "net": null,
+      "property": null,
+      "severity": "warning",
+      "side": "layout",
+      "subcircuit": null
+    },
+    {
+      "category": "device.finfet_bulk_tied",
+      "circuit": null,
+      "description": "options.finfet_bulk joined the nmos bulk net 'vsubs' onto layout net 'VSS' on 2 device(s) before comparing -- the bulk connectivity is a caller assertion, not geometry read from the layout",
+      "details": {
+        "bulk_net": "vsubs",
+        "circuit": "NAND2xp33_ASAP7_75t_R",
+        "device_classes": [
+          "nmos_rvt"
+        ],
+        "device_count": 2,
+        "net": "VSS",
+        "polarity": "nmos",
+        "status": "joined"
+      },
+      "device": null,
+      "instance": null,
+      "net": null,
+      "property": null,
+      "severity": "warning",
+      "side": "layout",
+      "subcircuit": null
+    },
+    {
+      "category": "device.finfet_bulk_tied",
+      "circuit": null,
+      "description": "options.finfet_bulk joined the pmos bulk net 'VDD' onto layout net 'VDD' on 2 device(s) before comparing -- the bulk connectivity is a caller assertion, not geometry read from the layout",
+      "details": {
+        "bulk_net": "VDD",
+        "circuit": "NAND2xp33_ASAP7_75t_R",
+        "device_classes": [
+          "pmos_rvt"
+        ],
+        "device_count": 2,
+        "net": "VDD",
+        "polarity": "pmos",
+        "status": "joined"
+      },
+      "device": null,
+      "instance": null,
+      "net": null,
+      "property": null,
+      "severity": "warning",
+      "side": "layout",
+      "subcircuit": null
+    },
+    {
+      "category": "device.finfet_bulk_tied",
+      "circuit": null,
+      "description": "options.finfet_bulk joined the nmos bulk net 'vsubs' onto layout net 'VSS' on 2 device(s) before comparing -- the bulk connectivity is a caller assertion, not geometry read from the layout",
+      "details": {
+        "bulk_net": "vsubs",
+        "circuit": "NOR2xp33_ASAP7_75t_R$VAR1",
+        "device_classes": [
+          "nmos_rvt"
+        ],
+        "device_count": 2,
+        "net": "VSS",
+        "polarity": "nmos",
+        "status": "joined"
+      },
+      "device": null,
+      "instance": null,
+      "net": null,
+      "property": null,
+      "severity": "warning",
+      "side": "layout",
+      "subcircuit": null
+    },
+    {
+      "category": "device.finfet_bulk_tied",
+      "circuit": null,
+      "description": "options.finfet_bulk joined the pmos bulk net 'VDD' onto layout net 'VDD' on 2 device(s) before comparing -- the bulk connectivity is a caller assertion, not geometry read from the layout",
+      "details": {
+        "bulk_net": "VDD",
+        "circuit": "NOR2xp33_ASAP7_75t_R$VAR1",
+        "device_classes": [
+          "pmos_rvt"
+        ],
+        "device_count": 2,
+        "net": "VDD",
+        "polarity": "pmos",
+        "status": "joined"
+      },
+      "device": null,
+      "instance": null,
+      "net": null,
+      "property": null,
+      "severity": "warning",
+      "side": "layout",
+      "subcircuit": null
+    },
+    {
+      "category": "net.supply_fragmented",
+      "circuit": {
+        "layout": "AOI31xp33_ASAP7_75t_R",
+        "reference": null
+      },
+      "description": "supply 'VDD' spans 2 disconnected layout nets in circuit 'AOI31xp33_ASAP7_75t_R'; connect the supply grid or configure options.supply_nets for this design's domains. A signal-topology match does not verify power delivery.",
+      "details": {
+        "fragment_count": 2,
+        "supply": "VDD"
+      },
+      "device": null,
+      "instance": null,
+      "net": {
+        "layout": "VDD",
+        "reference": null
+      },
+      "property": null,
+      "severity": "warning",
+      "side": "layout",
+      "subcircuit": null
+    },
+    {
+      "category": "net.supply_fragmented",
+      "circuit": {
+        "layout": "BUFx4_ASAP7_75t_R",
+        "reference": null
+      },
+      "description": "supply 'VDD' spans 2 disconnected layout nets in circuit 'BUFx4_ASAP7_75t_R'; connect the supply grid or configure options.supply_nets for this design's domains. A signal-topology match does not verify power delivery.",
+      "details": {
+        "fragment_count": 2,
+        "supply": "VDD"
+      },
+      "device": null,
+      "instance": null,
+      "net": {
+        "layout": "VDD",
+        "reference": null
+      },
+      "property": null,
+      "severity": "warning",
+      "side": "layout",
+      "subcircuit": null
+    },
+    {
+      "category": "net.supply_fragmented",
+      "circuit": {
+        "layout": "BUFx4_ASAP7_75t_R$VAR1",
+        "reference": null
+      },
+      "description": "supply 'VDD' spans 2 disconnected layout nets in circuit 'BUFx4_ASAP7_75t_R$VAR1'; connect the supply grid or configure options.supply_nets for this design's domains. A signal-topology match does not verify power delivery.",
+      "details": {
+        "fragment_count": 2,
+        "supply": "VDD"
+      },
+      "device": null,
+      "instance": null,
+      "net": {
+        "layout": "VDD",
+        "reference": null
+      },
+      "property": null,
+      "severity": "warning",
+      "side": "layout",
+      "subcircuit": null
+    },
+    {
+      "category": "net.supply_fragmented",
+      "circuit": {
+        "layout": "DFFASRHQNx1_ASAP7_75t_R",
+        "reference": null
+      },
+      "description": "supply 'VDD' spans 2 disconnected layout nets in circuit 'DFFASRHQNx1_ASAP7_75t_R'; connect the supply grid or configure options.supply_nets for this design's domains. A signal-topology match does not verify power delivery.",
+      "details": {
+        "fragment_count": 2,
+        "supply": "VDD"
+      },
+      "device": null,
+      "instance": null,
+      "net": {
+        "layout": "VDD",
+        "reference": null
+      },
+      "property": null,
+      "severity": "warning",
+      "side": "layout",
+      "subcircuit": null
+    },
+    {
+      "category": "net.supply_fragmented",
+      "circuit": {
+        "layout": "DFFASRHQNx1_ASAP7_75t_R$VAR1",
+        "reference": null
+      },
+      "description": "supply 'VDD' spans 2 disconnected layout nets in circuit 'DFFASRHQNx1_ASAP7_75t_R$VAR1'; connect the supply grid or configure options.supply_nets for this design's domains. A signal-topology match does not verify power delivery.",
+      "details": {
+        "fragment_count": 2,
+        "supply": "VDD"
+      },
+      "device": null,
+      "instance": null,
+      "net": {
+        "layout": "VDD",
+        "reference": null
+      },
+      "property": null,
+      "severity": "warning",
+      "side": "layout",
+      "subcircuit": null
+    },
+    {
+      "category": "net.supply_fragmented",
+      "circuit": {
+        "layout": "INVx1_ASAP7_75t_R",
+        "reference": null
+      },
+      "description": "supply 'VDD' spans 2 disconnected layout nets in circuit 'INVx1_ASAP7_75t_R'; connect the supply grid or configure options.supply_nets for this design's domains. A signal-topology match does not verify power delivery.",
+      "details": {
+        "fragment_count": 2,
+        "supply": "VDD"
+      },
+      "device": null,
+      "instance": null,
+      "net": {
+        "layout": "VDD",
+        "reference": null
+      },
+      "property": null,
+      "severity": "warning",
+      "side": "layout",
+      "subcircuit": null
+    },
+    {
+      "category": "net.supply_fragmented",
+      "circuit": {
+        "layout": "INVx1_ASAP7_75t_R$VAR1",
+        "reference": null
+      },
+      "description": "supply 'VDD' spans 2 disconnected layout nets in circuit 'INVx1_ASAP7_75t_R$VAR1'; connect the supply grid or configure options.supply_nets for this design's domains. A signal-topology match does not verify power delivery.",
+      "details": {
+        "fragment_count": 2,
+        "supply": "VDD"
+      },
+      "device": null,
+      "instance": null,
+      "net": {
+        "layout": "VDD",
+        "reference": null
+      },
+      "property": null,
+      "severity": "warning",
+      "side": "layout",
+      "subcircuit": null
+    },
+    {
+      "category": "net.supply_fragmented",
+      "circuit": {
+        "layout": "NAND2xp33_ASAP7_75t_R",
+        "reference": null
+      },
+      "description": "supply 'VDD' spans 2 disconnected layout nets in circuit 'NAND2xp33_ASAP7_75t_R'; connect the supply grid or configure options.supply_nets for this design's domains. A signal-topology match does not verify power delivery.",
+      "details": {
+        "fragment_count": 2,
+        "supply": "VDD"
+      },
+      "device": null,
+      "instance": null,
+      "net": {
+        "layout": "VDD",
+        "reference": null
+      },
+      "property": null,
+      "severity": "warning",
+      "side": "layout",
+      "subcircuit": null
+    },
+    {
+      "category": "net.supply_fragmented",
+      "circuit": {
+        "layout": "NAND5xp2_ASAP7_75t_R",
+        "reference": null
+      },
+      "description": "supply 'VDD' spans 2 disconnected layout nets in circuit 'NAND5xp2_ASAP7_75t_R'; connect the supply grid or configure options.supply_nets for this design's domains. A signal-topology match does not verify power delivery.",
+      "details": {
+        "fragment_count": 2,
+        "supply": "VDD"
+      },
+      "device": null,
+      "instance": null,
+      "net": {
+        "layout": "VDD",
+        "reference": null
+      },
+      "property": null,
+      "severity": "warning",
+      "side": "layout",
+      "subcircuit": null
+    },
+    {
+      "category": "net.supply_fragmented",
+      "circuit": {
+        "layout": "NOR2xp33_ASAP7_75t_R",
+        "reference": null
+      },
+      "description": "supply 'VDD' spans 2 disconnected layout nets in circuit 'NOR2xp33_ASAP7_75t_R'; connect the supply grid or configure options.supply_nets for this design's domains. A signal-topology match does not verify power delivery.",
+      "details": {
+        "fragment_count": 2,
+        "supply": "VDD"
+      },
+      "device": null,
+      "instance": null,
+      "net": {
+        "layout": "VDD",
+        "reference": null
+      },
+      "property": null,
+      "severity": "warning",
+      "side": "layout",
+      "subcircuit": null
+    },
+    {
+      "category": "net.supply_fragmented",
+      "circuit": {
+        "layout": "NOR2xp33_ASAP7_75t_R$VAR1",
+        "reference": null
+      },
+      "description": "supply 'VDD' spans 2 disconnected layout nets in circuit 'NOR2xp33_ASAP7_75t_R$VAR1'; connect the supply grid or configure options.supply_nets for this design's domains. A signal-topology match does not verify power delivery.",
+      "details": {
+        "fragment_count": 2,
+        "supply": "VDD"
+      },
+      "device": null,
+      "instance": null,
+      "net": {
+        "layout": "VDD",
+        "reference": null
+      },
+      "property": null,
+      "severity": "warning",
+      "side": "layout",
+      "subcircuit": null
+    },
+    {
+      "category": "net.supply_fragmented",
+      "circuit": {
+        "layout": "NOR3xp33_ASAP7_75t_R",
+        "reference": null
+      },
+      "description": "supply 'VDD' spans 2 disconnected layout nets in circuit 'NOR3xp33_ASAP7_75t_R'; connect the supply grid or configure options.supply_nets for this design's domains. A signal-topology match does not verify power delivery.",
+      "details": {
+        "fragment_count": 2,
+        "supply": "VDD"
+      },
+      "device": null,
+      "instance": null,
+      "net": {
+        "layout": "VDD",
+        "reference": null
+      },
+      "property": null,
+      "severity": "warning",
+      "side": "layout",
+      "subcircuit": null
+    },
+    {
+      "category": "net.supply_fragmented",
+      "circuit": {
+        "layout": "NOR4xp25_ASAP7_75t_R",
+        "reference": null
+      },
+      "description": "supply 'VDD' spans 2 disconnected layout nets in circuit 'NOR4xp25_ASAP7_75t_R'; connect the supply grid or configure options.supply_nets for this design's domains. A signal-topology match does not verify power delivery.",
+      "details": {
+        "fragment_count": 2,
+        "supply": "VDD"
+      },
+      "device": null,
+      "instance": null,
+      "net": {
+        "layout": "VDD",
+        "reference": null
+      },
+      "property": null,
+      "severity": "warning",
+      "side": "layout",
+      "subcircuit": null
+    },
+    {
+      "category": "net.supply_fragmented",
+      "circuit": {
+        "layout": "OA21x2_ASAP7_75t_R",
+        "reference": null
+      },
+      "description": "supply 'VDD' spans 2 disconnected layout nets in circuit 'OA21x2_ASAP7_75t_R'; connect the supply grid or configure options.supply_nets for this design's domains. A signal-topology match does not verify power delivery.",
+      "details": {
+        "fragment_count": 2,
+        "supply": "VDD"
+      },
+      "device": null,
+      "instance": null,
+      "net": {
+        "layout": "VDD",
+        "reference": null
+      },
+      "property": null,
+      "severity": "warning",
+      "side": "layout",
+      "subcircuit": null
+    },
+    {
+      "category": "net.supply_fragmented",
+      "circuit": {
+        "layout": "TIEHIx1_ASAP7_75t_R",
+        "reference": null
+      },
+      "description": "supply 'VDD' spans 2 disconnected layout nets in circuit 'TIEHIx1_ASAP7_75t_R'; connect the supply grid or configure options.supply_nets for this design's domains. A signal-topology match does not verify power delivery.",
+      "details": {
+        "fragment_count": 2,
+        "supply": "VDD"
+      },
+      "device": null,
+      "instance": null,
+      "net": {
+        "layout": "VDD",
+        "reference": null
+      },
+      "property": null,
+      "severity": "warning",
+      "side": "layout",
+      "subcircuit": null
+    },
+    {
+      "category": "net.supply_fragmented",
+      "circuit": {
+        "layout": "TIEHIx1_ASAP7_75t_R$VAR1",
+        "reference": null
+      },
+      "description": "supply 'VDD' spans 2 disconnected layout nets in circuit 'TIEHIx1_ASAP7_75t_R$VAR1'; connect the supply grid or configure options.supply_nets for this design's domains. A signal-topology match does not verify power delivery.",
+      "details": {
+        "fragment_count": 2,
+        "supply": "VDD"
+      },
+      "device": null,
+      "instance": null,
+      "net": {
+        "layout": "VDD",
+        "reference": null
+      },
+      "property": null,
+      "severity": "warning",
+      "side": "layout",
+      "subcircuit": null
+    },
+    {
+      "category": "net.supply_fragmented",
+      "circuit": {
+        "layout": "XNOR2xp5_ASAP7_75t_R",
+        "reference": null
+      },
+      "description": "supply 'VDD' spans 2 disconnected layout nets in circuit 'XNOR2xp5_ASAP7_75t_R'; connect the supply grid or configure options.supply_nets for this design's domains. A signal-topology match does not verify power delivery.",
+      "details": {
+        "fragment_count": 2,
+        "supply": "VDD"
+      },
+      "device": null,
+      "instance": null,
+      "net": {
+        "layout": "VDD",
+        "reference": null
+      },
+      "property": null,
+      "severity": "warning",
+      "side": "layout",
+      "subcircuit": null
+    },
+    {
+      "category": "net.supply_fragmented",
+      "circuit": {
+        "layout": "XNOR2xp5_ASAP7_75t_R$VAR1",
+        "reference": null
+      },
+      "description": "supply 'VDD' spans 2 disconnected layout nets in circuit 'XNOR2xp5_ASAP7_75t_R$VAR1'; connect the supply grid or configure options.supply_nets for this design's domains. A signal-topology match does not verify power delivery.",
+      "details": {
+        "fragment_count": 2,
+        "supply": "VDD"
+      },
+      "device": null,
+      "instance": null,
+      "net": {
+        "layout": "VDD",
+        "reference": null
+      },
+      "property": null,
+      "severity": "warning",
+      "side": "layout",
+      "subcircuit": null
+    },
+    {
+      "category": "reference.gate_level_pin_case_folded",
+      "circuit": null,
+      "description": "gate-level-verilog reference connects library cell 'DFFASRHQNx1_ASAP7_75t_R' pin 'RESETN' on 8 instance(s), but the resolved pin list spells it 'RESETn' -- bound case-insensitively (unambiguous: no other pin of the cell differs from it only by case) (see docs/cli/lvs.md, \"reference.gate_level_pin_case_folded\")",
+      "details": {
+        "cell": "DFFASRHQNx1_ASAP7_75t_R",
+        "from": "RESETN",
+        "instance_count": 8,
+        "to": "RESETn"
+      },
+      "device": null,
+      "instance": null,
+      "net": null,
+      "property": null,
+      "severity": "warning",
+      "side": "reference",
+      "subcircuit": null
+    },
+    {
+      "category": "reference.gate_level_pin_case_folded",
+      "circuit": null,
+      "description": "gate-level-verilog reference connects library cell 'DFFASRHQNx1_ASAP7_75t_R' pin 'SETN' on 8 instance(s), but the resolved pin list spells it 'SETn' -- bound case-insensitively (unambiguous: no other pin of the cell differs from it only by case) (see docs/cli/lvs.md, \"reference.gate_level_pin_case_folded\")",
+      "details": {
+        "cell": "DFFASRHQNx1_ASAP7_75t_R",
+        "from": "SETN",
+        "instance_count": 8,
+        "to": "SETn"
+      },
+      "device": null,
+      "instance": null,
+      "net": null,
+      "property": null,
+      "severity": "warning",
+      "side": "reference",
+      "subcircuit": null
+    },
+    {
+      "category": "topology.flattened",
+      "circuit": null,
+      "description": "options.flatten_layout flattened the layout netlist before comparing: 27 circuit(s) were collapsed into 9 top-level circuit(s), substituting every subcircuit-call instance in place -- this compare verified topology only after removing the original hierarchy boundaries on this side (see docs/cli/lvs.md, \"topology.flattened\")",
+      "details": null,
+      "device": null,
+      "instance": null,
+      "net": null,
+      "property": null,
+      "severity": "warning",
+      "side": "layout",
+      "subcircuit": null
+    },
+    {
+      "category": "topology.flattened",
+      "circuit": null,
+      "description": "options.flatten_reference flattened the reference netlist before comparing: 13 circuit(s) were collapsed into 1 top-level circuit(s), substituting every subcircuit-call instance in place -- this compare verified topology only after removing the original hierarchy boundaries on this side (see docs/cli/lvs.md, \"topology.flattened\")",
+      "details": null,
+      "device": null,
+      "instance": null,
+      "net": null,
+      "property": null,
+      "severity": "warning",
+      "side": "reference",
+      "subcircuit": null
+    }
+  ],
+  "net_correspondence": [
+    {
+      "layout": "\\$49",
+      "pin": false,
+      "reference": "CLK"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "CLKBUF_0_CLK_AN"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "CLKBUF_1_0__F_CLK_AN"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "CLKBUF_1_1__F_CLK_AN"
+    },
+    {
+      "layout": "\\$8",
+      "pin": false,
+      "reference": "CLKNET_0_CLK"
+    },
+    {
+      "layout": "\\$4",
+      "pin": false,
+      "reference": "CLKNET_1_0__LEAF_CLK"
+    },
+    {
+      "layout": "\\$251",
+      "pin": false,
+      "reference": "CLKNET_1_1__LEAF_CLK"
+    },
+    {
+      "layout": "\\$106",
+      "pin": false,
+      "reference": "COUNT[0]"
+    },
+    {
+      "layout": "\\$104",
+      "pin": false,
+      "reference": "COUNT[1]"
+    },
+    {
+      "layout": "\\$139",
+      "pin": false,
+      "reference": "COUNT[2]"
+    },
+    {
+      "layout": "\\$154",
+      "pin": false,
+      "reference": "COUNT[3]"
+    },
+    {
+      "layout": "\\$54",
+      "pin": false,
+      "reference": "COUNT[4]"
+    },
+    {
+      "layout": "\\$103",
+      "pin": false,
+      "reference": "COUNT[5]"
+    },
+    {
+      "layout": "\\$102",
+      "pin": false,
+      "reference": "COUNT[6]"
+    },
+    {
+      "layout": "\\$105",
+      "pin": false,
+      "reference": "COUNT[7]"
+    },
+    {
+      "layout": "\\$125",
+      "pin": false,
+      "reference": "EN"
+    },
+    {
+      "layout": "\\$1",
+      "pin": false,
+      "reference": "RST_N"
+    },
+    {
+      "layout": "VDD",
+      "pin": true,
+      "reference": "VDD"
+    },
+    {
+      "layout": "VSS|vsubs",
+      "pin": true,
+      "reference": "VSS"
+    },
+    {
+      "layout": "\\$39",
+      "pin": false,
+      "reference": "_00_"
+    },
+    {
+      "layout": "\\$216",
+      "pin": false,
+      "reference": "_01_"
+    },
+    {
+      "layout": "\\$169",
+      "pin": false,
+      "reference": "_02_"
+    },
+    {
+      "layout": "\\$156",
+      "pin": false,
+      "reference": "_03_"
+    },
+    {
+      "layout": "\\$255",
+      "pin": false,
+      "reference": "_04_"
+    },
+    {
+      "layout": "\\$27",
+      "pin": false,
+      "reference": "_05_"
+    },
+    {
+      "layout": "\\$74",
+      "pin": false,
+      "reference": "_06_"
+    },
+    {
+      "layout": "\\$55",
+      "pin": false,
+      "reference": "_07_"
+    },
+    {
+      "layout": "\\$56",
+      "pin": false,
+      "reference": "_08_"
+    },
+    {
+      "layout": "\\$60",
+      "pin": false,
+      "reference": "_09_"
+    },
+    {
+      "layout": "\\$16",
+      "pin": false,
+      "reference": "_10_"
+    },
+    {
+      "layout": "\\$287",
+      "pin": false,
+      "reference": "_11_"
+    },
+    {
+      "layout": "\\$311",
+      "pin": false,
+      "reference": "_12_"
+    },
+    {
+      "layout": "\\$144",
+      "pin": false,
+      "reference": "_13_"
+    },
+    {
+      "layout": "\\$235",
+      "pin": false,
+      "reference": "_14_"
+    },
+    {
+      "layout": "\\$34",
+      "pin": false,
+      "reference": "_15_"
+    },
+    {
+      "layout": "\\$94",
+      "pin": false,
+      "reference": "_16_"
+    },
+    {
+      "layout": "\\$196",
+      "pin": false,
+      "reference": "_17_"
+    },
+    {
+      "layout": "\\$70",
+      "pin": false,
+      "reference": "_18_"
+    },
+    {
+      "layout": "\\$52",
+      "pin": false,
+      "reference": "_19_"
+    },
+    {
+      "layout": "\\$202",
+      "pin": false,
+      "reference": "_20_"
+    },
+    {
+      "layout": "\\$46",
+      "pin": false,
+      "reference": "_21_"
+    },
+    {
+      "layout": "\\$210",
+      "pin": false,
+      "reference": "_22_"
+    },
+    {
+      "layout": "\\$187",
+      "pin": false,
+      "reference": "_23_"
+    },
+    {
+      "layout": "\\$304",
+      "pin": false,
+      "reference": "_24_"
+    },
+    {
+      "layout": "\\$14",
+      "pin": false,
+      "reference": "_25_"
+    },
+    {
+      "layout": "\\$53",
+      "pin": false,
+      "reference": "_26_"
+    },
+    {
+      "layout": "\\$57",
+      "pin": false,
+      "reference": "_27_"
+    },
+    {
+      "layout": "\\$35",
+      "pin": false,
+      "reference": "_28_"
+    },
+    {
+      "layout": "\\$268",
+      "pin": false,
+      "reference": "_29_"
+    },
+    {
+      "layout": "\\$290",
+      "pin": false,
+      "reference": "_30_"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_39__NET16"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_40__NET21"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_40__NET22"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_41__NET023"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_41__NET024"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_41__NET29"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_41__NET30"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_42__NET21"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_42__NET22"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_43__PD1"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_43__PD2"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_43__PD3"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_44__NET015"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_44__NET041"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_44__NET29"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_44__NET43"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_45__NET11"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_45__NET25"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_45__NET27"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_46__NET16"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_47__NET015"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_47__NET041"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_47__NET29"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_47__NET43"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_48__NET015"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_48__NET041"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_48__NET29"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_48__NET43"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_49__NET23"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_49__NET29"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_49__NET30"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_50__NET16"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_51__NET015"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_51__NET041"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_51__NET29"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_51__NET43"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_52__NET015"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_52__NET041"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_52__NET29"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_52__NET43"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_53__NET015"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_53__NET041"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_53__NET29"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_53__NET43"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_54__CLKB"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_54__CLKN"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_54__MH"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_54__MS"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_54__NET19"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_54__NET37"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_54__NET54"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_54__NET55"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_54__NET56"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_54__NET57"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_54__NET58"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_54__NET59"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_54__PD1"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_54__PU1"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_54__SH"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_54__SS"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_55__CLKB"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_55__CLKN"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_55__MH"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_55__MS"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_55__NET19"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_55__NET37"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_55__NET54"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_55__NET55"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_55__NET56"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_55__NET57"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_55__NET58"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_55__NET59"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_55__PD1"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_55__PU1"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_55__SH"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_55__SS"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_56__CLKB"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_56__CLKN"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_56__MH"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_56__MS"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_56__NET19"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_56__NET37"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_56__NET54"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_56__NET55"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_56__NET56"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_56__NET57"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_56__NET58"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_56__NET59"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_56__PD1"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_56__PU1"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_56__SH"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_56__SS"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_57__CLKB"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_57__CLKN"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_57__MH"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_57__MS"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_57__NET19"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_57__NET37"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_57__NET54"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_57__NET55"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_57__NET56"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_57__NET57"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_57__NET58"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_57__NET59"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_57__PD1"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_57__PU1"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_57__SH"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_57__SS"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_58__CLKB"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_58__CLKN"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_58__MH"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_58__MS"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_58__NET19"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_58__NET37"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_58__NET54"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_58__NET55"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_58__NET56"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_58__NET57"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_58__NET58"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_58__NET59"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_58__PD1"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_58__PU1"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_58__SH"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_58__SS"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_59__CLKB"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_59__CLKN"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_59__MH"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_59__MS"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_59__NET19"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_59__NET37"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_59__NET54"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_59__NET55"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_59__NET56"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_59__NET57"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_59__NET58"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_59__NET59"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_59__PD1"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_59__PU1"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_59__SH"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_59__SS"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_60__CLKB"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_60__CLKN"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_60__MH"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_60__MS"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_60__NET19"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_60__NET37"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_60__NET54"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_60__NET55"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_60__NET56"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_60__NET57"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_60__NET58"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_60__NET59"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_60__PD1"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_60__PU1"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_60__SH"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_60__SS"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_61__CLKB"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_61__CLKN"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_61__MH"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_61__MS"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_61__NET19"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_61__NET37"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_61__NET54"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_61__NET55"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_61__NET56"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_61__NET57"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_61__NET58"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_61__NET59"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_61__PD1"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_61__PU1"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_61__SH"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_61__SS"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_62__NET7"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_63__NET7"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_64__NET7"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_65__NET7"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_66__NET7"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_67__NET7"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_68__NET7"
+    },
+    {
+      "layout": "\\$0",
+      "pin": false,
+      "reference": "_69__NET7"
+    }
+  ],
+  "options": {
+    "anchor_top_level_pins": null,
+    "combine_devices": false,
+    "combine_devices_max_attempts": 5,
+    "combine_devices_per_circuit": null,
+    "compare_mos_flavour": false,
+    "compare_parameters": null,
+    "finfet_bulk": {
+      "nmos": "VSS",
+      "pmos": "VDD"
+    },
+    "flatten_layout": true,
+    "flatten_reference": true,
+    "netgen_setup": null,
+    "parameter_tolerance": null,
+    "power_connectivity": null,
+    "strict_top_level_pin_count": false,
+    "supply_nets": [
+      "GND",
+      "VCC",
+      "VDD",
+      "VGND",
+      "VPWR",
+      "VSS"
+    ]
+  },
+  "parameter_tolerance": null,
+  "power_connectivity": {
+    "excluded_pins": [],
+    "expected_nets": null,
+    "finding_count": 0,
+    "findings": [],
+    "instance_count": 0,
+    "power_pins": [],
+    "power_pins_derivation": null,
+    "reason": "reference.form is 'gate-level-verilog' on a FinFET layout.deck: each library cell was expanded to its transistor-level CDL body with its own power/ground pins, so supply connectivity takes part in the ordinary compare (a 'match' evidences it) and the stub-form power-pin check does not apply",
+    "status": "unchecked",
+    "unchecked_expected_pins": []
+  },
+  "provenance": {
+    "deck": {
+      "content_hash": "sha256:5c58a50e5f6a9099810b3fde37eaa8d93b0897653cb6597a831baac1f5ebee76",
+      "name": "asap7",
+      "released": true
+    },
+    "input": {
+      "content_hash": "sha256:07c29a72d40815f1c44ce5afb6a46467e4de474f022d967d4f43c4ab4f513d01",
+      "role": "layout"
+    },
+    "klayout_version": "0.30.13",
+    "klayout_version_mismatch": true,
+    "klt_git_commit": "5dbbad05ff42265c92a6f3d2f20d1bbcd2957d49",
+    "klt_reinstall_spec": "klayout-tools==0.9.0",
+    "klt_version": "0.9.0",
+    "pdk": null,
+    "pin_order_sources": [
+      {
+        "cells": 208,
+        "library": null,
+        "path": "<asap7-checkout>/asap7sc7p5t_28/CDL/LVS/asap7sc7p5t_28_R.cdl"
+      }
+    ]
+  },
+  "reference": "<repo>/flow/smoke/records/2026-11-21/layout/counter_asbuilt.v",
+  "reference_conversion": {
+    "form": "gate-level-verilog",
+    "library": null,
+    "pdk": null,
+    "pdk_root": null,
+    "pin_order_files": [
+      "<asap7-checkout>/asap7sc7p5t_28/CDL/LVS/asap7sc7p5t_28_R.cdl"
+    ]
+  },
+  "reference_top": "COUNTER",
+  "schema_version": 2,
+  "smoke": {
+    "bulk_policy": "options.finfet_bulk nmos=VSS pmos=VDD (decision 0005); disclosed by the tool as device.finfet_bulk_tied",
+    "exit_code": 0,
+    "input": "counter routed layout (layout/counter.gds from the par step of this run), against the as-built gate-level netlist written by place-and-route (cells expanded to the pinned cell CDL)",
+    "klayout_tools_issues": [],
+    "klt_build": {
+      "ref": "klayout-tools==0.9.0",
+      "role": "pinned",
+      "version": "klt 0.9.0"
+    },
+    "note": "Pinned klt; layout, reference and deck hashes are in environment and provenance.",
+    "run_state": "ran",
+    "step": "lvs"
+  },
+  "status": "match",
+  "top": "counter"
+}
