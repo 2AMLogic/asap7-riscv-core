@@ -13,8 +13,9 @@ queue is in [`WORK_PLAN.md`](WORK_PLAN.md), merge history in
 
 On the README's ladder: PDK brought up under `klt`, spec ratified, core passing
 the architectural tests in simulation, core synthesized; not yet placed and
-routed. Against the T1 checklist (`manifests/design-evidence-tiers.md`), the
-committed verdict `manifests/asap7-riscv-core.signoff.json` reads **3 of 11
+routed. Against the T1 checklist (the tiers doc shipped by the pinned
+`klayout-tools==0.8.0`, decision 0020), the committed verdict
+`manifests/asap7-riscv-core.signoff.json` reads **3 of 11
 met, 1 not applicable**:
 
 | Item | State | Evidence or owner |
