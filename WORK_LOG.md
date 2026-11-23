@@ -3,6 +3,11 @@
 Chronological record of merged PRs and closed issues, maintained by the Guide
 triage role. Newest first.
 
+### 2026-11-23
+
+- **Issue #230** (closed): Run the offline lockstep comparator self-test in harness CI
+- **PR #233**: ci: run the offline lockstep comparator self-test in the harness job
+
 ### 2026-11-22
 
 - **PR #236**: feat: add klt erc VDD/VSS supply spec with counter evidence run
