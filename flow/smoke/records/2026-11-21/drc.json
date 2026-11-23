@@ -1,0 +1,2281 @@
+{
+  "coverage": {
+    "checked": [
+      "ACTIVE.A.1A",
+      "ACTIVE.A.1B",
+      "ACTIVE.AUX.1",
+      "ACTIVE.FIN.EX.1",
+      "ACTIVE.S.1",
+      "ACTIVE.S.2A",
+      "ACTIVE.S.2B",
+      "ACTIVE.W.1",
+      "ACTIVE.W.2",
+      "ACTIVE.W.3",
+      "ACTIVE.WELL.EN.1",
+      "ACTIVE.WELL.S.4",
+      "FIN.AUX.1",
+      "FIN.S.1",
+      "FIN.W.1",
+      "FIN.W.2",
+      "GATE.ACTIVE.AUX.3",
+      "GATE.ACTIVE.EX.1",
+      "GATE.ACTIVE.EX.2",
+      "GATE.ACTIVE.S.4",
+      "GATE.AUX.1",
+      "GATE.S.1",
+      "GATE.S.2",
+      "GATE.S.3",
+      "GATE.W.1",
+      "GATE.W.2",
+      "GCUT.ACTIVE.S.1",
+      "GCUT.AUX.1",
+      "GCUT.AUX.2",
+      "GCUT.AUX.3",
+      "GCUT.GATE.EX.1",
+      "GCUT.GATE.S.2",
+      "GCUT.S.3",
+      "GCUT.W.1",
+      "GEOMETRY.NONORTHOGONAL",
+      "LIG.A.1",
+      "LIG.GATE.A.3",
+      "LIG.GATE.AUX.1",
+      "LIG.GATE.EX.1",
+      "LIG.GATE.S.10",
+      "LIG.GATE.S.9A",
+      "LIG.GATE.S.9B",
+      "LIG.GCUT.S.11",
+      "LIG.LISD.A.2",
+      "LIG.LISD.OV.1",
+      "LIG.LISD.S.6",
+      "LIG.LISD.S.7",
+      "LIG.S.1",
+      "LIG.S.2",
+      "LIG.S.3",
+      "LIG.S.4",
+      "LIG.S.5",
+      "LIG.SDT.S.8",
+      "LIG.W.1",
+      "LISD.A.1",
+      "LISD.S.1",
+      "LISD.S.2",
+      "LISD.S.3",
+      "LISD.W.1",
+      "LVT.ACTIVE.EN.1",
+      "LVT.ACTIVE.EN.2",
+      "LVT.GATE.EX.1",
+      "LVT.GATE.EX.2",
+      "LVT.W.1",
+      "LVT.W.2",
+      "M1.A.1",
+      "M1.S.1",
+      "M1.S.2",
+      "M1.S.3",
+      "M1.S.4",
+      "M1.S.5",
+      "M1.S.6",
+      "M1.W.1",
+      "M2.A.1",
+      "M2.S.1",
+      "M2.S.2",
+      "M2.S.3",
+      "M2.S.4",
+      "M2.S.5",
+      "M2.S.6",
+      "M2.W.1",
+      "M3.A.1",
+      "M3.S.1",
+      "M3.S.2",
+      "M3.S.3",
+      "M3.S.4",
+      "M3.S.5",
+      "M3.S.6",
+      "M3.W.1",
+      "M4.AUX.1",
+      "M4.AUX.2",
+      "M4.AUX.3",
+      "M4.S.1",
+      "M4.S.2",
+      "M4.W.1",
+      "M4.W.2",
+      "M4.W.3",
+      "M4.W.5",
+      "M5.AUX.1",
+      "M5.AUX.2",
+      "M5.AUX.3",
+      "M5.S.1",
+      "M5.S.2",
+      "M5.W.1",
+      "M5.W.2",
+      "M5.W.3",
+      "M5.W.5",
+      "M6.AUX.1",
+      "M6.AUX.2",
+      "M6.AUX.3",
+      "M6.S.1",
+      "M6.S.2",
+      "M6.W.1",
+      "M6.W.2",
+      "M6.W.3",
+      "M6.W.5",
+      "M7.AUX.1",
+      "M7.AUX.2",
+      "M7.AUX.3",
+      "M7.S.1",
+      "M7.S.2",
+      "M7.W.1",
+      "M7.W.2",
+      "M7.W.3",
+      "M7.W.5",
+      "M8.A.1",
+      "M8.L.1",
+      "M8.S.1",
+      "M8.S.2",
+      "M8.S.3",
+      "M8.W.1",
+      "M8.W.2",
+      "M8.W.3",
+      "M8.W.4",
+      "M8.W.5",
+      "M9.A.1",
+      "M9.L.1",
+      "M9.S.1",
+      "M9.S.2",
+      "M9.S.3",
+      "M9.W.1",
+      "M9.W.2",
+      "M9.W.3",
+      "M9.W.4",
+      "M9.W.5",
+      "NSELECT.ACTIVE.EN.1",
+      "NSELECT.ACTIVE.EN.2",
+      "NSELECT.GATE.EX.1",
+      "NSELECT.GATE.EX.2",
+      "NSELECT.PSELECT.AUX.1",
+      "NSELECT.W.1",
+      "NSELECT.W.2",
+      "PSELECT.ACTIVE.EN.1",
+      "PSELECT.ACTIVE.EN.2",
+      "PSELECT.GATE.EX.1",
+      "PSELECT.GATE.EX.2",
+      "PSELECT.W.1",
+      "PSELECT.W.2",
+      "SDT.ACTIVE.AUX.2",
+      "SDT.ACTIVE.AUX.3",
+      "SDT.ACTIVE.OV.1",
+      "SDT.GATE.AUX.1",
+      "SDT.GATE.S.2",
+      "SDT.LISD.AUX.4",
+      "SDT.LISD.OV.2",
+      "SDT.S.1",
+      "SDT.W.1",
+      "SDT.W.2",
+      "SDT.W.3",
+      "SLVT.ACTIVE.EN.1",
+      "SLVT.ACTIVE.EN.2",
+      "SLVT.GATE.EX.1",
+      "SLVT.GATE.EX.2",
+      "SLVT.W.1",
+      "SLVT.W.2",
+      "SRAM.ACTIVE.A.2A",
+      "SRAM.ACTIVE.A.2B",
+      "SRAM.ACTIVE.AUX.2",
+      "SRAM.ACTIVE.WELL.EN.2",
+      "SRAM.ACTIVE.WELL.S.5",
+      "SRAM.LIG.AUX.2",
+      "SRAM.LIG.GATE.A.4",
+      "SRAM.LIG.GATE.OV.2",
+      "SRAM.LISD.AUX.1",
+      "SRAM.LISD.S.4",
+      "SRAM.LVT.ACTIVE.EN.3",
+      "SRAM.LVT.ACTIVE.EN.4",
+      "SRAM.NSELECT.ACTIVE.EN.3",
+      "SRAM.NSELECT.ACTIVE.EN.4",
+      "SRAM.PSELECT.ACTIVE.EN.3",
+      "SRAM.PSELECT.ACTIVE.EN.4",
+      "SRAM.SDT.ACTIVE.OV.3",
+      "SRAM.SDT.LISD.OV.4",
+      "SRAM.SDT.W.4",
+      "SRAM.SLVT.ACTIVE.EN.3",
+      "SRAM.SLVT.ACTIVE.EN.4",
+      "SRAM.SRAMVT.ACTIVE.EN.3",
+      "SRAM.SRAMVT.ACTIVE.EN.4",
+      "SRAMVT.ACTIVE.EN.1",
+      "SRAMVT.ACTIVE.EN.2",
+      "SRAMVT.GATE.EX.1",
+      "SRAMVT.GATE.EX.2",
+      "SRAMVT.W.1",
+      "SRAMVT.W.2",
+      "THICKOX.ACTIVE.EN",
+      "THICKOX.ACTIVE.W",
+      "THICKOX.GATE.L",
+      "THICKOX.S",
+      "V0.AUX.1",
+      "V0.LIG.A.1",
+      "V0.W.1",
+      "V1.AUX.1",
+      "V1.W.1",
+      "V2.AUX.1",
+      "V2.M2.EN.1",
+      "V2.W.1",
+      "V3.AUX.1",
+      "V3.M3.EN.1",
+      "V3.M4.EN.2",
+      "V3.W.1",
+      "V4.AUX.1",
+      "V4.M4.EN.1",
+      "V4.M5.AUX.2",
+      "V4.M5.EN.2",
+      "V4.S.1",
+      "V4.S.3",
+      "V4.W.1",
+      "V5.AUX.1",
+      "V5.M5.EN.1",
+      "V5.M6.AUX.2",
+      "V5.M6.EN.2",
+      "V5.S.1",
+      "V5.S.3",
+      "V5.W.1",
+      "V6.AUX.1",
+      "V6.M6.EN.1",
+      "V6.M7.AUX.2",
+      "V6.M7.EN.2",
+      "V6.S.1",
+      "V6.S.3",
+      "V6.W.1",
+      "V7.AUX.1",
+      "V7.M7.EN.1",
+      "V7.M8.EN.2",
+      "V7.S.1",
+      "V7.S.3",
+      "V8.AUX.1",
+      "V8.M8.EN.1",
+      "V8.M9.EN.2",
+      "V8.S.1",
+      "V8.S.2",
+      "V8.W.1",
+      "V9.AUX.1",
+      "V9.M9.EN.1",
+      "V9.PAD.EN.2",
+      "V9.S.1",
+      "V9.S.2",
+      "V9.W.1",
+      "VT.AUX.2",
+      "WELL.A.1A",
+      "WELL.A.1B",
+      "WELL.GATE.EX.1",
+      "WELL.GATE.EX.2",
+      "WELL.S.1",
+      "WELL.S.2",
+      "WELL.W.1",
+      "WELL.W.2"
+    ],
+    "deck_layers": [],
+    "deck_scope": [],
+    "inapplicable": [],
+    "isolation_only_rules": [
+      {
+        "description": "min horizontal FIN width 108 nm",
+        "layer": "2/0",
+        "reason": "isolation_only",
+        "rule": "FIN.W.2"
+      },
+      {
+        "description": "every GATE needs another GATE within 54 nm horizontally",
+        "layer": "7/0",
+        "reason": "isolation_only",
+        "rule": "GATE.S.3"
+      },
+      {
+        "description": "min horizontal NSELECT width 108 nm",
+        "layer": "12/0",
+        "reason": "isolation_only",
+        "rule": "NSELECT.W.1"
+      },
+      {
+        "description": "min horizontal PSELECT width 108 nm",
+        "layer": "13/0",
+        "reason": "isolation_only",
+        "rule": "PSELECT.W.1"
+      },
+      {
+        "description": "min horizontal WELL width 108 nm",
+        "layer": "1/0",
+        "reason": "isolation_only",
+        "rule": "WELL.W.1"
+      }
+    ],
+    "known": true,
+    "layers_checked": [],
+    "layers_in_stream_without_rules": [],
+    "nothing_checked": false,
+    "nothing_checked_reasons": [],
+    "rule_categories": [
+      "ACTIVE.A.1A",
+      "ACTIVE.A.1B",
+      "ACTIVE.AUX.1",
+      "ACTIVE.FIN.EX.1",
+      "ACTIVE.S.1",
+      "ACTIVE.S.2A",
+      "ACTIVE.S.2B",
+      "ACTIVE.W.1",
+      "ACTIVE.W.2",
+      "ACTIVE.W.3",
+      "ACTIVE.WELL.EN.1",
+      "ACTIVE.WELL.S.4",
+      "FIN.AUX.1",
+      "FIN.S.1",
+      "FIN.W.1",
+      "FIN.W.2",
+      "GATE.ACTIVE.AUX.3",
+      "GATE.ACTIVE.EX.1",
+      "GATE.ACTIVE.EX.2",
+      "GATE.ACTIVE.S.4",
+      "GATE.AUX.1",
+      "GATE.S.1",
+      "GATE.S.2",
+      "GATE.S.3",
+      "GATE.W.1",
+      "GATE.W.2",
+      "GCUT.ACTIVE.S.1",
+      "GCUT.AUX.1",
+      "GCUT.AUX.2",
+      "GCUT.AUX.3",
+      "GCUT.GATE.EX.1",
+      "GCUT.GATE.S.2",
+      "GCUT.S.3",
+      "GCUT.W.1",
+      "GEOMETRY.NONORTHOGONAL",
+      "LIG.A.1",
+      "LIG.GATE.A.3",
+      "LIG.GATE.AUX.1",
+      "LIG.GATE.EX.1",
+      "LIG.GATE.S.10",
+      "LIG.GATE.S.9A",
+      "LIG.GATE.S.9B",
+      "LIG.GCUT.S.11",
+      "LIG.LISD.A.2",
+      "LIG.LISD.OV.1",
+      "LIG.LISD.S.6",
+      "LIG.LISD.S.7",
+      "LIG.S.1",
+      "LIG.S.2",
+      "LIG.S.3",
+      "LIG.S.4",
+      "LIG.S.5",
+      "LIG.SDT.S.8",
+      "LIG.W.1",
+      "LISD.A.1",
+      "LISD.S.1",
+      "LISD.S.2",
+      "LISD.S.3",
+      "LISD.W.1",
+      "LVT.ACTIVE.EN.1",
+      "LVT.ACTIVE.EN.2",
+      "LVT.GATE.EX.1",
+      "LVT.GATE.EX.2",
+      "LVT.W.1",
+      "LVT.W.2",
+      "M1.A.1",
+      "M1.S.1",
+      "M1.S.2",
+      "M1.S.3",
+      "M1.S.4",
+      "M1.S.5",
+      "M1.S.6",
+      "M1.W.1",
+      "M2.A.1",
+      "M2.S.1",
+      "M2.S.2",
+      "M2.S.3",
+      "M2.S.4",
+      "M2.S.5",
+      "M2.S.6",
+      "M2.W.1",
+      "M3.A.1",
+      "M3.S.1",
+      "M3.S.2",
+      "M3.S.3",
+      "M3.S.4",
+      "M3.S.5",
+      "M3.S.6",
+      "M3.W.1",
+      "M4.AUX.1",
+      "M4.AUX.2",
+      "M4.AUX.3",
+      "M4.S.1",
+      "M4.S.2",
+      "M4.W.1",
+      "M4.W.2",
+      "M4.W.3",
+      "M4.W.5",
+      "M5.AUX.1",
+      "M5.AUX.2",
+      "M5.AUX.3",
+      "M5.S.1",
+      "M5.S.2",
+      "M5.W.1",
+      "M5.W.2",
+      "M5.W.3",
+      "M5.W.5",
+      "M6.AUX.1",
+      "M6.AUX.2",
+      "M6.AUX.3",
+      "M6.S.1",
+      "M6.S.2",
+      "M6.W.1",
+      "M6.W.2",
+      "M6.W.3",
+      "M6.W.5",
+      "M7.AUX.1",
+      "M7.AUX.2",
+      "M7.AUX.3",
+      "M7.S.1",
+      "M7.S.2",
+      "M7.W.1",
+      "M7.W.2",
+      "M7.W.3",
+      "M7.W.5",
+      "M8.A.1",
+      "M8.L.1",
+      "M8.S.1",
+      "M8.S.2",
+      "M8.S.3",
+      "M8.W.1",
+      "M8.W.2",
+      "M8.W.3",
+      "M8.W.4",
+      "M8.W.5",
+      "M9.A.1",
+      "M9.L.1",
+      "M9.S.1",
+      "M9.S.2",
+      "M9.S.3",
+      "M9.W.1",
+      "M9.W.2",
+      "M9.W.3",
+      "M9.W.4",
+      "M9.W.5",
+      "NSELECT.ACTIVE.EN.1",
+      "NSELECT.ACTIVE.EN.2",
+      "NSELECT.GATE.EX.1",
+      "NSELECT.GATE.EX.2",
+      "NSELECT.PSELECT.AUX.1",
+      "NSELECT.W.1",
+      "NSELECT.W.2",
+      "PSELECT.ACTIVE.EN.1",
+      "PSELECT.ACTIVE.EN.2",
+      "PSELECT.GATE.EX.1",
+      "PSELECT.GATE.EX.2",
+      "PSELECT.W.1",
+      "PSELECT.W.2",
+      "SDT.ACTIVE.AUX.2",
+      "SDT.ACTIVE.AUX.3",
+      "SDT.ACTIVE.OV.1",
+      "SDT.GATE.AUX.1",
+      "SDT.GATE.S.2",
+      "SDT.LISD.AUX.4",
+      "SDT.LISD.OV.2",
+      "SDT.S.1",
+      "SDT.W.1",
+      "SDT.W.2",
+      "SDT.W.3",
+      "SLVT.ACTIVE.EN.1",
+      "SLVT.ACTIVE.EN.2",
+      "SLVT.GATE.EX.1",
+      "SLVT.GATE.EX.2",
+      "SLVT.W.1",
+      "SLVT.W.2",
+      "SRAM.ACTIVE.A.2A",
+      "SRAM.ACTIVE.A.2B",
+      "SRAM.ACTIVE.AUX.2",
+      "SRAM.ACTIVE.WELL.EN.2",
+      "SRAM.ACTIVE.WELL.S.5",
+      "SRAM.LIG.AUX.2",
+      "SRAM.LIG.GATE.A.4",
+      "SRAM.LIG.GATE.OV.2",
+      "SRAM.LISD.AUX.1",
+      "SRAM.LISD.S.4",
+      "SRAM.LVT.ACTIVE.EN.3",
+      "SRAM.LVT.ACTIVE.EN.4",
+      "SRAM.NSELECT.ACTIVE.EN.3",
+      "SRAM.NSELECT.ACTIVE.EN.4",
+      "SRAM.PSELECT.ACTIVE.EN.3",
+      "SRAM.PSELECT.ACTIVE.EN.4",
+      "SRAM.SDT.ACTIVE.OV.3",
+      "SRAM.SDT.LISD.OV.4",
+      "SRAM.SDT.W.4",
+      "SRAM.SLVT.ACTIVE.EN.3",
+      "SRAM.SLVT.ACTIVE.EN.4",
+      "SRAM.SRAMVT.ACTIVE.EN.3",
+      "SRAM.SRAMVT.ACTIVE.EN.4",
+      "SRAMVT.ACTIVE.EN.1",
+      "SRAMVT.ACTIVE.EN.2",
+      "SRAMVT.GATE.EX.1",
+      "SRAMVT.GATE.EX.2",
+      "SRAMVT.W.1",
+      "SRAMVT.W.2",
+      "THICKOX.ACTIVE.EN",
+      "THICKOX.ACTIVE.W",
+      "THICKOX.GATE.L",
+      "THICKOX.S",
+      "V0.AUX.1",
+      "V0.LIG.A.1",
+      "V0.W.1",
+      "V1.AUX.1",
+      "V1.W.1",
+      "V2.AUX.1",
+      "V2.M2.EN.1",
+      "V2.W.1",
+      "V3.AUX.1",
+      "V3.M3.EN.1",
+      "V3.M4.EN.2",
+      "V3.W.1",
+      "V4.AUX.1",
+      "V4.M4.EN.1",
+      "V4.M5.AUX.2",
+      "V4.M5.EN.2",
+      "V4.S.1",
+      "V4.S.3",
+      "V4.W.1",
+      "V5.AUX.1",
+      "V5.M5.EN.1",
+      "V5.M6.AUX.2",
+      "V5.M6.EN.2",
+      "V5.S.1",
+      "V5.S.3",
+      "V5.W.1",
+      "V6.AUX.1",
+      "V6.M6.EN.1",
+      "V6.M7.AUX.2",
+      "V6.M7.EN.2",
+      "V6.S.1",
+      "V6.S.3",
+      "V6.W.1",
+      "V7.AUX.1",
+      "V7.M7.EN.1",
+      "V7.M8.EN.2",
+      "V7.S.1",
+      "V7.S.3",
+      "V8.AUX.1",
+      "V8.M8.EN.1",
+      "V8.M9.EN.2",
+      "V8.S.1",
+      "V8.S.2",
+      "V8.W.1",
+      "V9.AUX.1",
+      "V9.M9.EN.1",
+      "V9.PAD.EN.2",
+      "V9.S.1",
+      "V9.S.2",
+      "V9.W.1",
+      "VT.AUX.2",
+      "WELL.A.1A",
+      "WELL.A.1B",
+      "WELL.GATE.EX.1",
+      "WELL.GATE.EX.2",
+      "WELL.S.1",
+      "WELL.S.2",
+      "WELL.W.1",
+      "WELL.W.2"
+    ],
+    "rules_checked": [
+      "ACTIVE.A.1A",
+      "ACTIVE.A.1B",
+      "ACTIVE.AUX.1",
+      "ACTIVE.FIN.EX.1",
+      "ACTIVE.S.1",
+      "ACTIVE.S.2A",
+      "ACTIVE.S.2B",
+      "ACTIVE.W.1",
+      "ACTIVE.W.2",
+      "ACTIVE.W.3",
+      "ACTIVE.WELL.EN.1",
+      "ACTIVE.WELL.S.4",
+      "FIN.AUX.1",
+      "FIN.S.1",
+      "FIN.W.1",
+      "FIN.W.2",
+      "GATE.ACTIVE.AUX.3",
+      "GATE.ACTIVE.EX.1",
+      "GATE.ACTIVE.EX.2",
+      "GATE.ACTIVE.S.4",
+      "GATE.AUX.1",
+      "GATE.S.1",
+      "GATE.S.2",
+      "GATE.S.3",
+      "GATE.W.1",
+      "GATE.W.2",
+      "GCUT.ACTIVE.S.1",
+      "GCUT.AUX.1",
+      "GCUT.AUX.2",
+      "GCUT.AUX.3",
+      "GCUT.GATE.EX.1",
+      "GCUT.GATE.S.2",
+      "GCUT.S.3",
+      "GCUT.W.1",
+      "GEOMETRY.NONORTHOGONAL",
+      "LIG.A.1",
+      "LIG.GATE.A.3",
+      "LIG.GATE.AUX.1",
+      "LIG.GATE.EX.1",
+      "LIG.GATE.S.10",
+      "LIG.GATE.S.9A",
+      "LIG.GATE.S.9B",
+      "LIG.GCUT.S.11",
+      "LIG.LISD.A.2",
+      "LIG.LISD.OV.1",
+      "LIG.LISD.S.6",
+      "LIG.LISD.S.7",
+      "LIG.S.1",
+      "LIG.S.2",
+      "LIG.S.3",
+      "LIG.S.4",
+      "LIG.S.5",
+      "LIG.SDT.S.8",
+      "LIG.W.1",
+      "LISD.A.1",
+      "LISD.S.1",
+      "LISD.S.2",
+      "LISD.S.3",
+      "LISD.W.1",
+      "LVT.ACTIVE.EN.1",
+      "LVT.ACTIVE.EN.2",
+      "LVT.GATE.EX.1",
+      "LVT.GATE.EX.2",
+      "LVT.W.1",
+      "LVT.W.2",
+      "M1.A.1",
+      "M1.S.1",
+      "M1.S.2",
+      "M1.S.3",
+      "M1.S.4",
+      "M1.S.5",
+      "M1.S.6",
+      "M1.W.1",
+      "M2.A.1",
+      "M2.S.1",
+      "M2.S.2",
+      "M2.S.3",
+      "M2.S.4",
+      "M2.S.5",
+      "M2.S.6",
+      "M2.W.1",
+      "M3.A.1",
+      "M3.S.1",
+      "M3.S.2",
+      "M3.S.3",
+      "M3.S.4",
+      "M3.S.5",
+      "M3.S.6",
+      "M3.W.1",
+      "M4.AUX.1",
+      "M4.AUX.2",
+      "M4.AUX.3",
+      "M4.S.1",
+      "M4.S.2",
+      "M4.W.1",
+      "M4.W.2",
+      "M4.W.3",
+      "M4.W.5",
+      "M5.AUX.1",
+      "M5.AUX.2",
+      "M5.AUX.3",
+      "M5.S.1",
+      "M5.S.2",
+      "M5.W.1",
+      "M5.W.2",
+      "M5.W.3",
+      "M5.W.5",
+      "M6.AUX.1",
+      "M6.AUX.2",
+      "M6.AUX.3",
+      "M6.S.1",
+      "M6.S.2",
+      "M6.W.1",
+      "M6.W.2",
+      "M6.W.3",
+      "M6.W.5",
+      "M7.AUX.1",
+      "M7.AUX.2",
+      "M7.AUX.3",
+      "M7.S.1",
+      "M7.S.2",
+      "M7.W.1",
+      "M7.W.2",
+      "M7.W.3",
+      "M7.W.5",
+      "M8.A.1",
+      "M8.L.1",
+      "M8.S.1",
+      "M8.S.2",
+      "M8.S.3",
+      "M8.W.1",
+      "M8.W.2",
+      "M8.W.3",
+      "M8.W.4",
+      "M8.W.5",
+      "M9.A.1",
+      "M9.L.1",
+      "M9.S.1",
+      "M9.S.2",
+      "M9.S.3",
+      "M9.W.1",
+      "M9.W.2",
+      "M9.W.3",
+      "M9.W.4",
+      "M9.W.5",
+      "NSELECT.ACTIVE.EN.1",
+      "NSELECT.ACTIVE.EN.2",
+      "NSELECT.GATE.EX.1",
+      "NSELECT.GATE.EX.2",
+      "NSELECT.PSELECT.AUX.1",
+      "NSELECT.W.1",
+      "NSELECT.W.2",
+      "PSELECT.ACTIVE.EN.1",
+      "PSELECT.ACTIVE.EN.2",
+      "PSELECT.GATE.EX.1",
+      "PSELECT.GATE.EX.2",
+      "PSELECT.W.1",
+      "PSELECT.W.2",
+      "SDT.ACTIVE.AUX.2",
+      "SDT.ACTIVE.AUX.3",
+      "SDT.ACTIVE.OV.1",
+      "SDT.GATE.AUX.1",
+      "SDT.GATE.S.2",
+      "SDT.LISD.AUX.4",
+      "SDT.LISD.OV.2",
+      "SDT.S.1",
+      "SDT.W.1",
+      "SDT.W.2",
+      "SDT.W.3",
+      "SLVT.ACTIVE.EN.1",
+      "SLVT.ACTIVE.EN.2",
+      "SLVT.GATE.EX.1",
+      "SLVT.GATE.EX.2",
+      "SLVT.W.1",
+      "SLVT.W.2",
+      "SRAM.ACTIVE.A.2A",
+      "SRAM.ACTIVE.A.2B",
+      "SRAM.ACTIVE.AUX.2",
+      "SRAM.ACTIVE.WELL.EN.2",
+      "SRAM.ACTIVE.WELL.S.5",
+      "SRAM.LIG.AUX.2",
+      "SRAM.LIG.GATE.A.4",
+      "SRAM.LIG.GATE.OV.2",
+      "SRAM.LISD.AUX.1",
+      "SRAM.LISD.S.4",
+      "SRAM.LVT.ACTIVE.EN.3",
+      "SRAM.LVT.ACTIVE.EN.4",
+      "SRAM.NSELECT.ACTIVE.EN.3",
+      "SRAM.NSELECT.ACTIVE.EN.4",
+      "SRAM.PSELECT.ACTIVE.EN.3",
+      "SRAM.PSELECT.ACTIVE.EN.4",
+      "SRAM.SDT.ACTIVE.OV.3",
+      "SRAM.SDT.LISD.OV.4",
+      "SRAM.SDT.W.4",
+      "SRAM.SLVT.ACTIVE.EN.3",
+      "SRAM.SLVT.ACTIVE.EN.4",
+      "SRAM.SRAMVT.ACTIVE.EN.3",
+      "SRAM.SRAMVT.ACTIVE.EN.4",
+      "SRAMVT.ACTIVE.EN.1",
+      "SRAMVT.ACTIVE.EN.2",
+      "SRAMVT.GATE.EX.1",
+      "SRAMVT.GATE.EX.2",
+      "SRAMVT.W.1",
+      "SRAMVT.W.2",
+      "THICKOX.ACTIVE.EN",
+      "THICKOX.ACTIVE.W",
+      "THICKOX.GATE.L",
+      "THICKOX.S",
+      "V0.AUX.1",
+      "V0.LIG.A.1",
+      "V0.W.1",
+      "V1.AUX.1",
+      "V1.W.1",
+      "V2.AUX.1",
+      "V2.M2.EN.1",
+      "V2.W.1",
+      "V3.AUX.1",
+      "V3.M3.EN.1",
+      "V3.M4.EN.2",
+      "V3.W.1",
+      "V4.AUX.1",
+      "V4.M4.EN.1",
+      "V4.M5.AUX.2",
+      "V4.M5.EN.2",
+      "V4.S.1",
+      "V4.S.3",
+      "V4.W.1",
+      "V5.AUX.1",
+      "V5.M5.EN.1",
+      "V5.M6.AUX.2",
+      "V5.M6.EN.2",
+      "V5.S.1",
+      "V5.S.3",
+      "V5.W.1",
+      "V6.AUX.1",
+      "V6.M6.EN.1",
+      "V6.M7.AUX.2",
+      "V6.M7.EN.2",
+      "V6.S.1",
+      "V6.S.3",
+      "V6.W.1",
+      "V7.AUX.1",
+      "V7.M7.EN.1",
+      "V7.M8.EN.2",
+      "V7.S.1",
+      "V7.S.3",
+      "V8.AUX.1",
+      "V8.M8.EN.1",
+      "V8.M9.EN.2",
+      "V8.S.1",
+      "V8.S.2",
+      "V8.W.1",
+      "V9.AUX.1",
+      "V9.M9.EN.1",
+      "V9.PAD.EN.2",
+      "V9.S.1",
+      "V9.S.2",
+      "V9.W.1",
+      "VT.AUX.2",
+      "WELL.A.1A",
+      "WELL.A.1B",
+      "WELL.GATE.EX.1",
+      "WELL.GATE.EX.2",
+      "WELL.S.1",
+      "WELL.S.2",
+      "WELL.W.1",
+      "WELL.W.2"
+    ],
+    "rules_skipped": [],
+    "schema_version": 1,
+    "skipped": [],
+    "unchecked_rules": [],
+    "unknown": [],
+    "unmodeled_rules": [
+      "ACTIVE.AUX.3",
+      "ACTIVE.LUP.1",
+      "GATE.AUX.2",
+      "M4.AUX.4",
+      "M4.S.3",
+      "M4.S.4",
+      "M4.S.5",
+      "M4.W.4",
+      "M5.AUX.4",
+      "M5.S.3",
+      "M5.S.4",
+      "M5.S.5",
+      "M5.W.4",
+      "M6.AUX.4",
+      "M6.S.3",
+      "M6.S.4",
+      "M6.S.5",
+      "M6.W.4",
+      "M7.AUX.4",
+      "M7.S.3",
+      "M7.S.4",
+      "M7.S.5",
+      "M7.W.4",
+      "M8.S.4",
+      "M8.S.5",
+      "M8.S.6",
+      "M8.S.7",
+      "M8.S.8",
+      "M9.S.4",
+      "M9.S.5",
+      "M9.S.6",
+      "M9.S.7",
+      "M9.S.8",
+      "V0.LIG.AUX.2",
+      "V0.LIG.EN.4",
+      "V0.LISD.EN.2",
+      "V0.LISD.EN.3",
+      "V0.M1.AUX.3",
+      "V0.M1.EN.1",
+      "V0.S.1",
+      "V0.S.2",
+      "V0.S.3",
+      "V0.S.4",
+      "V1.M1.EN.1",
+      "V1.M2.AUX.2",
+      "V1.M2.EN.2",
+      "V1.S.1",
+      "V1.S.2",
+      "V1.S.3",
+      "V1.S.4",
+      "V2.M3.AUX.2",
+      "V2.M3.EN.2",
+      "V2.S.1",
+      "V2.S.2",
+      "V2.S.3",
+      "V2.S.4",
+      "V3.M4.AUX.2",
+      "V3.S.1",
+      "V3.S.2",
+      "V3.S.3",
+      "V3.S.4",
+      "V4.S.2",
+      "V5.S.2",
+      "V6.S.2",
+      "V7.M8.AUX.2",
+      "V7.S.2",
+      "V7.W.1"
+    ],
+    "voltage_domain_warnings": []
+  },
+  "coverage_assertion": {
+    "expected": 267,
+    "kind": "expected_rule_categories",
+    "observed": 267,
+    "satisfied": true
+  },
+  "dbu_um": 0.00025,
+  "deck": "<scratch>/deck/asap7.drc",
+  "engine": "klayout",
+  "file": {
+    "path": "flow/smoke/records/2026-11-21/layout/counter.gds",
+    "scope": "repo"
+  },
+  "provenance": {
+    "deck": {
+      "content_hash": "sha256:14f146f02cd731de3e0b59452eadfdab9c2c947724a219a1002a31b5e0f12d13",
+      "name": "asap7.drc",
+      "released": false
+    },
+    "input": {
+      "content_hash": "sha256:07c29a72d40815f1c44ce5afb6a46467e4de474f022d967d4f43c4ab4f513d01",
+      "role": "layout"
+    },
+    "klayout_version": "0.30.13",
+    "klayout_version_mismatch": true,
+    "klt_git_commit": "5dbbad05ff42265c92a6f3d2f20d1bbcd2957d49",
+    "klt_reinstall_spec": "klayout-tools==0.9.0",
+    "klt_version": "0.9.0",
+    "pdk": null
+  },
+  "rule_counts": {
+    "M1.S.4": 1,
+    "M1.S.5": 2,
+    "SDT.ACTIVE.AUX.2": 6,
+    "V4.M4.EN.1": 28,
+    "V4.M5.EN.2": 7
+  },
+  "schema_version": 3,
+  "smoke": {
+    "exit_code": 3,
+    "input": "counter routed layout (layout/counter.gds from the par step of this run)",
+    "klayout_tools_issues": [],
+    "klt_build": {
+      "ref": "klayout-tools==0.9.0",
+      "role": "pinned",
+      "version": "klt 0.9.0"
+    },
+    "note": "Pinned klt, --engine klayout with the packaged ASAP7 deck, --expect-rule-categories 267.",
+    "run_state": "ran",
+    "step": "drc",
+    "unchecked": "Rules needing track/net/corner/grid predicates, FEOL/MOL increments and PAD are not checked (spec/pdk-bringup.md section 3; spec/core.md DRC acceptance)."
+  },
+  "status": "violations",
+  "violation_count": 44,
+  "violations": [
+    {
+      "bbox": {
+        "bottom": 4940,
+        "left": 13124,
+        "right": 13212,
+        "top": 5012
+      },
+      "cell": "counter",
+      "check": "external",
+      "description": "Table 3.12.1: min tip-to-tip M1 spacing (both edges < 24 nm) 31 nm",
+      "layer": "M1.S.4",
+      "polygon": null,
+      "rule": "M1.S.4",
+      "source_cell": null,
+      "source_path": null
+    },
+    {
+      "bbox": {
+        "bottom": 11404,
+        "left": 7092,
+        "right": 7200,
+        "top": 11456
+      },
+      "cell": "counter",
+      "check": "external",
+      "description": "Table 3.12.1: min tip-to-tip M1 spacing (one edge 24..36 nm, other < 24 nm) 31 nm",
+      "layer": "M1.S.5",
+      "polygon": null,
+      "rule": "M1.S.5",
+      "source_cell": null,
+      "source_path": null
+    },
+    {
+      "bbox": {
+        "bottom": 7956,
+        "left": 7956,
+        "right": 8064,
+        "top": 8036
+      },
+      "cell": "counter",
+      "check": "external",
+      "description": "Table 3.12.1: min tip-to-tip M1 spacing (one edge 24..36 nm, other < 24 nm) 31 nm",
+      "layer": "M1.S.5",
+      "polygon": null,
+      "rule": "M1.S.5",
+      "source_cell": null,
+      "source_path": null
+    },
+    {
+      "bbox": {
+        "bottom": 14472,
+        "left": 6000,
+        "right": 6096,
+        "top": 14472
+      },
+      "cell": "counter",
+      "check": "external",
+      "description": "Table 3.8.1: SDT (not interacting with SRAMDRC) horizontal edges must coincide with ACTIVE horizontal edges",
+      "layer": "SDT.ACTIVE.AUX.2",
+      "polygon": null,
+      "rule": "SDT.ACTIVE.AUX.2",
+      "source_cell": null,
+      "source_path": null
+    },
+    {
+      "bbox": {
+        "bottom": 14688,
+        "left": 6000,
+        "right": 6096,
+        "top": 14688
+      },
+      "cell": "counter",
+      "check": "external",
+      "description": "Table 3.8.1: SDT (not interacting with SRAMDRC) horizontal edges must coincide with ACTIVE horizontal edges",
+      "layer": "SDT.ACTIVE.AUX.2",
+      "polygon": null,
+      "rule": "SDT.ACTIVE.AUX.2",
+      "source_cell": null,
+      "source_path": null
+    },
+    {
+      "bbox": {
+        "bottom": 5832,
+        "left": 7512,
+        "right": 7608,
+        "top": 5832
+      },
+      "cell": "counter",
+      "check": "external",
+      "description": "Table 3.8.1: SDT (not interacting with SRAMDRC) horizontal edges must coincide with ACTIVE horizontal edges",
+      "layer": "SDT.ACTIVE.AUX.2",
+      "polygon": null,
+      "rule": "SDT.ACTIVE.AUX.2",
+      "source_cell": null,
+      "source_path": null
+    },
+    {
+      "bbox": {
+        "bottom": 6048,
+        "left": 7512,
+        "right": 7608,
+        "top": 6048
+      },
+      "cell": "counter",
+      "check": "external",
+      "description": "Table 3.8.1: SDT (not interacting with SRAMDRC) horizontal edges must coincide with ACTIVE horizontal edges",
+      "layer": "SDT.ACTIVE.AUX.2",
+      "polygon": null,
+      "rule": "SDT.ACTIVE.AUX.2",
+      "source_cell": null,
+      "source_path": null
+    },
+    {
+      "bbox": {
+        "bottom": 4752,
+        "left": 10320,
+        "right": 10416,
+        "top": 4752
+      },
+      "cell": "counter",
+      "check": "external",
+      "description": "Table 3.8.1: SDT (not interacting with SRAMDRC) horizontal edges must coincide with ACTIVE horizontal edges",
+      "layer": "SDT.ACTIVE.AUX.2",
+      "polygon": null,
+      "rule": "SDT.ACTIVE.AUX.2",
+      "source_cell": null,
+      "source_path": null
+    },
+    {
+      "bbox": {
+        "bottom": 4968,
+        "left": 10320,
+        "right": 10416,
+        "top": 4968
+      },
+      "cell": "counter",
+      "check": "external",
+      "description": "Table 3.8.1: SDT (not interacting with SRAMDRC) horizontal edges must coincide with ACTIVE horizontal edges",
+      "layer": "SDT.ACTIVE.AUX.2",
+      "polygon": null,
+      "rule": "SDT.ACTIVE.AUX.2",
+      "source_cell": null,
+      "source_path": null
+    },
+    {
+      "bbox": {
+        "bottom": 4224,
+        "left": 5568,
+        "right": 6432,
+        "top": 4320
+      },
+      "cell": "counter",
+      "check": "external",
+      "description": "Table 3.15.1: min enclosure of V4 by M4 on two opposite sides 11 nm",
+      "layer": "V4.M4.EN.1",
+      "polygon": [
+        [
+          5568,
+          4224
+        ],
+        [
+          5568,
+          4320
+        ],
+        [
+          6432,
+          4320
+        ],
+        [
+          6432,
+          4224
+        ]
+      ],
+      "rule": "V4.M4.EN.1",
+      "source_cell": null,
+      "source_path": null
+    },
+    {
+      "bbox": {
+        "bottom": 6336,
+        "left": 5568,
+        "right": 6432,
+        "top": 6432
+      },
+      "cell": "counter",
+      "check": "external",
+      "description": "Table 3.15.1: min enclosure of V4 by M4 on two opposite sides 11 nm",
+      "layer": "V4.M4.EN.1",
+      "polygon": [
+        [
+          5568,
+          6336
+        ],
+        [
+          5568,
+          6432
+        ],
+        [
+          6432,
+          6432
+        ],
+        [
+          6432,
+          6336
+        ]
+      ],
+      "rule": "V4.M4.EN.1",
+      "source_cell": null,
+      "source_path": null
+    },
+    {
+      "bbox": {
+        "bottom": 8640,
+        "left": 5568,
+        "right": 6432,
+        "top": 8736
+      },
+      "cell": "counter",
+      "check": "external",
+      "description": "Table 3.15.1: min enclosure of V4 by M4 on two opposite sides 11 nm",
+      "layer": "V4.M4.EN.1",
+      "polygon": [
+        [
+          5568,
+          8640
+        ],
+        [
+          5568,
+          8736
+        ],
+        [
+          6432,
+          8736
+        ],
+        [
+          6432,
+          8640
+        ]
+      ],
+      "rule": "V4.M4.EN.1",
+      "source_cell": null,
+      "source_path": null
+    },
+    {
+      "bbox": {
+        "bottom": 10752,
+        "left": 5568,
+        "right": 6432,
+        "top": 10848
+      },
+      "cell": "counter",
+      "check": "external",
+      "description": "Table 3.15.1: min enclosure of V4 by M4 on two opposite sides 11 nm",
+      "layer": "V4.M4.EN.1",
+      "polygon": [
+        [
+          5568,
+          10752
+        ],
+        [
+          5568,
+          10848
+        ],
+        [
+          6432,
+          10848
+        ],
+        [
+          6432,
+          10752
+        ]
+      ],
+      "rule": "V4.M4.EN.1",
+      "source_cell": null,
+      "source_path": null
+    },
+    {
+      "bbox": {
+        "bottom": 12864,
+        "left": 5568,
+        "right": 6432,
+        "top": 12960
+      },
+      "cell": "counter",
+      "check": "external",
+      "description": "Table 3.15.1: min enclosure of V4 by M4 on two opposite sides 11 nm",
+      "layer": "V4.M4.EN.1",
+      "polygon": [
+        [
+          5568,
+          12864
+        ],
+        [
+          5568,
+          12960
+        ],
+        [
+          6432,
+          12960
+        ],
+        [
+          6432,
+          12864
+        ]
+      ],
+      "rule": "V4.M4.EN.1",
+      "source_cell": null,
+      "source_path": null
+    },
+    {
+      "bbox": {
+        "bottom": 14976,
+        "left": 5568,
+        "right": 6432,
+        "top": 15072
+      },
+      "cell": "counter",
+      "check": "external",
+      "description": "Table 3.15.1: min enclosure of V4 by M4 on two opposite sides 11 nm",
+      "layer": "V4.M4.EN.1",
+      "polygon": [
+        [
+          5568,
+          14976
+        ],
+        [
+          5568,
+          15072
+        ],
+        [
+          6432,
+          15072
+        ],
+        [
+          6432,
+          14976
+        ]
+      ],
+      "rule": "V4.M4.EN.1",
+      "source_cell": null,
+      "source_path": null
+    },
+    {
+      "bbox": {
+        "bottom": 5376,
+        "left": 7872,
+        "right": 8736,
+        "top": 5472
+      },
+      "cell": "counter",
+      "check": "external",
+      "description": "Table 3.15.1: min enclosure of V4 by M4 on two opposite sides 11 nm",
+      "layer": "V4.M4.EN.1",
+      "polygon": [
+        [
+          7872,
+          5376
+        ],
+        [
+          7872,
+          5472
+        ],
+        [
+          8736,
+          5472
+        ],
+        [
+          8736,
+          5376
+        ]
+      ],
+      "rule": "V4.M4.EN.1",
+      "source_cell": null,
+      "source_path": null
+    },
+    {
+      "bbox": {
+        "bottom": 7488,
+        "left": 7872,
+        "right": 8736,
+        "top": 7584
+      },
+      "cell": "counter",
+      "check": "external",
+      "description": "Table 3.15.1: min enclosure of V4 by M4 on two opposite sides 11 nm",
+      "layer": "V4.M4.EN.1",
+      "polygon": [
+        [
+          7872,
+          7488
+        ],
+        [
+          7872,
+          7584
+        ],
+        [
+          8736,
+          7584
+        ],
+        [
+          8736,
+          7488
+        ]
+      ],
+      "rule": "V4.M4.EN.1",
+      "source_cell": null,
+      "source_path": null
+    },
+    {
+      "bbox": {
+        "bottom": 9600,
+        "left": 7872,
+        "right": 8736,
+        "top": 9696
+      },
+      "cell": "counter",
+      "check": "external",
+      "description": "Table 3.15.1: min enclosure of V4 by M4 on two opposite sides 11 nm",
+      "layer": "V4.M4.EN.1",
+      "polygon": [
+        [
+          7872,
+          9600
+        ],
+        [
+          7872,
+          9696
+        ],
+        [
+          8736,
+          9696
+        ],
+        [
+          8736,
+          9600
+        ]
+      ],
+      "rule": "V4.M4.EN.1",
+      "source_cell": null,
+      "source_path": null
+    },
+    {
+      "bbox": {
+        "bottom": 11904,
+        "left": 7872,
+        "right": 8736,
+        "top": 12000
+      },
+      "cell": "counter",
+      "check": "external",
+      "description": "Table 3.15.1: min enclosure of V4 by M4 on two opposite sides 11 nm",
+      "layer": "V4.M4.EN.1",
+      "polygon": [
+        [
+          7872,
+          11904
+        ],
+        [
+          7872,
+          12000
+        ],
+        [
+          8736,
+          12000
+        ],
+        [
+          8736,
+          11904
+        ]
+      ],
+      "rule": "V4.M4.EN.1",
+      "source_cell": null,
+      "source_path": null
+    },
+    {
+      "bbox": {
+        "bottom": 14016,
+        "left": 7872,
+        "right": 8736,
+        "top": 14112
+      },
+      "cell": "counter",
+      "check": "external",
+      "description": "Table 3.15.1: min enclosure of V4 by M4 on two opposite sides 11 nm",
+      "layer": "V4.M4.EN.1",
+      "polygon": [
+        [
+          7872,
+          14016
+        ],
+        [
+          7872,
+          14112
+        ],
+        [
+          8736,
+          14112
+        ],
+        [
+          8736,
+          14016
+        ]
+      ],
+      "rule": "V4.M4.EN.1",
+      "source_cell": null,
+      "source_path": null
+    },
+    {
+      "bbox": {
+        "bottom": 4224,
+        "left": 10176,
+        "right": 11040,
+        "top": 4320
+      },
+      "cell": "counter",
+      "check": "external",
+      "description": "Table 3.15.1: min enclosure of V4 by M4 on two opposite sides 11 nm",
+      "layer": "V4.M4.EN.1",
+      "polygon": [
+        [
+          10176,
+          4224
+        ],
+        [
+          10176,
+          4320
+        ],
+        [
+          11040,
+          4320
+        ],
+        [
+          11040,
+          4224
+        ]
+      ],
+      "rule": "V4.M4.EN.1",
+      "source_cell": null,
+      "source_path": null
+    },
+    {
+      "bbox": {
+        "bottom": 6336,
+        "left": 10176,
+        "right": 11040,
+        "top": 6432
+      },
+      "cell": "counter",
+      "check": "external",
+      "description": "Table 3.15.1: min enclosure of V4 by M4 on two opposite sides 11 nm",
+      "layer": "V4.M4.EN.1",
+      "polygon": [
+        [
+          10176,
+          6336
+        ],
+        [
+          10176,
+          6432
+        ],
+        [
+          11040,
+          6432
+        ],
+        [
+          11040,
+          6336
+        ]
+      ],
+      "rule": "V4.M4.EN.1",
+      "source_cell": null,
+      "source_path": null
+    },
+    {
+      "bbox": {
+        "bottom": 8640,
+        "left": 10176,
+        "right": 11040,
+        "top": 8736
+      },
+      "cell": "counter",
+      "check": "external",
+      "description": "Table 3.15.1: min enclosure of V4 by M4 on two opposite sides 11 nm",
+      "layer": "V4.M4.EN.1",
+      "polygon": [
+        [
+          10176,
+          8640
+        ],
+        [
+          10176,
+          8736
+        ],
+        [
+          11040,
+          8736
+        ],
+        [
+          11040,
+          8640
+        ]
+      ],
+      "rule": "V4.M4.EN.1",
+      "source_cell": null,
+      "source_path": null
+    },
+    {
+      "bbox": {
+        "bottom": 10752,
+        "left": 10176,
+        "right": 11040,
+        "top": 10848
+      },
+      "cell": "counter",
+      "check": "external",
+      "description": "Table 3.15.1: min enclosure of V4 by M4 on two opposite sides 11 nm",
+      "layer": "V4.M4.EN.1",
+      "polygon": [
+        [
+          10176,
+          10752
+        ],
+        [
+          10176,
+          10848
+        ],
+        [
+          11040,
+          10848
+        ],
+        [
+          11040,
+          10752
+        ]
+      ],
+      "rule": "V4.M4.EN.1",
+      "source_cell": null,
+      "source_path": null
+    },
+    {
+      "bbox": {
+        "bottom": 12864,
+        "left": 10176,
+        "right": 11040,
+        "top": 12960
+      },
+      "cell": "counter",
+      "check": "external",
+      "description": "Table 3.15.1: min enclosure of V4 by M4 on two opposite sides 11 nm",
+      "layer": "V4.M4.EN.1",
+      "polygon": [
+        [
+          10176,
+          12864
+        ],
+        [
+          10176,
+          12960
+        ],
+        [
+          11040,
+          12960
+        ],
+        [
+          11040,
+          12864
+        ]
+      ],
+      "rule": "V4.M4.EN.1",
+      "source_cell": null,
+      "source_path": null
+    },
+    {
+      "bbox": {
+        "bottom": 14976,
+        "left": 10176,
+        "right": 11040,
+        "top": 15072
+      },
+      "cell": "counter",
+      "check": "external",
+      "description": "Table 3.15.1: min enclosure of V4 by M4 on two opposite sides 11 nm",
+      "layer": "V4.M4.EN.1",
+      "polygon": [
+        [
+          10176,
+          14976
+        ],
+        [
+          10176,
+          15072
+        ],
+        [
+          11040,
+          15072
+        ],
+        [
+          11040,
+          14976
+        ]
+      ],
+      "rule": "V4.M4.EN.1",
+      "source_cell": null,
+      "source_path": null
+    },
+    {
+      "bbox": {
+        "bottom": 5376,
+        "left": 12480,
+        "right": 13344,
+        "top": 5472
+      },
+      "cell": "counter",
+      "check": "external",
+      "description": "Table 3.15.1: min enclosure of V4 by M4 on two opposite sides 11 nm",
+      "layer": "V4.M4.EN.1",
+      "polygon": [
+        [
+          12480,
+          5376
+        ],
+        [
+          12480,
+          5472
+        ],
+        [
+          13344,
+          5472
+        ],
+        [
+          13344,
+          5376
+        ]
+      ],
+      "rule": "V4.M4.EN.1",
+      "source_cell": null,
+      "source_path": null
+    },
+    {
+      "bbox": {
+        "bottom": 7488,
+        "left": 12480,
+        "right": 13344,
+        "top": 7584
+      },
+      "cell": "counter",
+      "check": "external",
+      "description": "Table 3.15.1: min enclosure of V4 by M4 on two opposite sides 11 nm",
+      "layer": "V4.M4.EN.1",
+      "polygon": [
+        [
+          12480,
+          7488
+        ],
+        [
+          12480,
+          7584
+        ],
+        [
+          13344,
+          7584
+        ],
+        [
+          13344,
+          7488
+        ]
+      ],
+      "rule": "V4.M4.EN.1",
+      "source_cell": null,
+      "source_path": null
+    },
+    {
+      "bbox": {
+        "bottom": 9600,
+        "left": 12480,
+        "right": 13344,
+        "top": 9696
+      },
+      "cell": "counter",
+      "check": "external",
+      "description": "Table 3.15.1: min enclosure of V4 by M4 on two opposite sides 11 nm",
+      "layer": "V4.M4.EN.1",
+      "polygon": [
+        [
+          12480,
+          9600
+        ],
+        [
+          12480,
+          9696
+        ],
+        [
+          13344,
+          9696
+        ],
+        [
+          13344,
+          9600
+        ]
+      ],
+      "rule": "V4.M4.EN.1",
+      "source_cell": null,
+      "source_path": null
+    },
+    {
+      "bbox": {
+        "bottom": 11904,
+        "left": 12480,
+        "right": 13344,
+        "top": 12000
+      },
+      "cell": "counter",
+      "check": "external",
+      "description": "Table 3.15.1: min enclosure of V4 by M4 on two opposite sides 11 nm",
+      "layer": "V4.M4.EN.1",
+      "polygon": [
+        [
+          12480,
+          11904
+        ],
+        [
+          12480,
+          12000
+        ],
+        [
+          13344,
+          12000
+        ],
+        [
+          13344,
+          11904
+        ]
+      ],
+      "rule": "V4.M4.EN.1",
+      "source_cell": null,
+      "source_path": null
+    },
+    {
+      "bbox": {
+        "bottom": 14016,
+        "left": 12480,
+        "right": 13344,
+        "top": 14112
+      },
+      "cell": "counter",
+      "check": "external",
+      "description": "Table 3.15.1: min enclosure of V4 by M4 on two opposite sides 11 nm",
+      "layer": "V4.M4.EN.1",
+      "polygon": [
+        [
+          12480,
+          14016
+        ],
+        [
+          12480,
+          14112
+        ],
+        [
+          13344,
+          14112
+        ],
+        [
+          13344,
+          14016
+        ]
+      ],
+      "rule": "V4.M4.EN.1",
+      "source_cell": null,
+      "source_path": null
+    },
+    {
+      "bbox": {
+        "bottom": 4224,
+        "left": 14784,
+        "right": 15648,
+        "top": 4320
+      },
+      "cell": "counter",
+      "check": "external",
+      "description": "Table 3.15.1: min enclosure of V4 by M4 on two opposite sides 11 nm",
+      "layer": "V4.M4.EN.1",
+      "polygon": [
+        [
+          14784,
+          4224
+        ],
+        [
+          14784,
+          4320
+        ],
+        [
+          15648,
+          4320
+        ],
+        [
+          15648,
+          4224
+        ]
+      ],
+      "rule": "V4.M4.EN.1",
+      "source_cell": null,
+      "source_path": null
+    },
+    {
+      "bbox": {
+        "bottom": 6336,
+        "left": 14784,
+        "right": 15648,
+        "top": 6432
+      },
+      "cell": "counter",
+      "check": "external",
+      "description": "Table 3.15.1: min enclosure of V4 by M4 on two opposite sides 11 nm",
+      "layer": "V4.M4.EN.1",
+      "polygon": [
+        [
+          14784,
+          6336
+        ],
+        [
+          14784,
+          6432
+        ],
+        [
+          15648,
+          6432
+        ],
+        [
+          15648,
+          6336
+        ]
+      ],
+      "rule": "V4.M4.EN.1",
+      "source_cell": null,
+      "source_path": null
+    },
+    {
+      "bbox": {
+        "bottom": 8640,
+        "left": 14784,
+        "right": 15648,
+        "top": 8736
+      },
+      "cell": "counter",
+      "check": "external",
+      "description": "Table 3.15.1: min enclosure of V4 by M4 on two opposite sides 11 nm",
+      "layer": "V4.M4.EN.1",
+      "polygon": [
+        [
+          14784,
+          8640
+        ],
+        [
+          14784,
+          8736
+        ],
+        [
+          15648,
+          8736
+        ],
+        [
+          15648,
+          8640
+        ]
+      ],
+      "rule": "V4.M4.EN.1",
+      "source_cell": null,
+      "source_path": null
+    },
+    {
+      "bbox": {
+        "bottom": 10752,
+        "left": 14784,
+        "right": 15648,
+        "top": 10848
+      },
+      "cell": "counter",
+      "check": "external",
+      "description": "Table 3.15.1: min enclosure of V4 by M4 on two opposite sides 11 nm",
+      "layer": "V4.M4.EN.1",
+      "polygon": [
+        [
+          14784,
+          10752
+        ],
+        [
+          14784,
+          10848
+        ],
+        [
+          15648,
+          10848
+        ],
+        [
+          15648,
+          10752
+        ]
+      ],
+      "rule": "V4.M4.EN.1",
+      "source_cell": null,
+      "source_path": null
+    },
+    {
+      "bbox": {
+        "bottom": 12864,
+        "left": 14784,
+        "right": 15648,
+        "top": 12960
+      },
+      "cell": "counter",
+      "check": "external",
+      "description": "Table 3.15.1: min enclosure of V4 by M4 on two opposite sides 11 nm",
+      "layer": "V4.M4.EN.1",
+      "polygon": [
+        [
+          14784,
+          12864
+        ],
+        [
+          14784,
+          12960
+        ],
+        [
+          15648,
+          12960
+        ],
+        [
+          15648,
+          12864
+        ]
+      ],
+      "rule": "V4.M4.EN.1",
+      "source_cell": null,
+      "source_path": null
+    },
+    {
+      "bbox": {
+        "bottom": 14976,
+        "left": 14784,
+        "right": 15648,
+        "top": 15072
+      },
+      "cell": "counter",
+      "check": "external",
+      "description": "Table 3.15.1: min enclosure of V4 by M4 on two opposite sides 11 nm",
+      "layer": "V4.M4.EN.1",
+      "polygon": [
+        [
+          14784,
+          14976
+        ],
+        [
+          14784,
+          15072
+        ],
+        [
+          15648,
+          15072
+        ],
+        [
+          15648,
+          14976
+        ]
+      ],
+      "rule": "V4.M4.EN.1",
+      "source_cell": null,
+      "source_path": null
+    },
+    {
+      "bbox": {
+        "bottom": 4224,
+        "left": 5568,
+        "right": 6432,
+        "top": 4320
+      },
+      "cell": "counter",
+      "check": "external",
+      "description": "Table 3.15.1: min enclosure of V4 by M5 on at least two opposite sides 11 nm",
+      "layer": "V4.M5.EN.2",
+      "polygon": [
+        [
+          5568,
+          4224
+        ],
+        [
+          5568,
+          4320
+        ],
+        [
+          6432,
+          4320
+        ],
+        [
+          6432,
+          4224
+        ]
+      ],
+      "rule": "V4.M5.EN.2",
+      "source_cell": null,
+      "source_path": null
+    },
+    {
+      "bbox": {
+        "bottom": 5376,
+        "left": 7872,
+        "right": 8736,
+        "top": 5472
+      },
+      "cell": "counter",
+      "check": "external",
+      "description": "Table 3.15.1: min enclosure of V4 by M5 on at least two opposite sides 11 nm",
+      "layer": "V4.M5.EN.2",
+      "polygon": [
+        [
+          7872,
+          5376
+        ],
+        [
+          7872,
+          5472
+        ],
+        [
+          8736,
+          5472
+        ],
+        [
+          8736,
+          5376
+        ]
+      ],
+      "rule": "V4.M5.EN.2",
+      "source_cell": null,
+      "source_path": null
+    },
+    {
+      "bbox": {
+        "bottom": 14016,
+        "left": 7872,
+        "right": 8736,
+        "top": 14112
+      },
+      "cell": "counter",
+      "check": "external",
+      "description": "Table 3.15.1: min enclosure of V4 by M5 on at least two opposite sides 11 nm",
+      "layer": "V4.M5.EN.2",
+      "polygon": [
+        [
+          7872,
+          14016
+        ],
+        [
+          7872,
+          14112
+        ],
+        [
+          8736,
+          14112
+        ],
+        [
+          8736,
+          14016
+        ]
+      ],
+      "rule": "V4.M5.EN.2",
+      "source_cell": null,
+      "source_path": null
+    },
+    {
+      "bbox": {
+        "bottom": 4224,
+        "left": 10176,
+        "right": 11040,
+        "top": 4320
+      },
+      "cell": "counter",
+      "check": "external",
+      "description": "Table 3.15.1: min enclosure of V4 by M5 on at least two opposite sides 11 nm",
+      "layer": "V4.M5.EN.2",
+      "polygon": [
+        [
+          10176,
+          4224
+        ],
+        [
+          10176,
+          4320
+        ],
+        [
+          11040,
+          4320
+        ],
+        [
+          11040,
+          4224
+        ]
+      ],
+      "rule": "V4.M5.EN.2",
+      "source_cell": null,
+      "source_path": null
+    },
+    {
+      "bbox": {
+        "bottom": 5376,
+        "left": 12480,
+        "right": 13344,
+        "top": 5472
+      },
+      "cell": "counter",
+      "check": "external",
+      "description": "Table 3.15.1: min enclosure of V4 by M5 on at least two opposite sides 11 nm",
+      "layer": "V4.M5.EN.2",
+      "polygon": [
+        [
+          12480,
+          5376
+        ],
+        [
+          12480,
+          5472
+        ],
+        [
+          13344,
+          5472
+        ],
+        [
+          13344,
+          5376
+        ]
+      ],
+      "rule": "V4.M5.EN.2",
+      "source_cell": null,
+      "source_path": null
+    },
+    {
+      "bbox": {
+        "bottom": 14016,
+        "left": 12480,
+        "right": 13344,
+        "top": 14112
+      },
+      "cell": "counter",
+      "check": "external",
+      "description": "Table 3.15.1: min enclosure of V4 by M5 on at least two opposite sides 11 nm",
+      "layer": "V4.M5.EN.2",
+      "polygon": [
+        [
+          12480,
+          14016
+        ],
+        [
+          12480,
+          14112
+        ],
+        [
+          13344,
+          14112
+        ],
+        [
+          13344,
+          14016
+        ]
+      ],
+      "rule": "V4.M5.EN.2",
+      "source_cell": null,
+      "source_path": null
+    },
+    {
+      "bbox": {
+        "bottom": 4224,
+        "left": 14784,
+        "right": 15648,
+        "top": 4320
+      },
+      "cell": "counter",
+      "check": "external",
+      "description": "Table 3.15.1: min enclosure of V4 by M5 on at least two opposite sides 11 nm",
+      "layer": "V4.M5.EN.2",
+      "polygon": [
+        [
+          14784,
+          4224
+        ],
+        [
+          14784,
+          4320
+        ],
+        [
+          15648,
+          4320
+        ],
+        [
+          15648,
+          4224
+        ]
+      ],
+      "rule": "V4.M5.EN.2",
+      "source_cell": null,
+      "source_path": null
+    }
+  ]
+}
