@@ -39,6 +39,7 @@ Issues currently being built (`loom:building`).
 - **#225**: Smoke flow: apply the classified flow-setting fixes (track offsets, on-grid PDN, LVS flatten recipe) and commit a new counter record
 - **#226**: Write the klt erc supply spec for VDD/VSS and exercise it on the routed counter before the core
 - **#230**: Run the offline lockstep comparator self-test in harness CI
+- **#241**: flow/merge_lib.py drops appended groups' table templates: merged Liberty loses SEQ delay tables, sta reports incomplete constraints
 
 ## PRs Awaiting Review
 
@@ -66,6 +67,7 @@ Issues carrying `loom:curated`.
 - **#225**: Smoke flow: apply the classified flow-setting fixes (track offsets, on-grid PDN, LVS flatten recipe) and commit a new counter record *(curated)*
 - **#226**: Write the klt erc supply spec for VDD/VSS and exercise it on the routed counter before the core *(curated)*
 - **#230**: Run the offline lockstep comparator self-test in harness CI *(curated)*
+- **#241**: flow/merge_lib.py drops appended groups' table templates: merged Liberty loses SEQ delay tables, sta reports incomplete constraints *(curated)*
 
 ## Proposed (Architect / Hermit)
 
@@ -83,10 +85,10 @@ _None._
 | Very important | 1 |
 | Important | 3 |
 | Ready (`loom:issue`) | 0 |
-| In Progress (`loom:building`) | 5 |
+| In Progress (`loom:building`) | 6 |
 | PRs awaiting review | 4 |
 | Approved PRs awaiting merge | 0 |
-| Curated | 7 |
+| Curated | 8 |
 | Architect / Hermit proposals | 1 |
 | Active epics | 0 |
 <!-- guide:plan-body:end -->
