@@ -46,6 +46,7 @@ sys.path.insert(0, str(HERE))  # lockstep.sh runs this with -I, which drops the 
 
 import spike_trace as st  # noqa: E402
 from archtest_common import REPO, paths  # noqa: E402
+from fv import scrub  # noqa: E402
 
 BUILD = REPO / "verification" / "build"
 TOP = "cve2_rv32imc_wrapper"
@@ -100,18 +101,6 @@ def disasm(p, elf) -> dict:
                          check=True, capture_output=True, text=True).stdout
     return {int(m.group(1), 16): m.group(2).strip()
             for m in re.finditer(r"^\s*([0-9a-f]+):\s+(?:[0-9a-f]+\s+)+(.*)$", out, re.M)}
-
-
-def scrub(obj, subs):
-    if isinstance(obj, str):
-        for path, tag in subs:
-            obj = obj.replace(path, tag)
-        return obj
-    if isinstance(obj, list):
-        return [scrub(x, subs) for x in obj]
-    if isinstance(obj, dict):
-        return {k: scrub(v, subs) for k, v in obj.items()}
-    return obj
 
 
 def reference_for(elf, tohost):
