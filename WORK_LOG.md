@@ -5,6 +5,7 @@ triage role. Newest first.
 
 ### 2026-11-24
 
+- **PR #278**: feat(flow/core): record the first core DRC run on the routed GDS, waive router/PDN markers and disclose the SDT shipped-cell deviation
 - **PR #275**: docs: drop the hand-typed _Generated: stamp from WORK_PLAN.md
 - **Issue #274** (closed): WORK_PLAN.md's _Generated: stamp is hand-typed, not captured: #272's value postdates its own commit by 14 minutes
 - **PR #273**: fix: refuse par.sh --check when the selected netlist differs from the par.json input pin

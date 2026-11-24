@@ -26,15 +26,15 @@ _None._
 
 Human-approved issues ready for implementation (`loom:issue`).
 
-- **#30**: T1 item 4 (LVS clean): klt lvs of the routed core vs the gate-level netlist with power_connectivity match
+_None._
 
 ## In Progress
 
 Issues currently being built (`loom:building`).
 
+- **#30**: T1 item 4 (LVS clean): klt lvs of the routed core vs the gate-level netlist with power_connectivity match
 - **#200**: Fetch ASAP7 cell models only when preparing gate-level tests
 - **#241**: flow/merge_lib.py drops appended groups' table templates: merged Liberty loses SEQ delay tables, sta reports incomplete constraints
-- **#266**: par.sh --check routes the newest netlist at HEAD, not the one item 2's evidence pins
 
 ## PRs Awaiting Review
 
@@ -56,11 +56,11 @@ Issues carrying `loom:curated`.
 - **#29**: T1 item 3 (DRC clean): klt drc on the routed core GDS against the pinned 263-category deck *(curated)*
 - **#30**: T1 item 4 (LVS clean): klt lvs of the routed core vs the gate-level netlist with power_connectivity match *(curated)*
 - **#31**: T1 item 11 (power delivery): klt erc supply spec and PDN evidence for the routed core *(curated)*
+- **#32**: T1 item 5 (corner verification): multi-corner klt sta and klt functional-verification on the post-route core *(curated)*
 - **#122**: Commit the latch-mapped core netlist and re-attest T1 item 1 for layout #28 *(curated)*
 - **#174**: Decisions 0012 (klt 0.9.0 pin) and 0013 still read "proposed" while spec/core.md already carries their pins *(curated)*
 - **#226**: Write the klt erc supply spec for VDD/VSS and exercise it on the routed counter before the core *(curated)*
 - **#241**: flow/merge_lib.py drops appended groups' table templates: merged Liberty loses SEQ delay tables, sta reports incomplete constraints *(curated)*
-- **#266**: par.sh --check routes the newest netlist at HEAD, not the one item 2's evidence pins *(curated)*
 
 ## Proposed (Architect / Hermit)
 
@@ -78,7 +78,7 @@ _None._
 | Operator merge-risk holds | 0 |
 | Very important | 0 |
 | Important | 2 |
-| Ready (`loom:issue`) | 1 |
+| Ready (`loom:issue`) | 0 |
 | In Progress (`loom:building`) | 3 |
 | PRs awaiting review | 1 |
 | Approved PRs awaiting merge | 0 |
