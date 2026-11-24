@@ -3,6 +3,7 @@
   "kind": "digital",
   "evidence": {
     "1": {"file": "evidence/item1.json", "content_hash": "sha256:2c1b4cacc00c561393764d63bbb4a2e604e73d656b0b126f6757906339b0e7cb"},
+    "2": {"file": "evidence/item2.json", "content_hash": "sha256:abaf794b569e5956e5f4340e1ffc5ae5e6395b087ef7cf91f83591d3cec407e1"},
     "6": {
       "not_applicable": {
         "spec": {"file": "spec/core.rows.json", "content_hash": "sha256:1c3fb7e690aa7c7b186568dccc833a9c675e6905ae9e535854e40fbf56d89b95"},
