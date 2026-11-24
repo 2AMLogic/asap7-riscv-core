@@ -385,5 +385,110 @@ RECORD_DATE=2026-11-29 STUB_GDS_CONTENT="publish-retry-gds" STUB_RESPONSE_JSON="
 eq "retry after a failed publish exits 0" 0 "$rc"
 eq "retry publishes the new layout" "publish-retry-gds" "$(cat "$FX/layout/cve2_top.gds")"
 
+# 10. --check input pin (issue #266): the byte-compare validates the newest
+# committed par.json's regeneration claim, so --check must first refuse unless
+# the netlist selected at HEAD is the one that record pins in
+# core_flow.input_netlist -- otherwise a newer committed netlist (a
+# re-synthesis, #122) would be routed while the evidence pins the older one,
+# and the compare would report an unexplained GDS difference instead of the
+# moved input. Record mode is untouched: it is how a moved input is re-pinned.
+# No par.json is committed yet (the 2026-11-22 one from case 3 and the
+# 2026-11-29 one from case 9 are working-tree only, invisible to Git reads),
+# so the first case is the first-run edge: no pin to compare against, the
+# byte-compare decides, behaviour unchanged.
+NL_SHA="$(git -C "$FX" show HEAD:flow/core/records/2026-11-20/netlist.v | sha256sum | cut -d' ' -f1)"
+rm -f "$W/seen10a.sha"
+rc=0
+STUB_GDS_CONTENT="committed-gds-v1" STUB_RESPONSE_JSON="$VALID_RESP" \
+  STUB_NETLIST_SEEN="$W/seen10a.sha" \
+  run_par bash "$FX/flow/core/par.sh" "$FA" --check >"$W/pin_none.err" 2>&1 || rc=$?
+eq "--check with no committed par.json keeps first-run behaviour (exit 0)" 0 "$rc"
+eq "no-par.json --check still routes the selected netlist" "$NL_SHA" "$(cat "$W/seen10a.sha" 2>/dev/null)"
+
+# Two committed records: the older pins a stale input, the newest pins the
+# netlist HEAD selects. --check must compare against the newest, not the
+# older, and pass.
+mkdir -p "$FX/flow/core/records/2026-11-21"
+printf '{"core_flow":{"input_netlist":{"path":"flow/core/records/2026-11-03/netlist.v","sha256":"%064d"}}}\n' 0 \
+  >"$FX/flow/core/records/2026-11-21/par.json"
+printf '{"core_flow":{"input_netlist":{"path":"flow/core/records/2026-11-20/netlist.v","sha256":"%s"}}}\n' "$NL_SHA" \
+  >"$FX/flow/core/records/2026-11-22/par.json"
+git -C "$FX" add flow/core/records/2026-11-21/par.json flow/core/records/2026-11-22/par.json
+git -C "$FX" -c user.email=t@t -c user.name=t commit -q -m "commit two par records"
+rm -f "$W/seen10b.sha"
+rc=0
+STUB_GDS_CONTENT="committed-gds-v1" STUB_RESPONSE_JSON="$VALID_RESP" \
+  STUB_NETLIST_SEEN="$W/seen10b.sha" \
+  run_par bash "$FX/flow/core/par.sh" "$FA" --check >"$W/pin_match.err" 2>&1 || rc=$?
+eq "--check exits 0 when the newest par.json pins the selected netlist" 0 "$rc"
+eq "pin-match --check routes the selected netlist" "$NL_SHA" "$(cat "$W/seen10b.sha" 2>/dev/null)"
+
+# A newer committed netlist moves the selection off the pinned input: --check
+# refuses (exit 1) naming both path+hash pairs, before any routing.
+mkdir -p "$FX/flow/core/records/2026-11-24"
+printf 'module cve2_rv32imc_wrapper_resynth(input clk_i);\nendmodule\n' \
+  >"$FX/flow/core/records/2026-11-24/netlist.v"
+NEW_NL_SHA="$(sha256sum "$FX/flow/core/records/2026-11-24/netlist.v" | cut -d' ' -f1)"
+git -C "$FX" add flow/core/records/2026-11-24/netlist.v
+git -C "$FX" -c user.email=t@t -c user.name=t commit -q -m "commit newer netlist"
+rm -f "$W/seen10c.sha"
+rc=0
+STUB_GDS_CONTENT="committed-gds-v1" STUB_RESPONSE_JSON="$VALID_RESP" \
+  STUB_NETLIST_SEEN="$W/seen10c.sha" \
+  run_par bash "$FX/flow/core/par.sh" "$FA" --check >"$W/pin_mismatch.err" 2>&1 || rc=$?
+eq "--check exits 1 when the selected netlist is not the pinned input" 1 "$rc"
+if [[ ! -e "$W/seen10c.sha" ]]; then
+  ok "pin mismatch refuses before routing"
+else
+  no "pin mismatch refuses before routing"
+fi
+for want in "flow/core/records/2026-11-24/netlist.v" "$NEW_NL_SHA" \
+            "flow/core/records/2026-11-22/par.json" \
+            "flow/core/records/2026-11-20/netlist.v" "$NL_SHA"; do
+  if grep -qF "$want" "$W/pin_mismatch.err"; then
+    ok "mismatch message names $want"
+  else
+    no "mismatch message names $want"
+  fi
+done
+
+# Record mode is how a moved input is re-pinned: it routes the newest netlist
+# and writes the record pinning it; committing that record restores --check.
+rm -f "$W/seen10d.sha"
+rc=0
+RECORD_DATE=2026-12-01 STUB_GDS_CONTENT="router-gds-v4" STUB_RESPONSE_JSON="$VALID_RESP" \
+  STUB_NETLIST_SEEN="$W/seen10d.sha" \
+  run_par bash "$FX/flow/core/par.sh" "$FA" >"$W/pin_rec.err" 2>&1 || rc=$?
+eq "record mode is not gated by the pin (exit 0)" 0 "$rc"
+eq "record mode routes the newest netlist" "$NEW_NL_SHA" "$(cat "$W/seen10d.sha" 2>/dev/null)"
+if grep -q "$NEW_NL_SHA" "$FX/flow/core/records/2026-12-01/par.json" \
+   && grep -q 'flow/core/records/2026-11-24/netlist.v' "$FX/flow/core/records/2026-12-01/par.json"; then
+  ok "the refreshed par.json pins the new input"
+else
+  no "the refreshed par.json pins the new input"
+fi
+git -C "$FX" add flow/core/records/2026-12-01 layout/cve2_top.gds
+git -C "$FX" -c user.email=t@t -c user.name=t commit -q -m "commit refreshed record and layout"
+rc=0
+STUB_GDS_CONTENT="router-gds-v4" STUB_RESPONSE_JSON="$VALID_RESP" \
+  run_par bash "$FX/flow/core/par.sh" "$FA" --check >"$W/pin_rematch.err" 2>&1 || rc=$?
+eq "--check exits 0 again once the newest par.json re-pins the input" 0 "$rc"
+
+# A committed par.json without core_flow.input_netlist is a broken record:
+# --check fails closed instead of silently skipping the pin comparison.
+mkdir -p "$FX/flow/core/records/2026-12-02"
+printf '{"note":"not a par record"}\n' >"$FX/flow/core/records/2026-12-02/par.json"
+git -C "$FX" add flow/core/records/2026-12-02/par.json
+git -C "$FX" -c user.email=t@t -c user.name=t commit -q -m "commit broken par record"
+rc=0
+STUB_GDS_CONTENT="router-gds-v4" STUB_RESPONSE_JSON="$VALID_RESP" \
+  run_par bash "$FX/flow/core/par.sh" "$FA" --check >"$W/pin_broken.err" 2>&1 || rc=$?
+eq "--check fails closed on a par.json without core_flow.input_netlist" 1 "$rc"
+if grep -q "2026-12-02/par.json" "$W/pin_broken.err"; then
+  ok "broken-record refusal names the par.json"
+else
+  no "broken-record refusal names the par.json"
+fi
+
 echo "1..$((NPASS + NBAD)) pass=$NPASS fail=$NBAD"
 [[ "$NBAD" -eq 0 ]]

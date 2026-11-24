@@ -5,8 +5,11 @@
 # with the decision 0004 floorplan (60 % utilisation, aspect 1.0, single
 # block, no macro) and the pinned PDK inputs, and writes the routed GDS to
 # layout/cve2_top.gds plus a par record under flow/core/records/<date>/, or,
-# with --check, regenerates the GDS, validates the response, and byte-compares
-# it with the committed HEAD:layout/cve2_top.gds.
+# with --check, refuse unless the netlist selected at HEAD is the one the
+# newest committed flow/core/records/<date>/par.json pins in
+# core_flow.input_netlist (a moved input fails the regeneration claim before
+# anything is routed), then regenerate the GDS, validate the response, and
+# byte-compare it with the committed HEAD:layout/cve2_top.gds.
 #
 # ASAP7 is a predictive PDK; nothing here is fabricated or measured. The
 # flow claims no timing: the clock constraint is passed to the tool and any
@@ -48,9 +51,12 @@
 #
 # Exit status: 0 ok (and, with --check, byte-identical to
 # HEAD:layout/cve2_top.gds); 1 a step failed, the response failed validation,
-# a staged record leaked a host path, or --check found a difference; 2 refused
-# invocation -- including --check finding no committed HEAD:layout/cve2_top.gds
-# to compare against at all (a refusal, not a difference).
+# a staged record leaked a host path, or --check found a difference -- a GDS
+# byte difference, or the selected netlist not being the one the newest
+# committed par.json pins, or that record having no readable input pin; 2
+# refused invocation -- including --check finding no committed
+# HEAD:layout/cve2_top.gds to compare against at all (a refusal, not a
+# difference).
 set -euo pipefail
 
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
@@ -132,6 +138,42 @@ git -C "$REPO" cat-file blob "$INPUT_REV:$NETLIST_SRC" >"$NETLIST_IN" \
   || die "cannot read $NETLIST_SRC at $INPUT_REV" 1
 [[ -s "$NETLIST_IN" ]] || die "committed $NETLIST_SRC is empty" 1
 NETLIST_SHA="$(sha "$NETLIST_IN")"
+
+# ---- --check input pin ------------------------------------------------------
+# The byte-compare validates the newest committed par.json's regeneration
+# claim, so --check must refuse unless the netlist just selected is the one
+# that record pins in core_flow.input_netlist. Without this gate a newer
+# committed netlist (a re-synthesis) would be routed while the evidence pins
+# the older one, and the compare would report an unexplained GDS difference
+# instead of the moved input. The pin is read from Git at INPUT_REV, like the
+# netlist itself, so working-tree records cannot self-verify; with no
+# committed par.json at all (first run) there is no pin and behaviour is
+# unchanged. Record mode never passes this gate: it is how a moved input is
+# re-pinned, routing the newest netlist and writing the record that pins it.
+if [[ $CHECK == 1 ]]; then
+  PIN_PAR="$(git -C "$REPO" ls-tree -r --name-only "$INPUT_REV" -- flow/core/records/ \
+    | grep -E '^flow/core/records/[^/]+/par\.json$' | LC_ALL=C sort | tail -n 1)" || true
+  if [[ -n "$PIN_PAR" ]]; then
+    if ! PIN_ROW="$(python3 -I - "$REPO" "$INPUT_REV" "$PIN_PAR" <<'PY'
+import json, subprocess, sys
+repo, rev, path = sys.argv[1:4]
+blob = subprocess.run(["git", "-C", repo, "cat-file", "blob", f"{rev}:{path}"],
+                      check=True, capture_output=True).stdout
+try:
+    pin = json.loads(blob)["core_flow"]["input_netlist"]
+    print(f"{pin['path']}\t{pin['sha256']}")
+except Exception as e:
+    sys.exit(f"cannot read core_flow.input_netlist from {path}: {e}")
+PY
+)"; then
+      die "--check cannot read the input pin: $PIN_PAR at ${INPUT_REV:0:12} has no readable core_flow.input_netlist (a committed par.json without it is a broken record)" 1
+    fi
+    IFS=$'\t' read -r PIN_NL_PATH PIN_NL_SHA <<<"$PIN_ROW"
+    if [[ "$PIN_NL_SHA" != "$NETLIST_SHA" ]]; then
+      die "--check input pin mismatch: HEAD selects $NETLIST_SRC (sha256:$NETLIST_SHA) but the newest committed record $PIN_PAR pins $PIN_NL_PATH (sha256:$PIN_NL_SHA); rerun without --check to write the record that re-pins the new input" 1
+    fi
+  fi
+fi
 cp "$NETLIST_IN" "$W/${TOP}_synth.v"
 
 # ---- PDK overlay in scratch (the checkout is read only) ------------------
