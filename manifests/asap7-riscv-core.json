@@ -4,6 +4,7 @@
   "evidence": {
     "1": {"file": "evidence/item1.json", "content_hash": "sha256:2c1b4cacc00c561393764d63bbb4a2e604e73d656b0b126f6757906339b0e7cb"},
     "2": {"file": "evidence/item2.json", "content_hash": "sha256:abaf794b569e5956e5f4340e1ffc5ae5e6395b087ef7cf91f83591d3cec407e1"},
+    "3": {"file": "flow/core/records/2026-11-24/drc.json", "content_hash": "sha256:252b1ef88ca5da3a977bb12629e021e98a1aaf992e535c29c97b8dc9d8c27f0b"},
     "6": {
       "not_applicable": {
         "spec": {"file": "spec/core.rows.json", "content_hash": "sha256:1c3fb7e690aa7c7b186568dccc833a9c675e6905ae9e535854e40fbf56d89b95"},

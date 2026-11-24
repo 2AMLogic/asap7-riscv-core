@@ -1,0 +1,11 @@
+# Tool and input versions for flow/core/drc.sh (predictive PDK; nothing here is fabricated)
+klt:          klt 0.9.0  (klayout-tools==0.9.0)
+yosys:        Yosys 0.67+post (git sha1 b8e7da6f40ae8f552c116bf6c359b07c6533e159, Release, GNU /usr/bin/c++ 13.3.0)
+python:       Python 3.12.3
+uv:           uvx 0.13.9 (x86_64-unknown-linux-gnu)
+py7zr:        1.1.4
+asap7:        d24f8b857ff74cf5b21ab18a7e1b11a3954c449b
+asap7sc7p5t_28: f970bd3c3292b79ae4d022a3ec80533534614066
+pinned_drc_deck: sha256:14f146f02cd731de3e0b59452eadfdab9c2c947724a219a1002a31b5e0f12d13  (267 categories, decision 0012)
+gds:          layout/cve2_top.gds  sha256:abaf794b569e5956e5f4340e1ffc5ae5e6395b087ef7cf91f83591d3cec407e1  (blob at HEAD 9a7ad2968f7b)
+input_pin:    flow/core/records/2026-11-22/par.json  (core_flow.gds.sha256 equals the checked blob)
