@@ -3,6 +3,11 @@
 Chronological record of merged PRs and closed issues, maintained by the Guide
 triage role. Newest first.
 
+### 2026-11-24
+
+- **PR #238**: feat(flow): add core place-and-route flow and routed cve2_top GDS
+- **Issue #28** (closed): T1 item 2 (layout): committed P&R flow and routed cve2_top GDS on ASAP7
+
 ### 2026-11-23
 
 - **PR #270**: refactor: import scrub from fv in lockstep instead of duplicating it
