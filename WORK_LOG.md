@@ -5,6 +5,10 @@ triage role. Newest first.
 
 ### 2026-11-24
 
+- **PR #275**: docs: drop the hand-typed _Generated: stamp from WORK_PLAN.md
+- **Issue #274** (closed): WORK_PLAN.md's _Generated: stamp is hand-typed, not captured: #272's value postdates its own commit by 14 minutes
+- **PR #273**: fix: refuse par.sh --check when the selected netlist differs from the par.json input pin
+- **Issue #266** (closed): par.sh --check routes the newest netlist at HEAD, not the one item 2's evidence pins
 - **PR #238**: feat(flow): add core place-and-route flow and routed cve2_top GDS
 - **Issue #28** (closed): T1 item 2 (layout): committed P&R flow and routed cve2_top GDS on ASAP7
 
