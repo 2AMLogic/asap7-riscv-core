@@ -32,7 +32,6 @@ _None._
 
 Issues currently being built (`loom:building`).
 
-- **#30**: T1 item 4 (LVS clean): klt lvs of the routed core vs the gate-level netlist with power_connectivity match
 - **#200**: Fetch ASAP7 cell models only when preparing gate-level tests
 - **#241**: flow/merge_lib.py drops appended groups' table templates: merged Liberty loses SEQ delay tables, sta reports incomplete constraints
 
@@ -79,7 +78,7 @@ _None._
 | Very important | 0 |
 | Important | 2 |
 | Ready (`loom:issue`) | 0 |
-| In Progress (`loom:building`) | 3 |
+| In Progress (`loom:building`) | 2 |
 | PRs awaiting review | 1 |
 | Approved PRs awaiting merge | 0 |
 | Curated | 9 |
