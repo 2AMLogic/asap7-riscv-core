@@ -21,6 +21,7 @@ _None._
 
 - **#122**: Commit the latch-mapped core netlist and re-attest T1 item 1 for layout #28
 - **#226**: Write the klt erc supply spec for VDD/VSS and exercise it on the routed counter before the core
+- **#284**: Run the pinned core route on Spot and publish the verified STA inputs
 
 ## Ready
 
@@ -34,6 +35,8 @@ Issues currently being built (`loom:building`).
 
 - **#200**: Fetch ASAP7 cell models only when preparing gate-level tests
 - **#241**: flow/merge_lib.py drops appended groups' table templates: merged Liberty loses SEQ delay tables, sta reports incomplete constraints
+- **#289**: Share the ASAP7 place-and-route request between counter and core
+- **#290**: CLAUDE.md: the item 9 re-attest can run on a sweep worker that carries the pinned tools
 
 ## PRs Awaiting Review
 
@@ -45,7 +48,7 @@ PRs waiting on Judge (`loom:review-requested`).
 
 PRs that passed review and are queued for Champion auto-merge (`loom:pr`).
 
-_None._
+- **#291**: refactor(flow): write both place-and-route requests from one template
 
 ## Proposed
 
@@ -59,6 +62,7 @@ Issues carrying `loom:curated`.
 - **#174**: Decisions 0012 (klt 0.9.0 pin) and 0013 still read "proposed" while spec/core.md already carries their pins *(curated)*
 - **#226**: Write the klt erc supply spec for VDD/VSS and exercise it on the routed counter before the core *(curated)*
 - **#241**: flow/merge_lib.py drops appended groups' table templates: merged Liberty loses SEQ delay tables, sta reports incomplete constraints *(curated)*
+- **#290**: CLAUDE.md: the item 9 re-attest can run on a sweep worker that carries the pinned tools *(curated)*
 
 ## Proposed (Architect / Hermit)
 
@@ -75,12 +79,12 @@ _None._
 |------|-------|
 | Operator merge-risk holds | 0 |
 | Very important | 0 |
-| Important | 2 |
+| Important | 3 |
 | Ready (`loom:issue`) | 0 |
-| In Progress (`loom:building`) | 2 |
+| In Progress (`loom:building`) | 4 |
 | PRs awaiting review | 1 |
-| Approved PRs awaiting merge | 0 |
-| Curated | 8 |
+| Approved PRs awaiting merge | 1 |
+| Curated | 9 |
 | Architect / Hermit proposals | 2 |
 | Active epics | 0 |
 <!-- guide:plan-body:end -->

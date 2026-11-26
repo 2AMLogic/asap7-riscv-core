@@ -239,71 +239,14 @@ if [[ $STEP_OK == 1 ]]; then
   [[ -n "$SYNTH_NETLIST" ]] && cp "$SYNTH_NETLIST" "$W/${DUT}_synth.v"
 fi
 
-# output_dbu_um 0.00025: the ASAP7 deck measures FinFET geometry at 0.25 nm; the merged GDS defaults to 1 nm and
-# klt lvs refuses it (klayout-tools #4482 added the knob).
 # ---- 2. par -----------------------------------------------------------------
-# request.library values (klayout-tools #4086). Sources: cell names and pins from the pinned cell LEF;
-# route layers M2-M7 and the signal wire RC from The-OpenROAD-Project/OpenROAD-flow-scripts
-# 11aa833a11488c3a540a1d8eb4caa23fd22df703 flow/platforms/asap7/{config.mk,setRC.tcl} (the pinned ASAP7
-# checkout carries no RC table). The RC is 0.0265684 kohm/um and 0.16579 fF/um in the Liberty units;
-# klt emits the numbers unconverted under set_cmd_units -capacitance pF, so capacitance is given in
-# pF/um (1.6579e-4) and resistance in the Liberty resistance unit (kohm), not ohm as the field is named.
-# ASAP7 ships no antenna diode cell, hence null. The power grid is the ORFS M1/M2 followpin
-# scheme plus M5/M6 straps rebuilt on the deck's grids (klayout-tools #4494's recipe, carried
-# as explicit straps rather than power.preset: the pinned klt's asap7sc7p5t preset is gated
-# to the unflavoured cell-library key asap7sc7p5t_28 and rejects this flow's RVT overlay
-# key asap7sc7p5t_28_R -- klayout-tools #7001). M5 is 0.216 um wide so the tech LEF's
-# wide-V4 bar (VIARULE M5_M4widePWR0p864) applies and the V4 cut is exactly as wide as the
-# strap (V4.M5.AUX.2); pitches are multiples of 0.048 (M5) / 0.064 (M6) so every strap of a
-# net sits on the same grid residue; offsets put strap centres at x = 12 nm mod 24 (M5) and
-# y = 16 nm mod 32 (M6) measured from the core origin, so both edges of every strap are on
-# the deck's edge grid (M5.AUX.1 / M6.AUX.1); connects[].ongrid snaps the M3/M4 via stubs
-# onto the tracks (the M4 pad markers of analysis 2026-11-05-drc.md). Strap geometry vs the
-# deck predicates is verified by the record this run writes, not by this comment.
-# floorplan.tracks (klayout-tools #4088): the tech LEF gives M2 OFFSET -0.27, which OpenROAD's
-# automatic make_tracks rejects. Each entry is the LEF pitch and the LEF OFFSET reduced modulo that
-# pitch to be >= 0 (M2: x -0.27 mod 0.045 = 0.0, y -0.27 mod 0.036 = 0.018); the track grid is the same.
-# M4-M7 offsets sit at the deck's grid origin (klayout-tools #4493; analysis
-# 2026-11-05-drc.md, "Request fields that would change"): a minimum-width wire centred on
-# a track has both edges on the deck's AUX grid only when the centre is at 12 nm mod 24
-# (M4/M5, 24 nm wires on a 48 nm pitch) or 16 nm mod 32 (M6/M7, 32 nm wires on 64 nm).
-# 0.0 or the LEF residue leaves the edges off-grid and M4.AUX.1/M4.AUX.2 fire on every
-# signal wire.
+# The request is the one template both flow drivers send (par_request,
+# flow/lib.sh), where its field rationale lives; flow/core/par.sh inherits
+# the tracks and straps from this flow's verified records. The netlist is the
+# counter's <top>_synth.v and the clock port its clk.
 PAR_ISSUES="4086,4087,4088"
 if [[ -n "$SYNTH_NETLIST" ]]; then
-  cat >"$W/par.req.json" <<EOF
-{"schema":"klt.place_and_route.request/1","engine":"openroad","netlist":"${DUT}_synth.v","hdl_toplevel":"$DUT",
- "pdk":{"cell_library":"$CELL_LIB","corner":"SS"},
- "floorplan":{"method":"utilization","utilization_pct":60,"aspect_ratio":1.0,"core_margin_um":1.0,"site":"asap7sc7p5t",
-   "tracks":[
-   {"layer":"M1","x_offset_um":0.0,"x_pitch_um":0.036,"y_offset_um":0.0,"y_pitch_um":0.036},
-   {"layer":"M2","x_offset_um":0.0,"x_pitch_um":0.045,"y_offset_um":0.018,"y_pitch_um":0.036},
-   {"layer":"M3","x_offset_um":0.0,"x_pitch_um":0.036,"y_offset_um":0.0,"y_pitch_um":0.036},
-   {"layer":"M4","x_offset_um":0.012,"x_pitch_um":0.048,"y_offset_um":0.012,"y_pitch_um":0.048},
-   {"layer":"M5","x_offset_um":0.012,"x_pitch_um":0.048,"y_offset_um":0.012,"y_pitch_um":0.048},
-   {"layer":"M6","x_offset_um":0.016,"x_pitch_um":0.064,"y_offset_um":0.016,"y_pitch_um":0.064},
-   {"layer":"M7","x_offset_um":0.016,"x_pitch_um":0.064,"y_offset_um":0.016,"y_pitch_um":0.064}]},
- "library":{"cts_buffer":"BUFx4_ASAP7_75t_R",
-   "power_pins":[{"net_role":"power","pattern":"VDD","primary":true},{"net_role":"ground","pattern":"VSS","primary":true}],
-   "wire_rc":{"resistance_ohm_per_um":2.65684E-02,"capacitance_pf_per_um":1.65790E-04},
-   "route_layers":{"low":"M2","high":"M7"},
-   "antenna_diode":null,
-   "tapcell":{"master":"TAPCELL_ASAP7_75t_R","endcap":"TAPCELL_ASAP7_75t_R","distance_um":25},
-   "filler":["FILLERxp5_ASAP7_75t_R","FILLER_ASAP7_75t_R"]},
- "io":{"layer_h":"M4","layer_v":"M5"},
- "power":{"power_net":"VDD","ground_net":"VSS",
-   "straps":[
-   {"layer":"M1","width_um":0.018,"pitch_um":0.54,"followpins":true},
-   {"layer":"M2","width_um":0.018,"pitch_um":0.54,"followpins":true},
-   {"layer":"M5","width_um":0.216,"pitch_um":1.152,"offset_um":0.474},
-   {"layer":"M6","width_um":0.288,"pitch_um":1.152,"offset_um":0.152}],
-   "connects":[
-   {"layers":["M2","M5"],"max_columns":1,"ongrid":["M3","M4"]},
-   {"layers":["M5","M6"],"max_columns":1}]},
- "constraints":{"clock_port":"clk","clock_period_ns":1.0},
- "output_dbu_um":0.00025,
- "seed":1,"target_stage":"route"}
-EOF
+  par_request "$DUT" clk "$CELL_LIB" >"$W/par.req.json"
   STEP_EXTRA="{}" step par "$DUT synthesized netlist; target_stage route with a power grid" \
     "" "$PAR_ISSUES" place-and-route "$W/par.req.json" "${PDKARGS[@]}" --format json
 else
