@@ -240,51 +240,13 @@ PY3
 PDKARGS=(--pdk asap7 --pdk-root "$ROOT")
 
 # ---- the request ----------------------------------------------------------
-# request.library values (klayout-tools #4086), as in the smoke flow: cell
-# names and pins from the pinned cell LEF, route layers M2-M7 and the signal
-# wire RC from The-OpenROAD-Project/OpenROAD-flow-scripts
-# 11aa833a11488c3a540a1d8eb4caa23fd22df703 flow/platforms/asap7/{config.mk,
-# setRC.tcl}. ASAP7 ships no antenna diode cell, hence null. seed is fixed:
-# the flow's reproducibility claim (byte-identical GDS on re-run, verified by
-# --check) rests on it. The clock port is the wrapper's clk_i.
-cat >"$W/par.req.json" <<EOF
-{"schema":"klt.place_and_route.request/1","engine":"openroad","netlist":"${TOP}_synth.v","hdl_toplevel":"$TOP",
- "pdk":{"cell_library":"$CELL_LIB","corner":"SS"},
- "floorplan":{"method":"utilization","utilization_pct":60,"aspect_ratio":1.0,"core_margin_um":1.0,"site":"asap7sc7p5t",
-   "tracks":[
-   {"layer":"M1","x_offset_um":0.0,"x_pitch_um":0.036,"y_offset_um":0.0,"y_pitch_um":0.036},
-   {"layer":"M2","x_offset_um":0.0,"x_pitch_um":0.045,"y_offset_um":0.018,"y_pitch_um":0.036},
-   {"layer":"M3","x_offset_um":0.0,"x_pitch_um":0.036,"y_offset_um":0.0,"y_pitch_um":0.036},
-   {"layer":"M4","x_offset_um":0.012,"x_pitch_um":0.048,"y_offset_um":0.012,"y_pitch_um":0.048},
-   {"layer":"M5","x_offset_um":0.012,"x_pitch_um":0.048,"y_offset_um":0.012,"y_pitch_um":0.048},
-   {"layer":"M6","x_offset_um":0.016,"x_pitch_um":0.064,"y_offset_um":0.016,"y_pitch_um":0.064},
-   {"layer":"M7","x_offset_um":0.016,"x_pitch_um":0.064,"y_offset_um":0.016,"y_pitch_um":0.064}]},
- "library":{"cts_buffer":"BUFx4_ASAP7_75t_R",
-   "power_pins":[{"net_role":"power","pattern":"VDD","primary":true},{"net_role":"ground","pattern":"VSS","primary":true}],
-   "wire_rc":{"resistance_ohm_per_um":2.65684E-02,"capacitance_pf_per_um":1.65790E-04},
-   "route_layers":{"low":"M2","high":"M7"},
-   "antenna_diode":null,
-   "tapcell":{"master":"TAPCELL_ASAP7_75t_R","endcap":"TAPCELL_ASAP7_75t_R","distance_um":25},
-   "filler":["FILLERxp5_ASAP7_75t_R","FILLER_ASAP7_75t_R"]},
- "io":{"layer_h":"M4","layer_v":"M5"},
- "power":{"power_net":"VDD","ground_net":"VSS",
-   "straps":[
-   {"layer":"M1","width_um":0.018,"pitch_um":0.54,"followpins":true},
-   {"layer":"M2","width_um":0.018,"pitch_um":0.54,"followpins":true},
-   {"layer":"M5","width_um":0.216,"pitch_um":1.152,"offset_um":0.474},
-   {"layer":"M6","width_um":0.288,"pitch_um":1.152,"offset_um":0.152}],
-   "connects":[
-   {"layers":["M2","M5"],"max_columns":1,"ongrid":["M3","M4"]},
-   {"layers":["M5","M6"],"max_columns":1}]},
- "constraints":{"clock_port":"clk_i","clock_period_ns":1.0},
- "output_dbu_um":0.00025,
- "seed":1,"target_stage":"route"}
-EOF
+# The one template both flow drivers send (par_request, flow/lib.sh), which
+# is how this driver inherits the smoke flow's verified grid settings: the
+# field rationale lives with the template. The netlist is the wrapper's
+# <top>_synth.v; the clock port is the wrapper's clk_i.
+par_request "$TOP" clk_i "$CELL_LIB" >"$W/par.req.json"
 
 # ---- run the pinned klt ----------------------------------------------------
-# output_dbu_um 0.00025: the ASAP7 deck measures FinFET geometry at 0.25 nm;
-# the merged GDS defaults to 1 nm and klt lvs would refuse it
-# (klayout-tools #4482 added the knob).
 echo "par.sh: placing and routing ${TOP} from $NETLIST_SRC at ${INPUT_REV:0:12}" >&2
 rc=0
 ( cd "$W" && "${KLT[@]}" place-and-route par.req.json "${PDKARGS[@]}" --format json ) \
