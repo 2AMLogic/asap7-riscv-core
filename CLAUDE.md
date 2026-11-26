@@ -112,22 +112,27 @@ on ASAP7, designed and verified by AI agents. **Digital.**
        done
        ```
 
-       The PyPI line only shows public PyPI is unreachable; if pip is
-       pointed at a mirror or local wheelhouse (`PIP_INDEX_URL`,
-       `PIP_FIND_LINKS`, `PIP_NO_INDEX`), confirm through that source
-       instead (`pip download --no-deps -d "$(mktemp -d)" -r
-       verification/requirements.txt`). The GitHub lines use moving
-       references (`latest`, `HEAD`) as reachability checks only; they do
-       not say which revision the cold start fetches.
+       If the public PyPI probe fails, check the configured source using
+       the harness's virtual environment. This works with a mirror or
+       wheelhouse (`PIP_INDEX_URL`, `PIP_FIND_LINKS`, `PIP_NO_INDEX`).
 
-    When the versions match, attempt the two steps above in the worktree
-    and commit both envelopes in this PR, even if a probe failed: a failed
-    probe does not by itself mean an input is unavailable. Hand off only
-    when the cold start fails or an input is confirmed unavailable, and
-    record the specific missing prerequisite or failure in the PR — the
-    tool and the version found against its pin, the input that could not
-    be fetched and through which source, or the cold start's exit status
-    and failing step — so a capable host can finish it.
+       ```bash
+       if [ ! -x verification/.venv/bin/python ]; then
+         uvx --python 3.12 --from "klayout-tools==0.8.0" python -m venv verification/.venv
+       fi
+       verification/.venv/bin/python -m pip download -d "$(mktemp -d)" -r verification/requirements.txt
+       ```
+
+       The GitHub probes check reachability at `latest` and `HEAD`. The
+       scripts above select the pinned inputs for the cold start.
+
+    When the versions match, retain the committed envelope first and run the
+    pinned regeneration command above in the worktree, even if a probe failed.
+    On success, commit both envelopes in the same PR. If a required tool is
+    missing or its version mismatches, record the tool, its pin and any
+    installed version in the PR and hand off to a capable host. Do the same
+    for a confirmed unavailable input (name the input and source) or a
+    failed cold start (give the failing step and exit status).
 
   `--python 3.12` is load-bearing for both: `uvx` puts its own environment
   first on `PATH`, and each envelope's harness checks run `verification/run.sh`,
