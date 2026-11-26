@@ -1,14 +1,17 @@
 """Shared setup for the two riscv-arch-test drivers, runner.py and fv.py.
 
 Both convert the pinned CVE2 closure through flow/core/sv2v.sh, build the test
-programs with build_tests.py and walk tests.json (the first test only under
---negative-control). Needs verification/core/setup.sh to have run.
+programs with build_tests.py and walk tests.json: the full suite from the
+shared verification/build/tests, or under --negative-control the first
+program only, built into the run directory. Needs verification/core/setup.sh
+to have run.
 """
 
 import json
 import subprocess
 import sys
 from pathlib import Path
+from tempfile import mkdtemp
 
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parent.parent
@@ -65,12 +68,17 @@ def gate_sources(p):
 def prepare(out: Path, negative: bool, gate: bool = False):
     """Build the programs and the DUT source: (tests_dir, test names, DUT .v).
 
-    With gate=True the DUT is the committed netlist (no sv2v conversion)."""
+    With gate=True the DUT is the committed netlist (no sv2v conversion).
+    With negative=True only the first program is built under out. Its
+    one-entry tests.json must stay separate from the full suite's manifest."""
     out.mkdir(parents=True, exist_ok=True)
     p = paths()
-    tests_dir = BUILD / "tests"
-    subprocess.run([sys.executable, "-I", str(HERE / "build_tests.py"), str(tests_dir)], check=True)
+    shared_tests = BUILD / "tests"
+    tests_dir = out / "tests" if negative else shared_tests
+    if negative and tests_dir.resolve() == shared_tests.resolve():
+        # fv.sh accepts BUILD itself as the output directory.
+        tests_dir = Path(mkdtemp(prefix="control-tests-", dir=out))
+    limit = ["--first-only"] if negative else []
+    subprocess.run([sys.executable, "-I", str(HERE / "build_tests.py"), str(tests_dir), *limit], check=True)
     names = json.loads((tests_dir / "tests.json").read_text())
-    if negative:
-        names = names[:1]
     return tests_dir, names, (NETLIST if gate else convert(p, out))

@@ -1,12 +1,15 @@
 """Compile the pinned riscv-arch-test I/M/C tests and produce Sail reference signatures.
 
-Usage: python build_tests.py <out-dir>      (after verification/core/setup.sh)
+Usage: python build_tests.py <out-dir> [--first-only]      (after verification/core/setup.sh)
 
 For every test selected from the pinned suite this writes, under <out-dir>:
   <name>.hex       32-bit words from 0x80000000 ($readmemh)
   <name>.json      {tohost, sig_begin, sig_end, expected: [words]}
-The expected signature comes from the Sail golden model run on the same ELF,
-never from the DUT.
+and tests.json, the names built, in suite order. The expected signature comes
+from the Sail golden model run on the same ELF, never from the DUT.
+
+--first-only stops after the first test not in EXCLUDE: no later test is
+compiled or run on Sail, and tests.json names that one test.
 """
 
 import json
@@ -89,14 +92,25 @@ def build_one(p, at, ext, src, out):
     return name
 
 
-def main(out):
+def main(out, first_only=False):
     out.mkdir(parents=True, exist_ok=True)
     p = paths()
     at = Path(p["AT"])
-    built = [n for n in (build_one(p, at, e, s, out) for e, s in select(at)) if n]
+    built, skipped = [], 0
+    for e, s in select(at):
+        n = build_one(p, at, e, s, out)
+        if n:
+            built.append(n)
+            if first_only:
+                break
+        else:
+            skipped += 1
     (out / "tests.json").write_text(json.dumps(built))
-    print(f"build_tests: {len(built)} tests built, {len(EXCLUDE)} excluded")
+    if first_only:
+        print(f"build_tests: {len(built)} test(s) built (first eligible only), {skipped} excluded before it")
+    else:
+        print(f"build_tests: {len(built)} tests built, {len(EXCLUDE)} excluded")
 
 
 if __name__ == "__main__":
-    main(Path(sys.argv[1]).resolve())
+    main(Path(sys.argv[1]).resolve(), "--first-only" in sys.argv[2:])

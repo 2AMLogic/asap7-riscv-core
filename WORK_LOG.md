@@ -5,6 +5,8 @@ triage role. Newest first.
 
 ### 2026-11-26
 
+- **PR #295**: refactor(flow): fold repeated par_test.sh assertions into one helper
+- **Issue #293** (closed): Consolidate repeated command assertions in the place-and-route self-test
 - **PR #294**: docs: replace the item 9 sweep-worktree ban with a worker check
 - **Issue #290** (closed): CLAUDE.md: the item 9 re-attest can run on a sweep worker that carries the pinned tools
 - **PR #291**: refactor(flow): write both place-and-route requests from one template
