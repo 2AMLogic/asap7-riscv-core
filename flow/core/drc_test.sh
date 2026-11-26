@@ -275,7 +275,6 @@ fi
 exec "$REAL_CAT" "\$@"
 STUB
 chmod +x "$BIN/cat"
-: >"$W/refmode"
 REC="$FX/flow/core/records/$FXDATE"
 dated() {  # every entry of the dated directory, hidden names included
   ls -A "$REC" 2>/dev/null | LC_ALL=C sort | tr '\n' ' ' | sed 's/ $//'
@@ -288,8 +287,8 @@ partial_copy() {  # <label> <record>: run with that record's copy failing partwa
   local seen="$W/catseen.$2"
   STUB_CAT_FAIL="$2" STUB_CAT_SEEN="$seen" record_run "$W/partial_$2.out"
   eq "$1: record mode exits 1" 1 "$rc"
-  eq "$1: the partial copy was written inside the dated directory" \
-    "$REC" "$(dirname "$(cat "$seen")")"
+  eq "$1: the partial copy was written in a private directory inside the dated directory" \
+    "$REC" "$(dirname "$(dirname "$(cat "$seen")")")"
   [[ ! -e "$(cat "$seen")" ]] && ok "$1: the partial copy is removed" || no "$1: the partial copy is removed"
   [[ ! -e "$REC" ]] && ok "$1: the dated directory the run created is removed" || no "$1: the dated directory the run created is removed"
   eq "$1: the dated directory holds nothing, hidden names included" "" "$(dated)"
@@ -303,10 +302,12 @@ rm "$BIN/cat"
 record_run "$W/partial_retry.out"
 eq "the same date retries cleanly after a partial copy" 0 "$rc"
 eq "the retried date holds exactly the two records" "drc.json tool-versions.txt" "$(dated)"
-eq "a published drc.json has the mode of a plain redirect, not the private copy's 0600" \
-  "$(stat -c %a "$W/refmode")" "$(stat -c %a "$REC/drc.json")"
-eq "a published tool-versions.txt has the mode of a plain redirect" \
-  "$(stat -c %a "$W/refmode")" "$(stat -c %a "$REC/tool-versions.txt")"
+REFM="$REC/.refmode"; : >"$REFM"
+eq "a published drc.json has the mode of a plain redirect in the dated directory (same umask and default ACL)" \
+  "$(stat -c %a "$REFM")" "$(stat -c %a "$REC/drc.json")"
+eq "a published tool-versions.txt has the mode of a plain redirect in the dated directory" \
+  "$(stat -c %a "$REFM")" "$(stat -c %a "$REC/tool-versions.txt")"
+rm -f "$REC/.refmode"
 rm -rf "$REC"
 
 # Another writer creates the second record's pathname after preflight (the

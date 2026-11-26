@@ -421,7 +421,6 @@ STUB
 chmod +x "$BIN/cat"
 REC="$FX/flow/core/records"
 cp "$FX/layout/cve2_top.gds" "$W/prev.gds"
-: >"$W/refmode"
 dated() {  # <date>: every entry of the dated directory, hidden names included
   ls -A "$REC/$1" 2>/dev/null | LC_ALL=C sort | tr '\n' ' ' | sed 's/ $//'
 }
@@ -446,8 +445,8 @@ partial_copy() {  # <label> <date> <record>: run with that record's copy failing
     STUB_CAT_FAIL="$3" STUB_CAT_SEEN="$seen" \
     run_par bash "$FX/flow/core/par.sh" "$FA" >"$W/partial_$2.err" 2>&1 || rc=$?
   eq "$1: record mode exits 1" 1 "$rc"
-  eq "$1: the partial copy was written inside the dated directory" \
-    "$REC/$2" "$(dirname "$(cat "$seen")")"
+  eq "$1: the partial copy was written in a private directory inside the dated directory" \
+    "$REC/$2" "$(dirname "$(dirname "$(cat "$seen")")")"
   [[ ! -e "$(cat "$seen")" ]] && ok "$1: the partial copy is removed" || no "$1: the partial copy is removed"
   [[ ! -e "$REC/$2" ]] && ok "$1: the dated directory the run created is removed" || no "$1: the dated directory the run created is removed"
   after_failure "$2" "" "$1"
@@ -522,10 +521,12 @@ retry_date() {  # <label> <date>
 retry_date "a failed par.json copy" 2026-12-10
 retry_date "a failed tool-versions.txt copy" 2026-12-11
 eq "the retried date holds exactly the two records" "par.json tool-versions.txt" "$(dated 2026-12-11)"
-eq "a published par.json has the mode of a plain redirect, not the private copy's 0600" \
-  "$(stat -c %a "$W/refmode")" "$(stat -c %a "$REC/2026-12-11/par.json")"
-eq "a published tool-versions.txt has the mode of a plain redirect" \
-  "$(stat -c %a "$W/refmode")" "$(stat -c %a "$REC/2026-12-11/tool-versions.txt")"
+REFM="$REC/2026-12-11/.refmode"; : >"$REFM"
+eq "a published par.json has the mode of a plain redirect in the dated directory (same umask and default ACL)" \
+  "$(stat -c %a "$REFM")" "$(stat -c %a "$REC/2026-12-11/par.json")"
+eq "a published tool-versions.txt has the mode of a plain redirect in the dated directory" \
+  "$(stat -c %a "$REFM")" "$(stat -c %a "$REC/2026-12-11/tool-versions.txt")"
+rm -f "$REC/2026-12-11/.refmode"
 rm "$SQUAT"
 retry_date "a competing file" 2026-12-12
 rm "$REC/2026-12-13/tool-versions.txt/inner"
@@ -997,6 +998,16 @@ if compgen -G "$W/exp*.export.*" >/dev/null; then
 else
   ok "no export staging directories are left behind"
 fi
+
+# A temporary name has one owner, the helper, and never joins the rollback
+# list: after a successful install CREATED holds only the final pathname, so a
+# rollback cannot unlink a name another publisher has reused.
+OWN="$W/own"; mkdir -p "$OWN/stage" "$OWN/rec"
+printf 'x\n' >"$OWN/stage/a.json"
+CREATED_LIST="$(bash -c 'source "$1"; CREATED=(); record_install "$2" "$3" || exit 1; printf "%s\n" "${CREATED[@]}"' _ \
+  "$REPO/flow/core/record_publish.sh" "$OWN/stage/a.json" "$OWN/rec/a.json")"
+eq "a successful install lists only the final pathname for rollback" "$OWN/rec/a.json" "$CREATED_LIST"
+eq "a successful install leaves no private name behind" "a.json" "$(ls -A "$OWN/rec")"
 
 echo "1..$((NPASS + NBAD)) pass=$NPASS fail=$NBAD"
 [[ "$NBAD" -eq 0 ]]
