@@ -1,8 +1,10 @@
 """Shared setup for the two riscv-arch-test drivers, runner.py and fv.py.
 
 Both convert the pinned CVE2 closure through flow/core/sv2v.sh, build the test
-programs with build_tests.py and walk tests.json (the first test only under
---negative-control). Needs verification/core/setup.sh to have run.
+programs with build_tests.py and walk tests.json: the full suite from the
+shared verification/build/tests, or under --negative-control the first
+program only, built into the run directory. Needs verification/core/setup.sh
+to have run.
 """
 
 import json
@@ -50,12 +52,14 @@ def gate_sources(p):
 def prepare(out: Path, negative: bool, gate: bool = False):
     """Build the programs and the DUT source: (tests_dir, test names, DUT .v).
 
-    With gate=True the DUT is the committed netlist (no sv2v conversion)."""
+    With gate=True the DUT is the committed netlist (no sv2v conversion).
+    With negative=True only the first program is built, into <out>/tests: the
+    control runs that one program, and its one-entry tests.json must not
+    replace the full suite's shared one."""
     out.mkdir(parents=True, exist_ok=True)
     p = paths()
-    tests_dir = BUILD / "tests"
-    subprocess.run([sys.executable, "-I", str(HERE / "build_tests.py"), str(tests_dir)], check=True)
+    tests_dir = out / "tests" if negative else BUILD / "tests"
+    limit = ["--first-only"] if negative else []
+    subprocess.run([sys.executable, "-I", str(HERE / "build_tests.py"), str(tests_dir), *limit], check=True)
     names = json.loads((tests_dir / "tests.json").read_text())
-    if negative:
-        names = names[:1]
     return tests_dir, names, (NETLIST if gate else convert(p, out))
