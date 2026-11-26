@@ -3,6 +3,13 @@
 Chronological record of merged PRs and closed issues, maintained by the Guide
 triage role. Newest first.
 
+### 2026-11-26
+
+- **PR #287**: fix: link dated records into place only once their copy is complete
+- **Issue #286** (closed): Share dated record publication so partial writes can be retried
+- **PR #285**: feat: export the routed DEF and netlist via par.sh --check --export
+- **Issue #283** (closed): Export the routed core DEF and matching netlist from flow/core/par.sh
+
 ### 2026-11-24
 
 - **PR #278**: feat(flow/core): record the first core DRC run on the routed GDS, waive router/PDN markers and disclose the SDT shipped-cell deviation
