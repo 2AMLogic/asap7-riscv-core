@@ -81,9 +81,58 @@ on ASAP7, designed and verified by AI agents. **Digital.**
     ```
 
     This re-attest runs `attest/item9.json`'s `local_only` cold start
-    (`verification/run.sh --core`, timeout 1800 s), so it needs a host with
-    `iverilog`, `python 3.12` and network egress — it
-    cannot be done in a sweep worktree (cf. #107, #112).
+    (`verification/run.sh --core`, timeout 1800 s). Check whether the host
+    can run it rather than assume it cannot (#290):
+
+    1. Compare the two versions `verification/run.sh` checks for `--core`
+       with `verification/tool-versions.txt` (`iverilog=13.0`, `python=3.12`):
+
+       ```bash
+       iverilog -V | sed -n '1s/.*version \([0-9][0-9.]*\).*/\1/p'
+       uvx --python 3.12 --from "klayout-tools==0.8.0" python --version
+       ```
+
+       The second is the pinned invocation with `python --version` in place
+       of `klt signoff …`, so it reports the `python3` the cold start sees.
+       `check_version` in `verification/lib.sh` accepts each pin exactly or
+       followed by a dot (`13.0.1`, `3.12.13`); `12.0`, `13.1` and `3.13` are
+       refused. Verilator is checked on the smoke path only.
+    2. Check the host can reach the cold start's inputs: `cocotb` through
+       pip (`verification/run.sh` installs `verification/requirements.txt`
+       with whatever source pip is configured for, so a mirror or wheelhouse
+       counts), and the pinned inputs `verification/core/setup.sh` downloads
+       from GitHub (`flow/core/sv2v.sh` and `flow/core/fetch.sh` name the
+       pins). These probes are diagnostic, not a gate:
+
+       ```bash
+       for u in https://pypi.org/simple/cocotb/ \
+                https://github.com/zachjs/sv2v/releases/latest/download/sv2v-Linux.zip \
+                https://raw.githubusercontent.com/openhwgroup/cve2/HEAD/rtl/cve2_top.sv; do
+         curl --connect-timeout 10 -fsSILo /dev/null "$u" || echo "cannot fetch: $u"
+       done
+       ```
+
+       If the public PyPI probe fails, check the configured source using
+       the harness's virtual environment. This works with a mirror or
+       wheelhouse (`PIP_INDEX_URL`, `PIP_FIND_LINKS`, `PIP_NO_INDEX`).
+
+       ```bash
+       if [ ! -x verification/.venv/bin/python ]; then
+         uvx --python 3.12 --from "klayout-tools==0.8.0" python -m venv verification/.venv
+       fi
+       verification/.venv/bin/python -m pip download -d "$(mktemp -d)" -r verification/requirements.txt
+       ```
+
+       The GitHub probes check reachability at `latest` and `HEAD`. The
+       scripts above select the pinned inputs for the cold start.
+
+    When the versions match, retain the committed envelope first and run the
+    pinned regeneration command above in the worktree, even if a probe failed.
+    On success, commit both envelopes in the same PR. If a required tool is
+    missing or its version mismatches, record the tool, its pin and any
+    installed version in the PR and hand off to a capable host. Do the same
+    for a confirmed unavailable input (name the input and source) or a
+    failed cold start (give the failing step and exit status).
 
   `--python 3.12` is load-bearing for both: `uvx` puts its own environment
   first on `PATH`, and each envelope's harness checks run `verification/run.sh`,
