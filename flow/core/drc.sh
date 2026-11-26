@@ -76,14 +76,18 @@ setup_scratch coredrc
 # Captured once from one Git revision: the routed GDS at HEAD, read as a
 # blob. The working tree is never consulted, so an edited or replaced
 # layout cannot become the checked input, and the bytes hashed for the
-# record are the bytes the deck checks.
+# record are the bytes the deck checks. Both GDS reads name the captured
+# revision rather than HEAD, so a checkout that advances mid-run cannot
+# supply a layout from a later commit than the routing record below is
+# read from (flow/core/par.sh captures its reference GDS the same way).
 INPUT_REV="$(git -C "$REPO" rev-parse --verify 'HEAD^{commit}')" \
   || die "cannot resolve HEAD to select the committed GDS" 2
-git -C "$REPO" cat-file -e "HEAD:$GDS_PATH" 2>/dev/null \
+GDS_REF="$INPUT_REV:$GDS_PATH"
+git -C "$REPO" cat-file -e "$GDS_REF" 2>/dev/null \
   || die "no committed HEAD:$GDS_PATH to check (T1 item 2 has not landed)" 2
 W="$SCRATCH/work"; mkdir -p "$W"
 GDS_IN="$W/$TOP.gds"
-git -C "$REPO" cat-file blob "HEAD:$GDS_PATH" >"$GDS_IN" \
+git -C "$REPO" cat-file blob "$GDS_REF" >"$GDS_IN" \
   || die "cannot read $GDS_PATH at $INPUT_REV" 1
 [[ -s "$GDS_IN" ]] || die "committed $GDS_PATH is empty" 1
 GDS_SHA="$(sha "$GDS_IN")"
