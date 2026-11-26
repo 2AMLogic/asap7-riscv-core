@@ -38,7 +38,7 @@
         "role": "testbench",
         "path": "flow/lib.sh",
         "passed": true,
-        "content_hash": "sha256:bcad7aa152f99b2e3db240d8e19ba23f61e1109d4719559b93f17bc26dafa737"
+        "content_hash": "sha256:96fc23679193d4cf1133164efb6036fef0cfa534ccc81ab27537a1d7463a696e"
       },
       {
         "check": "present",
@@ -59,7 +59,7 @@
         "role": "testbench",
         "path": "flow/smoke/run.sh",
         "passed": true,
-        "content_hash": "sha256:d22dbcbd3e5636e06c09874e8a11c43014a3eaf21e729d7aac7ca535f3378c13"
+        "content_hash": "sha256:bad936444420dc1874d4e81d3716dbeb6dd702221047b37826496569c602de66"
       },
       {
         "check": "present",
