@@ -8,7 +8,7 @@ to produce a reference trace:
 
     spike --isa=rv32imc_zicsr -m0x80000000:0x200000 --log-commits <elf>
 
-One hart (hart 0) in machine mode; 2 MiB of RAM at 0x80000000 (build_tests.py's
+One hart (hart 0) in machine mode; 2 MiB of RAM at 0x80000000 (archtest_common.py's
 MEM_WORDS), ELF entry 0x80000080 (verification/core/link.ld). --log-commits
 writes one line per retired instruction to stderr:
 
