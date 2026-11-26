@@ -32,7 +32,7 @@ eq() {  # label want got
   if [[ "$2" == "$3" ]]; then ok "$1"; else no "$1: want '$2', got '$3'"; fi
 }
 
-W="$(mktemp -d "${TMPDIR:-/tmp}/asap7-drctest.XXXXXX")"
+W="$(mktemp -d "${TMPDIR:-/tmp}/asap7-drctest.XXXXXX")" || exit 1
 cleanup() { rm -rf "$W"; }
 trap cleanup EXIT
 
