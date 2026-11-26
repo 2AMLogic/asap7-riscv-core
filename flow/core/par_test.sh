@@ -42,6 +42,11 @@ eq() {  # label want got
   if [[ "$2" == "$3" ]]; then ok "$1"; else no "$1: want '$2', got '$3'"; fi
 }
 
+ok_if() {  # <label> <command...>: passes when the command exits 0
+  local label="$1"; shift
+  if "$@"; then ok "$label"; else no "$label"; fi
+}
+
 W="$(mktemp -d "${TMPDIR:-/tmp}/asap7-partest.XXXXXX")"
 cleanup() { rm -rf "$W"; }
 trap cleanup EXIT
@@ -56,22 +61,14 @@ eq "no argument and no ASAP7_DIR refuses (exit 2)" 2 "$rc"
 out="$W/notgit.err"; rc=0
 ( env -u ASAP7_DIR bash "$PAR" "$W" ) >"$out" 2>&1 || rc=$?
 eq "a directory that is not a git checkout refuses (exit 2)" 2 "$rc"
-if grep -q "not a git checkout" "$W/notgit.err"; then
-  ok "non-checkout refusal names the git check"
-else
-  no "non-checkout refusal names the git check"
-fi
+ok_if "non-checkout refusal names the git check" grep -q "not a git checkout" "$W/notgit.err"
 
 git init -q "$W/wrongpin"
 git -C "$W/wrongpin" -c user.email=t@t -c user.name=t commit -q --allow-empty -m x
 out="$W/wrongpin.err"; rc=0
 ( env -u ASAP7_DIR bash "$PAR" "$W/wrongpin" ) >"$out" 2>&1 || rc=$?
 eq "a checkout at the wrong pin refuses (exit 2)" 2 "$rc"
-if grep -q "spec/pdk-bringup.md pins" "$W/wrongpin.err"; then
-  ok "wrong-pin refusal names the spec pin"
-else
-  no "wrong-pin refusal names the spec pin"
-fi
+ok_if "wrong-pin refusal names the spec pin" grep -q "spec/pdk-bringup.md pins" "$W/wrongpin.err"
 
 # ---- the request template's invariants --------------------------------------
 # Render the request through the shared writer both flow drivers call
@@ -243,11 +240,7 @@ rc=0
 STUB_GDS_CONTENT="untracked-only" STUB_RESPONSE_JSON="$VALID_RESP" \
   run_par bash "$FX/flow/core/par.sh" "$FA" --check >"$W/uncommitted.err" 2>&1 || rc=$?
 eq "--check with only an untracked layout/cve2_top.gds refuses (exit 2)" 2 "$rc"
-if grep -q "HEAD:layout/cve2_top.gds" "$W/uncommitted.err"; then
-  ok "--check refusal names HEAD:layout/cve2_top.gds"
-else
-  no "--check refusal names HEAD:layout/cve2_top.gds"
-fi
+ok_if "--check refusal names HEAD:layout/cve2_top.gds" grep -q "HEAD:layout/cve2_top.gds" "$W/uncommitted.err"
 
 # Commit the baseline layout at HEAD.
 printf 'committed-gds-v1' >"$FX/layout/cve2_top.gds"
@@ -260,11 +253,7 @@ rc=0
 STUB_GDS_CONTENT="committed-gds-v1" STUB_RESPONSE_JSON="$VALID_RESP" STUB_REQ_SEEN="$W/seen.req.json" \
   run_par bash "$FX/flow/core/par.sh" "$FA" --check >"$W/cleancheck.err" 2>&1 || rc=$?
 eq "--check exits 0 when GDS matches HEAD and response is valid" 0 "$rc"
-if cmp -s "$W/seen.req.json" "$req"; then
-  ok "the driver hands the router the request the shared writer renders, byte for byte"
-else
-  no "the driver hands the router the request the shared writer renders, byte for byte"
-fi
+ok_if "the driver hands the router the request the shared writer renders, byte for byte" cmp -s "$W/seen.req.json" "$req"
 
 # 3. Dirty-baseline regression: router emits different GDS; running record mode
 # overwrites working-tree layout/cve2_top.gds, and a subsequent --check must
@@ -348,11 +337,7 @@ RECORD_DATE=2026-11-25 STUB_GDS_CONTENT="leaked-run-gds" STUB_RESPONSE_JSON="$VA
   STUB_OPENROAD_VERSION="/Users/ops/bin/openroad 26Q3" \
   run_par bash "$FX/flow/core/par.sh" "$FA" >"$W/leak_tv.err" 2>&1 || rc=$?
 eq "record mode exits 1 when staged tool-versions.txt leaks a host path" 1 "$rc"
-if grep -q "leaks an absolute host path" "$W/leak_tv.err"; then
-  ok "leaked tool-versions.txt dies in record_leak_guard"
-else
-  no "leaked tool-versions.txt dies in record_leak_guard"
-fi
+ok_if "leaked tool-versions.txt dies in record_leak_guard" grep -q "leaks an absolute host path" "$W/leak_tv.err"
 eq "leaked tool-versions.txt leaves layout/cve2_top.gds untouched" "committed-gds-v1" "$(cat "$FX/layout/cve2_top.gds")"
 if [[ ! -e "$FX/flow/core/records/2026-11-25" ]]; then
   ok "leaked tool-versions.txt creates no record directory"
@@ -496,11 +481,7 @@ RECORD_DATE=2026-12-12 STUB_GDS_CONTENT="competed-gds" STUB_RESPONSE_JSON="$VALI
   STUB_SQUAT_FILE="$SQUAT" STUB_SQUAT_CONTENT="competitor-tool-versions" \
   run_par bash "$FX/flow/core/par.sh" "$FA" >"$W/competed.err" 2>&1 || rc=$?
 eq "a competing tool-versions.txt: record mode exits 1" 1 "$rc"
-if cmp -s "$W/competitor.want" "$SQUAT"; then
-  ok "a competing tool-versions.txt: the other writer's bytes survive"
-else
-  no "a competing tool-versions.txt: the other writer's bytes survive"
-fi
+ok_if "a competing tool-versions.txt: the other writer's bytes survive" cmp -s "$W/competitor.want" "$SQUAT"
 after_failure 2026-12-12 "tool-versions.txt" "a competing tool-versions.txt"
 
 # A directory at the second record's pathname fails the publication without
@@ -527,16 +508,8 @@ RECORD_DATE=2026-12-14 STUB_GDS_CONTENT="leaked-dir-gds" STUB_RESPONSE_JSON="$VA
   STUB_SQUAT_FILE="$LEAKER" STUB_SQUAT_CONTENT='{"path":"/tmp/competitor"}' \
   run_par bash "$FX/flow/core/par.sh" "$FA" >"$W/leaked_dir.err" 2>&1 || rc=$?
 eq "a leaking competing record: record mode exits 1" 1 "$rc"
-if grep -q "leaks an absolute host path" "$W/leaked_dir.err"; then
-  ok "a leaking competing record: the published-record leak check fails the run"
-else
-  no "a leaking competing record: the published-record leak check fails the run"
-fi
-if cmp -s "$W/leaker.want" "$LEAKER"; then
-  ok "a leaking competing record: the other writer's bytes survive"
-else
-  no "a leaking competing record: the other writer's bytes survive"
-fi
+ok_if "a leaking competing record: the published-record leak check fails the run" grep -q "leaks an absolute host path" "$W/leaked_dir.err"
+ok_if "a leaking competing record: the other writer's bytes survive" cmp -s "$W/leaker.want" "$LEAKER"
 after_failure 2026-12-14 "competitor.json" "a leaking competing record"
 
 # Clearing each fault leaves the same date retryable.
@@ -662,11 +635,7 @@ rc=0
 STUB_GDS_CONTENT="router-gds-v4" STUB_RESPONSE_JSON="$VALID_RESP" \
   run_par bash "$FX/flow/core/par.sh" "$FA" --check >"$W/pin_broken.err" 2>&1 || rc=$?
 eq "--check fails closed on a par.json without core_flow.input_netlist" 1 "$rc"
-if grep -q "2026-12-02/par.json" "$W/pin_broken.err"; then
-  ok "broken-record refusal names the par.json"
-else
-  no "broken-record refusal names the par.json"
-fi
+ok_if "broken-record refusal names the par.json" grep -q "2026-12-02/par.json" "$W/pin_broken.err"
 
 # 11. --export (issue #283): --check --export <dir> publishes the routed DEF,
 # the matching routed Verilog and a provenance manifest as one directory, only
@@ -705,11 +674,7 @@ PY
 rc=0
 run_par bash "$FX/flow/core/par.sh" "$FA" --export "$W/exp-nocheck" >"$W/exp_nocheck.err" 2>&1 || rc=$?
 eq "--export without --check refuses (exit 2)" 2 "$rc"
-if grep -q "rerun with --check" "$W/exp_nocheck.err"; then
-  ok "no-check export refusal names --check"
-else
-  no "no-check export refusal names --check"
-fi
+ok_if "no-check export refusal names --check" grep -q "rerun with --check" "$W/exp_nocheck.err"
 [[ ! -e "$W/exp-nocheck" ]] && ok "no-check export refusal publishes nothing" || no "no-check export refusal publishes nothing"
 
 rc=0
@@ -722,11 +687,7 @@ rc=0
 STUB_GDS_CONTENT="router-gds-v4" STUB_RESPONSE_JSON="$VALID_RESP" STUB_NETLIST_SEEN="$W/seen11r.sha" \
   run_par bash "$FX/flow/core/par.sh" "$FA" --check --export "$W/exp-taken" >"$W/exp_taken.err" 2>&1 || rc=$?
 eq "--export to an existing destination refuses (exit 2)" 2 "$rc"
-if grep -q "already exists" "$W/exp_taken.err"; then
-  ok "existing-destination refusal names the destination"
-else
-  no "existing-destination refusal names the destination"
-fi
+ok_if "existing-destination refusal names the destination" grep -q "already exists" "$W/exp_taken.err"
 if [[ ! -e "$W/seen11r.sha" ]]; then
   ok "existing-destination refusal fires before routing"
 else
@@ -749,23 +710,11 @@ if compgen -G "$ETMP/asap7-*" >/dev/null; then
 else
   ok "export run cleans its scratch directory"
 fi
-if grep -q "export ->" "$W/exp_ok.err"; then
-  ok "successful export announces the destination"
-else
-  no "successful export announces the destination"
-fi
+ok_if "successful export announces the destination" grep -q "export ->" "$W/exp_ok.err"
 printf 'VERSION 5.8 ;\nEND DESIGN\n' >"$W/exp.def.want"
 printf 'module cve2_rv32imc_wrapper(input clk_i);\n  wire stub_routed_w;\nendmodule\n' >"$W/exp.v.want"
-if cmp -s "$EXP/cve2_rv32imc_wrapper.def" "$W/exp.def.want"; then
-  ok "exported DEF carries the router's DEF bytes"
-else
-  no "exported DEF carries the router's DEF bytes"
-fi
-if cmp -s "$EXP/cve2_rv32imc_wrapper.v" "$W/exp.v.want"; then
-  ok "exported Verilog carries the routed netlist bytes"
-else
-  no "exported Verilog carries the routed netlist bytes"
-fi
+ok_if "exported DEF carries the router's DEF bytes" cmp -s "$EXP/cve2_rv32imc_wrapper.def" "$W/exp.def.want"
+ok_if "exported Verilog carries the routed netlist bytes" cmp -s "$EXP/cve2_rv32imc_wrapper.v" "$W/exp.v.want"
 if cmp -s "$EXP/cve2_rv32imc_wrapper.v" "$FX/flow/core/records/2026-11-24/netlist.v"; then
   no "exported Verilog is the routed netlist, not the synthesis input"
 else
@@ -781,11 +730,7 @@ eq "manifest input_netlist path is the routed input" "flow/core/records/2026-11-
 eq "manifest input_netlist sha256 is the routed input" "$NEW_NL_SHA" "$(mj "$EXP" 'm["input_netlist"]["sha256"]')"
 eq "manifest gds path is the committed layout" "layout/cve2_top.gds" "$(mj "$EXP" 'm["gds"]["path"]')"
 eq "manifest gds sha256 is the byte-compared GDS" "$(printf '%s' 'router-gds-v4' | sha256sum | cut -d' ' -f1)" "$(mj "$EXP" 'm["gds"]["sha256"]')"
-if bundle_consistent "$EXP"; then
-  ok "manifest artifact rows match the exported bytes, with nothing unlisted"
-else
-  no "manifest artifact rows match the exported bytes, with nothing unlisted"
-fi
+ok_if "manifest artifact rows match the exported bytes, with nothing unlisted" bundle_consistent "$EXP"
 
 # An ODB produced by the pinned run accompanies the DEF; without one, the
 # bundle above is DEF + Verilog + manifest only.
@@ -799,11 +744,7 @@ eq "the ODB accompanies the exported DEF" "stub-odb-v1" "$(cat "$EXP2/cve2_rv32i
 eq "export with an ODB holds DEF, ODB, Verilog and manifest" \
    "cve2_rv32imc_wrapper.def cve2_rv32imc_wrapper.odb cve2_rv32imc_wrapper.v manifest.json" \
    "$(ls "$EXP2" | LC_ALL=C sort | tr '\n' ' ' | sed 's/ $//')"
-if bundle_consistent "$EXP2"; then
-  ok "the ODB's manifest row matches its exported bytes"
-else
-  no "the ODB's manifest row matches its exported bytes"
-fi
+ok_if "the ODB's manifest row matches its exported bytes" bundle_consistent "$EXP2"
 
 # A missing DEF or a missing Verilog fails the run before any export.
 EXP3="$W/exp-missing"
@@ -811,22 +752,14 @@ rc=0
 STUB_GDS_CONTENT="router-gds-v4" STUB_RESPONSE_JSON="$VALID_RESP" STUB_OMIT_DEF=1 \
   run_par bash "$FX/flow/core/par.sh" "$FA" --check --export "$EXP3" >"$W/exp_nodef.err" 2>&1 || rc=$?
 eq "--check --export exits 1 when the router produced no DEF" 1 "$rc"
-if grep -q "produced no cve2_rv32imc_wrapper.def" "$W/exp_nodef.err"; then
-  ok "missing-DEF failure names the DEF"
-else
-  no "missing-DEF failure names the DEF"
-fi
+ok_if "missing-DEF failure names the DEF" grep -q "produced no cve2_rv32imc_wrapper.def" "$W/exp_nodef.err"
 [[ ! -e "$EXP3" ]] && ok "missing DEF publishes no export" || no "missing DEF publishes no export"
 
 rc=0
 STUB_GDS_CONTENT="router-gds-v4" STUB_RESPONSE_JSON="$VALID_RESP" STUB_OMIT_V=1 \
   run_par bash "$FX/flow/core/par.sh" "$FA" --check --export "$EXP3" >"$W/exp_nov.err" 2>&1 || rc=$?
 eq "--check --export exits 1 when the router produced no Verilog" 1 "$rc"
-if grep -q "produced no cve2_rv32imc_wrapper.v" "$W/exp_nov.err"; then
-  ok "missing-Verilog failure names the Verilog"
-else
-  no "missing-Verilog failure names the Verilog"
-fi
+ok_if "missing-Verilog failure names the Verilog" grep -q "produced no cve2_rv32imc_wrapper.v" "$W/exp_nov.err"
 [[ ! -e "$EXP3" ]] && ok "missing Verilog publishes no export" || no "missing Verilog publishes no export"
 
 # A rejected route response fails before the comparison, so no bundle.
@@ -876,11 +809,7 @@ rc=0
 STUB_GDS_CONTENT="router-gds-v4" STUB_RESPONSE_JSON="$VALID_RESP" STUB_MKDIR_AT="$EXP4" \
   run_par bash "$FX/flow/core/par.sh" "$FA" --check --export "$EXP4" >"$W/exp_raced.err" 2>&1 || rc=$?
 eq "--check --export exits 1 when the destination appears mid-run" 1 "$rc"
-if grep -q "the destination exists" "$W/exp_raced.err"; then
-  ok "mid-run destination failure names the destination"
-else
-  no "mid-run destination failure names the destination"
-fi
+ok_if "mid-run destination failure names the destination" grep -q "the destination exists" "$W/exp_raced.err"
 if compgen -G "$EXP4.export.*" >/dev/null; then
   no "a failed export leaves no staging directory behind"
 else
@@ -957,16 +886,8 @@ rc=0
 STUB_GDS_CONTENT="router-gds-v4" STUB_RESPONSE_JSON="$VALID_RESP" \
   run_par bash "$FX/flow/core/par.sh" "$FA" --check --export "$EXP5" >"$W/exp_retryok.err" 2>&1 || rc=$?
 eq "retrying the export at the same destination exits 0" 0 "$rc"
-if cmp -s "$EXP5/cve2_rv32imc_wrapper.v" "$W/exp.v.want"; then
-  ok "the retried export carries the routed Verilog bytes"
-else
-  no "the retried export carries the routed Verilog bytes"
-fi
-if bundle_consistent "$EXP5"; then
-  ok "the retried export publishes a manifest-consistent bundle"
-else
-  no "the retried export publishes a manifest-consistent bundle"
-fi
+ok_if "the retried export carries the routed Verilog bytes" cmp -s "$EXP5/cve2_rv32imc_wrapper.v" "$W/exp.v.want"
+ok_if "the retried export publishes a manifest-consistent bundle" bundle_consistent "$EXP5"
 
 # Keep a sibling at the old PID-derived staging path. exec preserves the
 # shell PID, so this also exercises a collision with the old staging scheme.
