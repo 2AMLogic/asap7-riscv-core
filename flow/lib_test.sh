@@ -498,5 +498,21 @@ expect_counted_die "a good first corner does not excuse the next (TT found 0)" \
   0 TT "$(fake_libdir FF 5)" FF TT
 
 echo
+echo "# 13. par_request: one place-and-route request serves both drivers"
+# The core driver inherits its grid from the verified smoke run, and one
+# template is what keeps that true when a track or a strap changes (#289): the
+# request schema is spelled in flow/lib.sh alone, and each driver renders its
+# request through the shared writer with its own top cell and clock port.
+TEMPLATE_FILES="$(grep -l --exclude='*_test.sh' 'klt\.place_and_route\.request/1' \
+  "$SELF_REPO"/flow/*.sh "$SELF_REPO"/flow/*/*.sh | sed "s|^$SELF_REPO/||" | sort | tr '\n' ' ' | sed 's/ $//')"
+eq "the request schema is spelled in flow/lib.sh alone" "flow/lib.sh" "$TEMPLATE_FILES"
+eq "the core driver renders the wrapper's request through the shared writer" \
+  'par_request "$TOP" clk_i "$CELL_LIB" >"$W/par.req.json"' \
+  "$(grep -F 'par_request "$TOP" clk_i "$CELL_LIB" >"$W/par.req.json"' "$SELF_REPO/flow/core/par.sh" | sed 's/^ *//')"
+eq "the smoke driver renders the counter's request through the shared writer" \
+  'par_request "$DUT" clk "$CELL_LIB" >"$W/par.req.json"' \
+  "$(grep -F 'par_request "$DUT" clk "$CELL_LIB" >"$W/par.req.json"' "$SELF_REPO/flow/smoke/run.sh" | sed 's/^ *//')"
+
+echo
 echo "flow/lib_test.sh: $PASS passed, $FAIL failed"
 [[ $FAIL -eq 0 ]]

@@ -5,8 +5,10 @@
 # driver's refusal contract (usage, non-checkout, a checkout at the wrong pin
 # -- the gate that fires before anything is written), the request template's
 # invariants (the decision 0004 floorplan values, the grid settings inherited
-# from the verified smoke run of PR #234, the wrapper's clock port, and the
-# fixed seed), and the driver's verification and publication invariants in a
+# from the verified smoke run of PR #234, the wrapper's netlist, clock port
+# and the fixed seed, then the smoke flow's counter through the same shared
+# template with its own netlist and clock port), and the driver's verification
+# and publication invariants in a
 # scratch fixture repository with stubbed router/provenance tools (--check
 # against HEAD:layout/cve2_top.gds even on a dirty working tree, response
 # validation in both modes, staging + leak-guarding records before publishing
@@ -16,9 +18,11 @@
 # provenance manifest only on the byte-identical path, with every failure
 # leaving the requested destination free for a retry).
 #
-# The template is extracted from the script and rendered with the same
-# values the script assigns, so a drifted setting fails here instead of in
-# a 30-minute place-and-route run.
+# The request is rendered through the shared writer the driver calls
+# (par_request, flow/lib.sh) with the values the driver passes, so a drifted
+# setting fails here instead of in a 30-minute place-and-route run; the
+# request the driver hands the router is compared with that render byte for
+# byte.
 #
 # ASAP7 is a predictive PDK; nothing here is fabricated or measured, and
 # this script makes no claim about any design.
@@ -70,15 +74,17 @@ else
 fi
 
 # ---- the request template's invariants --------------------------------------
-# Extract the request heredoc (the one unquoted <<EOF block), render it with
-# the values the script assigns, and load it as JSON.
+# Render the request through the shared writer both flow drivers call
+# (par_request, flow/lib.sh) with the values each driver passes, and load it
+# as JSON: the core's first, the smoke flow's counter after the assertions.
 req="$W/par.req.rendered.json"
-# shellcheck disable=SC2016  # literal match/replace of unexpanded $W, $TOP, $CELL_LIB
-sed -n '/cat >"\$W\/par.req.json" <<EOF/,/^EOF$/p' "$PAR" | sed '1d;$d' \
-  | sed -e 's/\${TOP}/cve2_rv32imc_wrapper/g' -e 's/\$TOP/cve2_rv32imc_wrapper/g' \
-        -e 's/\${CELL_LIB}/asap7sc7p5t_28_R/g' -e 's/\$CELL_LIB/asap7sc7p5t_28_R/g' \
-  >"$req"
-if python3 -I -c 'import json,sys; json.load(open(sys.argv[1]))' "$req" 2>/dev/null; then
+creq="$W/par.req.counter.json"
+par_request_of() (  # toplevel clock-port -- the shared writer's request, on stdout
+  source "$REPO/flow/lib.sh"
+  par_request "$1" "$2" asap7sc7p5t_28_R
+)
+if par_request_of cve2_rv32imc_wrapper clk_i >"$req" \
+   && python3 -I -c 'import json,sys; json.load(open(sys.argv[1]))' "$req" 2>/dev/null; then
   ok "request template renders to valid JSON"
 else
   no "request template renders to valid JSON"
@@ -86,8 +92,8 @@ else
   exit 1
 fi
 
-j() {  # jq-style extraction via python: j <py-expr over d>
-  python3 -I -c "import json,sys; d=json.load(open(sys.argv[1])); print($1)" "$req"
+j() {  # jq-style extraction via python: j <py-expr over d> [file]
+  python3 -I -c "import json,sys; d=json.load(open(sys.argv[1])); print($1)" "${2:-$req}"
 }
 
 eq "floorplan utilisation is decision 0004's 60%" "60" "$(j 'd["floorplan"]["utilization_pct"]')"
@@ -104,10 +110,25 @@ eq "connects[0] snaps the M3/M4 via stubs on-grid" "['M3', 'M4']" "$(j 'd["power
 eq "no power.preset (rejected with the RVT overlay key)" "None" "$(j 'd["power"].get("preset")')"
 eq "clock port is the wrapper's clk_i" "clk_i" "$(j 'd["constraints"]["clock_port"]')"
 eq "hdl toplevel is the wrapper" "cve2_rv32imc_wrapper" "$(j 'd["hdl_toplevel"]')"
+eq "netlist is derived from the top cell" "cve2_rv32imc_wrapper_synth.v" "$(j 'd["netlist"]')"
+eq "cell library is the RVT overlay key" "asap7sc7p5t_28_R" "$(j 'd["pdk"]["cell_library"]')"
 eq "seed is fixed at 1 (reproducibility claim)" "1" "$(j 'd["seed"]')"
 eq "output_dbu_um is 0.00025 (deck measures at 0.25 nm)" "0.00025" "$(j 'd["output_dbu_um"]')"
 eq "target stage is route" "route" "$(j 'd["target_stage"]')"
 eq "tapcell master is named" "TAPCELL_ASAP7_75t_R" "$(j 'd["library"]["tapcell"]["master"]')"
+
+# The smoke flow (flow/smoke/run.sh) sends the same template for the
+# counter: only its top cell, netlist and clock port are its own.
+if par_request_of counter clk >"$creq" \
+   && python3 -I -c 'import json,sys; json.load(open(sys.argv[1]))' "$creq" 2>/dev/null; then
+  ok "the counter request renders to valid JSON"
+else
+  no "the counter request renders to valid JSON"
+fi
+eq "counter hdl toplevel is the counter" "counter" "$(j 'd["hdl_toplevel"]' "$creq")"
+eq "counter netlist is derived from the top cell" "counter_synth.v" "$(j 'd["netlist"]' "$creq")"
+eq "counter clock port is the counter's clk" "clk" "$(j 'd["constraints"]["clock_port"]' "$creq")"
+eq "counter cell library is the same RVT overlay key" "asap7sc7p5t_28_R" "$(j 'd["pdk"]["cell_library"]' "$creq")"
 
 # ---- verification & publication invariants (PDK-free fixture repo) ----------
 BIN="$W/bin"; mkdir -p "$BIN"
@@ -146,6 +167,7 @@ fi
 if [[ "${1:-}" == "place-and-route" ]]; then
   mkdir -p .klt/place-and-route
   sha256sum cve2_rv32imc_wrapper_synth.v | cut -d' ' -f1 >"${STUB_NETLIST_SEEN:-/dev/null}"
+  [[ -z "${STUB_REQ_SEEN:-}" ]] || cp "$2" "$STUB_REQ_SEEN"
   [[ -z "${STUB_EDIT_SRC:-}" ]] || printf 'edited-during-route\n' >"$STUB_EDIT_SRC"
   [[ -z "${STUB_MKDIR_AT:-}" ]] || mkdir -p "$STUB_MKDIR_AT"
   if [[ -n "${STUB_SQUAT_FILE:-}" ]]; then
@@ -233,10 +255,16 @@ git -C "$FX" add layout/cve2_top.gds
 git -C "$FX" -c user.email=t@t -c user.name=t commit -q -m "commit baseline layout"
 
 # 2. Clean baseline: --check passes when regenerated GDS matches HEAD and response is valid.
+rm -f "$W/seen.req.json"
 rc=0
-STUB_GDS_CONTENT="committed-gds-v1" STUB_RESPONSE_JSON="$VALID_RESP" \
+STUB_GDS_CONTENT="committed-gds-v1" STUB_RESPONSE_JSON="$VALID_RESP" STUB_REQ_SEEN="$W/seen.req.json" \
   run_par bash "$FX/flow/core/par.sh" "$FA" --check >"$W/cleancheck.err" 2>&1 || rc=$?
 eq "--check exits 0 when GDS matches HEAD and response is valid" 0 "$rc"
+if cmp -s "$W/seen.req.json" "$req"; then
+  ok "the driver hands the router the request the shared writer renders, byte for byte"
+else
+  no "the driver hands the router the request the shared writer renders, byte for byte"
+fi
 
 # 3. Dirty-baseline regression: router emits different GDS; running record mode
 # overwrites working-tree layout/cve2_top.gds, and a subsequent --check must
