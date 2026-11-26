@@ -35,27 +35,6 @@ W="$(mktemp -d "${TMPDIR:-/tmp}/asap7-drctest.XXXXXX")"
 cleanup() { rm -rf "$W"; }
 trap cleanup EXIT
 
-DRC="$REPO/flow/core/drc.sh"
-
-# ---- the klt invocation's invariants (read from the driver) -----------------
-if grep -q -- '--engine klayout' "$DRC"; then
-  ok "the drc run names engine klayout"
-else
-  no "the drc run names engine klayout"
-fi
-if grep -q -- '--expect-rule-categories "$EXPECT_CATEGORIES"' "$DRC"; then
-  ok "the category count is a named constant, not a magic number inline"
-else
-  no "the category count is a named constant, not a magic number inline"
-fi
-eq "the expected category count is decision 0012's 267" \
-  "EXPECT_CATEGORIES=267" "$(grep -o 'EXPECT_CATEGORIES=267' "$DRC" | head -1)"
-if grep -q -- '--deck-file' "$DRC" && grep -q -- '--format json' "$DRC"; then
-  ok "the deck is passed by file and the report asked for as JSON"
-else
-  no "the deck is passed by file and the report asked for as JSON"
-fi
-
 # ---- fixture repository ------------------------------------------------------
 BIN="$W/bin"; mkdir -p "$BIN"
 cat >"$BIN/uvx" <<'STUB'
@@ -79,6 +58,26 @@ if [[ "${1:-}" == "version" ]]; then
   exit 0
 fi
 if [[ "${1:-}" == "drc" ]]; then
+  if [[ -n "${STUB_ARGS_DIR:-}" ]]; then
+    shift
+    while (( $# >= 2 )); do
+      case "$1" in
+        --engine|--expect-rule-categories|--format)
+          value=$2 ;;
+        --deck-file)
+          # The driver removes its scratch tree on exit. Check the staged copy now.
+          if [[ "$2" -ef ../deck/asap7.drc ]] && cmp -s -- "$2" "$KLT_DECK_FILE"; then
+            value="staged fixture deck"
+          else
+            value="unexpected deck at $2"
+          fi
+          ;;
+        *) shift; continue ;;
+      esac
+      printf '%s\n' "$value" >"$STUB_ARGS_DIR/${1#--}"
+      shift 2
+    done
+  fi
   if [[ -n "${STUB_SQUAT_FILE:-}" ]]; then
     mkdir -p -- "$(dirname -- "$STUB_SQUAT_FILE")"
     printf '%s' "${STUB_SQUAT_CONTENT:-}" >"$STUB_SQUAT_FILE"
@@ -104,7 +103,7 @@ FX="$W/repo"
 mkdir -p "$FX/flow/core/records" "$FX/spec" "$FX/layout"
 cp "$REPO/flow/lib.sh" "$REPO/flow/record_lib.py" "$FX/flow/"
 mkdir -p "$FX/flow/core"
-cp "$DRC" "$REPO/flow/core/record_publish.sh" "$FX/flow/core/"
+cp "$REPO/flow/core/drc.sh" "$REPO/flow/core/record_publish.sh" "$FX/flow/core/"
 chmod +x "$FX/flow/core/drc.sh"
 cat >"$FX/spec/pdk-bringup.md" <<EOF
 | Upstream repo | fake $SHA_UP |
@@ -212,8 +211,13 @@ print(json.dumps({
 PY
 )"
 out="$W/ok.out"; rc=0
-( STUB_REPORT_JSON="$VALID_REPORT" run_drc ) >"$out" 2>&1 || rc=$?
+args="$W/drc-args"; mkdir -p "$args"
+( STUB_ARGS_DIR="$args" STUB_REPORT_JSON="$VALID_REPORT" run_drc ) >"$out" 2>&1 || rc=$?
 eq "a usable report records cleanly (exit 0)" 0 "$rc"
+eq "klt drc receives the KLayout engine" klayout "$(cat "$args/engine" 2>/dev/null)"
+eq "klt drc expects decision 0012's category count" 267 "$(cat "$args/expect-rule-categories" 2>/dev/null)"
+eq "klt drc receives the JSON format" json "$(cat "$args/format" 2>/dev/null)"
+eq "klt drc receives the staged copy of the fixture deck" "staged fixture deck" "$(cat "$args/deck-file" 2>/dev/null)"
 
 REC="$FX/flow/core/records/$FXDATE/drc.json"
 if [[ -s "$REC" ]] && [[ -s "$FX/flow/core/records/$FXDATE/tool-versions.txt" ]]; then
