@@ -9,8 +9,10 @@
 # fixed seed), and the driver's verification and publication invariants in a
 # scratch fixture repository with stubbed router/provenance tools (--check
 # against HEAD:layout/cve2_top.gds even on a dirty working tree, response
-# validation in both modes, and staging + leak-guarding records before
-# publishing outputs).
+# validation in both modes, staging + leak-guarding records before publishing
+# outputs, and the --check --export bundle: routed DEF and routed Verilog
+# published with a provenance manifest only on the byte-identical path, with
+# every failure leaving the requested destination free for a retry).
 #
 # The template is extracted from the script and rendered with the same
 # values the script assigns, so a drifted setting fails here instead of in
@@ -143,9 +145,13 @@ if [[ "${1:-}" == "place-and-route" ]]; then
   mkdir -p .klt/place-and-route
   sha256sum cve2_rv32imc_wrapper_synth.v | cut -d' ' -f1 >"${STUB_NETLIST_SEEN:-/dev/null}"
   [[ -z "${STUB_EDIT_SRC:-}" ]] || printf 'edited-during-route\n' >"$STUB_EDIT_SRC"
+  [[ -z "${STUB_MKDIR_AT:-}" ]] || mkdir -p "$STUB_MKDIR_AT"
   printf '%s' "${STUB_GDS_CONTENT:-committed-gds-v1}" > .klt/place-and-route/cve2_rv32imc_wrapper.gds
-  printf 'VERSION 5.8 ;\nEND DESIGN\n' > .klt/place-and-route/cve2_rv32imc_wrapper.def
-  printf 'module cve2_rv32imc_wrapper(input clk_i);\nendmodule\n' > .klt/place-and-route/cve2_rv32imc_wrapper.v
+  # The routed Verilog carries different bytes from the synthesis input, so a
+  # test can tell an exported routed netlist from an exported input netlist.
+  [[ -n "${STUB_OMIT_DEF:-}" ]] || printf 'VERSION 5.8 ;\nEND DESIGN\n' > .klt/place-and-route/cve2_rv32imc_wrapper.def
+  [[ -n "${STUB_OMIT_V:-}" ]] || printf 'module cve2_rv32imc_wrapper(input clk_i);\n  wire stub_routed_w;\nendmodule\n' > .klt/place-and-route/cve2_rv32imc_wrapper.v
+  [[ -z "${STUB_ODB_CONTENT:-}" ]] || printf '%s' "${STUB_ODB_CONTENT}" > .klt/place-and-route/cve2_rv32imc_wrapper.odb
   printf '%s\n' "${STUB_RESPONSE_JSON:-}"
   exit "${STUB_KLT_RC:-0}"
 fi
@@ -488,6 +494,250 @@ if grep -q "2026-12-02/par.json" "$W/pin_broken.err"; then
   ok "broken-record refusal names the par.json"
 else
   no "broken-record refusal names the par.json"
+fi
+
+# 11. --export (issue #283): --check --export <dir> publishes the routed DEF,
+# the matching routed Verilog and a provenance manifest as one directory, only
+# on the byte-identical comparison path; every failure leaves the requested
+# destination free for a retry. --check must first be passable again: the
+# newest committed par.json is currently the broken 2026-12-02 record, so
+# commit a good one pinning the netlist HEAD selects.
+mkdir -p "$FX/flow/core/records/2026-12-03"
+printf '{"core_flow":{"input_netlist":{"path":"flow/core/records/2026-11-24/netlist.v","sha256":"%s"}}}\n' "$NEW_NL_SHA" \
+  >"$FX/flow/core/records/2026-12-03/par.json"
+git -C "$FX" add flow/core/records/2026-12-03/par.json
+git -C "$FX" -c user.email=t@t -c user.name=t commit -q -m "commit good pin record"
+FX_HEAD="$(git -C "$FX" rev-parse HEAD)"
+
+mj() {  # mj <export-dir> <py-expr over m>: one value from a bundle's manifest.json
+  python3 -I -c "import json,sys; m=json.load(open(sys.argv[1]+'/manifest.json',encoding='utf-8')); print($2)" "$1"
+}
+bundle_consistent() {  # <dir>: every artifacts row matches the bytes on disk, and vice versa
+  python3 -I - "$1" <<'PY'
+import hashlib, json, os, sys
+d = sys.argv[1]
+m = json.load(open(os.path.join(d, "manifest.json"), encoding="utf-8"))
+listed = set()
+for a in m["artifacts"]:
+    p = os.path.join(d, a["filename"])
+    assert os.path.isfile(p), "manifest lists a missing file: " + a["filename"]
+    assert hashlib.sha256(open(p, "rb").read()).hexdigest() == a["sha256"], "digest mismatch for " + a["filename"]
+    listed.add(a["filename"])
+on_disk = set(os.listdir(d)) - {"manifest.json"}
+assert listed == on_disk, "manifest and directory disagree: %r vs %r" % (sorted(listed), sorted(on_disk))
+PY
+}
+
+# Refusals: --export without --check, without a value, and onto an existing
+# destination are all exit 2; the existing-destination one fires before routing.
+rc=0
+run_par bash "$FX/flow/core/par.sh" "$FA" --export "$W/exp-nocheck" >"$W/exp_nocheck.err" 2>&1 || rc=$?
+eq "--export without --check refuses (exit 2)" 2 "$rc"
+if grep -q "rerun with --check" "$W/exp_nocheck.err"; then
+  ok "no-check export refusal names --check"
+else
+  no "no-check export refusal names --check"
+fi
+[[ ! -e "$W/exp-nocheck" ]] && ok "no-check export refusal publishes nothing" || no "no-check export refusal publishes nothing"
+
+rc=0
+run_par bash "$FX/flow/core/par.sh" "$FA" --check --export >"$W/exp_noval.err" 2>&1 || rc=$?
+eq "--export without a directory argument refuses (exit 2)" 2 "$rc"
+
+mkdir -p "$W/exp-taken"
+rm -f "$W/seen11r.sha"
+rc=0
+STUB_GDS_CONTENT="router-gds-v4" STUB_RESPONSE_JSON="$VALID_RESP" STUB_NETLIST_SEEN="$W/seen11r.sha" \
+  run_par bash "$FX/flow/core/par.sh" "$FA" --check --export "$W/exp-taken" >"$W/exp_taken.err" 2>&1 || rc=$?
+eq "--export to an existing destination refuses (exit 2)" 2 "$rc"
+if grep -q "already exists" "$W/exp_taken.err"; then
+  ok "existing-destination refusal names the destination"
+else
+  no "existing-destination refusal names the destination"
+fi
+if [[ ! -e "$W/seen11r.sha" ]]; then
+  ok "existing-destination refusal fires before routing"
+else
+  no "existing-destination refusal fires before routing"
+fi
+
+# Successful export after normal scratch cleanup: the run's TMPDIR is a
+# dedicated directory asserted empty afterwards, so the bundle cannot be
+# leftover scratch and must have been copied out before cleanup.
+EXP="$W/exp-bundle"; ETMP="$W/exp-tmp"; mkdir -p "$ETMP"
+rm -f "$W/seen11s.sha"
+rc=0
+TMPDIR="$ETMP" STUB_GDS_CONTENT="router-gds-v4" STUB_RESPONSE_JSON="$VALID_RESP" \
+  STUB_NETLIST_SEEN="$W/seen11s.sha" \
+  run_par bash "$FX/flow/core/par.sh" "$FA" --check --export "$EXP" >"$W/exp_ok.err" 2>&1 || rc=$?
+eq "--check --export exits 0 when the GDS matches HEAD" 0 "$rc"
+eq "export run routes the committed netlist" "$NEW_NL_SHA" "$(cat "$W/seen11s.sha" 2>/dev/null)"
+if compgen -G "$ETMP/asap7-*" >/dev/null; then
+  no "export run cleans its scratch directory"
+else
+  ok "export run cleans its scratch directory"
+fi
+if grep -q "export ->" "$W/exp_ok.err"; then
+  ok "successful export announces the destination"
+else
+  no "successful export announces the destination"
+fi
+printf 'VERSION 5.8 ;\nEND DESIGN\n' >"$W/exp.def.want"
+printf 'module cve2_rv32imc_wrapper(input clk_i);\n  wire stub_routed_w;\nendmodule\n' >"$W/exp.v.want"
+if cmp -s "$EXP/cve2_rv32imc_wrapper.def" "$W/exp.def.want"; then
+  ok "exported DEF carries the router's DEF bytes"
+else
+  no "exported DEF carries the router's DEF bytes"
+fi
+if cmp -s "$EXP/cve2_rv32imc_wrapper.v" "$W/exp.v.want"; then
+  ok "exported Verilog carries the routed netlist bytes"
+else
+  no "exported Verilog carries the routed netlist bytes"
+fi
+if cmp -s "$EXP/cve2_rv32imc_wrapper.v" "$FX/flow/core/records/2026-11-24/netlist.v"; then
+  no "exported Verilog is the routed netlist, not the synthesis input"
+else
+  ok "exported Verilog is the routed netlist, not the synthesis input"
+fi
+eq "export holds exactly the DEF, the routed Verilog and the manifest" \
+   "cve2_rv32imc_wrapper.def cve2_rv32imc_wrapper.v manifest.json" \
+   "$(ls "$EXP" | LC_ALL=C sort | tr '\n' ' ' | sed 's/ $//')"
+eq "manifest schema_version is 1" "1" "$(mj "$EXP" 'm["schema_version"]')"
+eq "manifest top_cell is the wrapper" "cve2_rv32imc_wrapper" "$(mj "$EXP" 'm["top_cell"]')"
+eq "manifest input_rev is the fixture's HEAD commit" "$FX_HEAD" "$(mj "$EXP" 'm["input_rev"]')"
+eq "manifest input_netlist path is the routed input" "flow/core/records/2026-11-24/netlist.v" "$(mj "$EXP" 'm["input_netlist"]["path"]')"
+eq "manifest input_netlist sha256 is the routed input" "$NEW_NL_SHA" "$(mj "$EXP" 'm["input_netlist"]["sha256"]')"
+eq "manifest gds path is the committed layout" "layout/cve2_top.gds" "$(mj "$EXP" 'm["gds"]["path"]')"
+eq "manifest gds sha256 is the byte-compared GDS" "$(printf '%s' 'router-gds-v4' | sha256sum | cut -d' ' -f1)" "$(mj "$EXP" 'm["gds"]["sha256"]')"
+if bundle_consistent "$EXP"; then
+  ok "manifest artifact rows match the exported bytes, with nothing unlisted"
+else
+  no "manifest artifact rows match the exported bytes, with nothing unlisted"
+fi
+
+# An ODB produced by the pinned run accompanies the DEF; without one, the
+# bundle above is DEF + Verilog + manifest only.
+EXP2="$W/exp-odb"; ETMP2="$W/exp-tmp2"; mkdir -p "$ETMP2"
+rc=0
+TMPDIR="$ETMP2" STUB_GDS_CONTENT="router-gds-v4" STUB_RESPONSE_JSON="$VALID_RESP" \
+  STUB_ODB_CONTENT="stub-odb-v1" \
+  run_par bash "$FX/flow/core/par.sh" "$FA" --check --export "$EXP2" >"$W/exp_odb.err" 2>&1 || rc=$?
+eq "--check --export with an ODB in the run tree exits 0" 0 "$rc"
+eq "the ODB accompanies the exported DEF" "stub-odb-v1" "$(cat "$EXP2/cve2_rv32imc_wrapper.odb" 2>/dev/null)"
+eq "export with an ODB holds DEF, ODB, Verilog and manifest" \
+   "cve2_rv32imc_wrapper.def cve2_rv32imc_wrapper.odb cve2_rv32imc_wrapper.v manifest.json" \
+   "$(ls "$EXP2" | LC_ALL=C sort | tr '\n' ' ' | sed 's/ $//')"
+if bundle_consistent "$EXP2"; then
+  ok "the ODB's manifest row matches its exported bytes"
+else
+  no "the ODB's manifest row matches its exported bytes"
+fi
+
+# A missing DEF or a missing Verilog fails the run before any export.
+EXP3="$W/exp-missing"
+rc=0
+STUB_GDS_CONTENT="router-gds-v4" STUB_RESPONSE_JSON="$VALID_RESP" STUB_OMIT_DEF=1 \
+  run_par bash "$FX/flow/core/par.sh" "$FA" --check --export "$EXP3" >"$W/exp_nodef.err" 2>&1 || rc=$?
+eq "--check --export exits 1 when the router produced no DEF" 1 "$rc"
+if grep -q "produced no cve2_rv32imc_wrapper.def" "$W/exp_nodef.err"; then
+  ok "missing-DEF failure names the DEF"
+else
+  no "missing-DEF failure names the DEF"
+fi
+[[ ! -e "$EXP3" ]] && ok "missing DEF publishes no export" || no "missing DEF publishes no export"
+
+rc=0
+STUB_GDS_CONTENT="router-gds-v4" STUB_RESPONSE_JSON="$VALID_RESP" STUB_OMIT_V=1 \
+  run_par bash "$FX/flow/core/par.sh" "$FA" --check --export "$EXP3" >"$W/exp_nov.err" 2>&1 || rc=$?
+eq "--check --export exits 1 when the router produced no Verilog" 1 "$rc"
+if grep -q "produced no cve2_rv32imc_wrapper.v" "$W/exp_nov.err"; then
+  ok "missing-Verilog failure names the Verilog"
+else
+  no "missing-Verilog failure names the Verilog"
+fi
+[[ ! -e "$EXP3" ]] && ok "missing Verilog publishes no export" || no "missing Verilog publishes no export"
+
+# A rejected route response fails before the comparison, so no bundle.
+rc=0
+STUB_GDS_CONTENT="router-gds-v4" STUB_RESPONSE_JSON="$BAD_PDN" \
+  run_par bash "$FX/flow/core/par.sh" "$FA" --check --export "$EXP3" >"$W/exp_badresp.err" 2>&1 || rc=$?
+eq "--check --export exits 1 on a rejected route response" 1 "$rc"
+[[ ! -e "$EXP3" ]] && ok "rejected response publishes no export" || no "rejected response publishes no export"
+
+# A GDS mismatch, against a dirty working-tree layout that must not
+# self-compare, fails the byte-compare: no bundle, no layout overwrite.
+printf 'dirty-working-layout' >"$FX/layout/cve2_top.gds"
+rc=0
+STUB_GDS_CONTENT="router-gds-v5" STUB_RESPONSE_JSON="$VALID_RESP" \
+  run_par bash "$FX/flow/core/par.sh" "$FA" --check --export "$EXP3" >"$W/exp_mismatch.err" 2>&1 || rc=$?
+eq "--check --export exits 1 on a GDS mismatch against HEAD" 1 "$rc"
+[[ ! -e "$EXP3" ]] && ok "GDS mismatch publishes no export" || no "GDS mismatch publishes no export"
+eq "GDS mismatch leaves the dirty working-tree layout untouched" "dirty-working-layout" "$(cat "$FX/layout/cve2_top.gds")"
+git -C "$FX" checkout -q -- layout/cve2_top.gds
+
+# A destination that appears mid-run -- after the early refusal, before the
+# rename -- fails the export, removes the staging directory and leaves the
+# squatter untouched.
+EXP4="$W/exp-raced"
+rc=0
+STUB_GDS_CONTENT="router-gds-v4" STUB_RESPONSE_JSON="$VALID_RESP" STUB_MKDIR_AT="$EXP4" \
+  run_par bash "$FX/flow/core/par.sh" "$FA" --check --export "$EXP4" >"$W/exp_raced.err" 2>&1 || rc=$?
+eq "--check --export exits 1 when the destination appears mid-run" 1 "$rc"
+if grep -q "the destination exists" "$W/exp_raced.err"; then
+  ok "mid-run destination failure names the destination"
+else
+  no "mid-run destination failure names the destination"
+fi
+if compgen -G "$EXP4.export.*" >/dev/null; then
+  no "a failed export leaves no staging directory behind"
+else
+  ok "a failed export leaves no staging directory behind"
+fi
+if [[ -d "$EXP4" && -z "$(ls -A "$EXP4")" ]]; then
+  ok "the mid-run squatter on the destination is left untouched"
+else
+  no "the mid-run squatter on the destination is left untouched"
+fi
+
+# Retry: the failed attempt left the destination free, so the retry at the
+# same path publishes the bundle.
+EXP5="$W/exp-retry"
+rc=0
+STUB_GDS_CONTENT="router-gds-mismatch" STUB_RESPONSE_JSON="$VALID_RESP" \
+  run_par bash "$FX/flow/core/par.sh" "$FA" --check --export "$EXP5" >"$W/exp_retryfail.err" 2>&1 || rc=$?
+eq "a failed export attempt exits 1" 1 "$rc"
+[[ ! -e "$EXP5" ]] && ok "the failed attempt leaves the destination free" || no "the failed attempt leaves the destination free"
+rc=0
+STUB_GDS_CONTENT="router-gds-v4" STUB_RESPONSE_JSON="$VALID_RESP" \
+  run_par bash "$FX/flow/core/par.sh" "$FA" --check --export "$EXP5" >"$W/exp_retryok.err" 2>&1 || rc=$?
+eq "retrying the export at the same destination exits 0" 0 "$rc"
+if cmp -s "$EXP5/cve2_rv32imc_wrapper.v" "$W/exp.v.want"; then
+  ok "the retried export carries the routed Verilog bytes"
+else
+  no "the retried export carries the routed Verilog bytes"
+fi
+if bundle_consistent "$EXP5"; then
+  ok "the retried export publishes a manifest-consistent bundle"
+else
+  no "the retried export publishes a manifest-consistent bundle"
+fi
+
+# A trailing slash on the destination is normalised, not published into.
+rc=0
+STUB_GDS_CONTENT="router-gds-v4" STUB_RESPONSE_JSON="$VALID_RESP" \
+  run_par bash "$FX/flow/core/par.sh" "$FA" --check --export "$W/exp-slash/" >"$W/exp_slash.err" 2>&1 || rc=$?
+eq "--export normalises a trailing slash on the destination (exit 0)" 0 "$rc"
+if [[ -f "$W/exp-slash/manifest.json" ]]; then
+  ok "the trailing-slash destination receives the bundle"
+else
+  no "the trailing-slash destination receives the bundle"
+fi
+
+# No staging directory survives any export path in this section.
+if compgen -G "$W/exp*.export.*" >/dev/null; then
+  no "no export staging directories are left behind"
+else
+  ok "no export staging directories are left behind"
 fi
 
 echo "1..$((NPASS + NBAD)) pass=$NPASS fail=$NBAD"

@@ -33,6 +33,17 @@
 #        flow/core/par.sh <asap7-checkout>            write a new dated record
 #        (the checkout may be given as $ASAP7_DIR instead of an argument)
 #
+# --check --export <dir>: once the regenerated GDS has compared byte-identical
+# with HEAD:layout/cve2_top.gds, publish the routed DEF and the matching routed
+# Verilog (plus the ODB, when the pinned run produced one) together at <dir>,
+# with a manifest.json naming the top cell, the captured INPUT_REV, the input
+# netlist's path and sha256, the compared GDS's sha256 and every exported
+# artifact's filename and sha256 -- one bundle a Spot worker copies as a unit
+# (#284) and verifies against the committed reference before accepting. The
+# bundle is staged beside <dir> and made visible in a single rename; a failed
+# run publishes nothing and leaves <dir> free for a retry, and an existing
+# <dir> is a refusal before anything runs.
+#
 # <asap7-checkout> is The-OpenROAD-Project/asap7 at the pins in
 # spec/pdk-bringup.md section 1, with the asap7_pdk_r1p7 and asap7sc7p5t_28
 # submodules initialised. The script refuses any other checkout.
@@ -50,13 +61,15 @@
 #   KEEP_SCRATCH=1  keep the scratch directory
 #
 # Exit status: 0 ok (and, with --check, byte-identical to
-# HEAD:layout/cve2_top.gds); 1 a step failed, the response failed validation,
-# a staged record leaked a host path, or --check found a difference -- a GDS
+# HEAD:layout/cve2_top.gds, with any --export bundle published); 1 a step
+# failed, the response failed validation, a staged record leaked a host path,
+# an export could not be published, or --check found a difference -- a GDS
 # byte difference, or the selected netlist not being the one the newest
 # committed par.json pins, or that record having no readable input pin; 2
 # refused invocation -- including --check finding no committed
 # HEAD:layout/cve2_top.gds to compare against at all (a refusal, not a
-# difference).
+# difference), --export without --check, and an --export destination that
+# already exists.
 set -euo pipefail
 
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
@@ -67,19 +80,41 @@ CELL_LIB=asap7sc7p5t_28_R
 GDS_OUT="$REPO/layout/cve2_top.gds"
 
 CHECK=0
+EXPORT_DEST=""
+EXPORT_GIVEN=0
 ARGS=()
-for a in "$@"; do
-  case "$a" in
-    --check) CHECK=1 ;;
-    -*) die "unknown option: $a" ;;
-    *) ARGS+=("$a") ;;
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --check) CHECK=1; shift ;;
+    --export)
+      [[ $# -ge 2 ]] || die "usage: flow/core/par.sh <asap7-checkout> --check --export <dir>: --export needs a directory argument"
+      EXPORT_DEST="$2"; EXPORT_GIVEN=1; shift 2 ;;
+    -*) die "unknown option: $1" ;;
+    *) ARGS+=("$1"); shift ;;
   esac
 done
-[[ ${#ARGS[@]} -le 1 ]] || die "usage: flow/core/par.sh [<asap7-checkout>] [--check]"
+[[ ${#ARGS[@]} -le 1 ]] || die "usage: flow/core/par.sh [<asap7-checkout>] [--check] [--export <dir>]"
 ASAP7_ARG="${ARGS[0]:-${ASAP7_DIR:-}}"
-[[ -n "$ASAP7_ARG" ]] || die "usage: flow/core/par.sh <asap7-checkout> [--check] (or set ASAP7_DIR)"
+[[ -n "$ASAP7_ARG" ]] || die "usage: flow/core/par.sh <asap7-checkout> [--check] [--export <dir>] (or set ASAP7_DIR)"
 [[ -d "$ASAP7_ARG" ]] || die "not a directory: $ASAP7_ARG"
 ASAP7="$(cd "$ASAP7_ARG" && pwd)"
+
+# ---- --export gate -----------------------------------------------------------
+# The bundle is published on the --check comparison path only, so an export
+# request without --check is a refused invocation, and a destination that
+# already exists is refused here -- before the pins, the scratch and the
+# route -- so a caller learns immediately that the path is taken and a failed
+# run always leaves the requested destination free for a retry. Trailing
+# slashes are normalised so the staging directory is a sibling of the
+# destination, never a path inside it.
+if [[ $EXPORT_GIVEN == 1 ]]; then
+  [[ -n "$EXPORT_DEST" ]] || die "--export needs a non-empty directory path"
+  while [[ "$EXPORT_DEST" == */ && "$EXPORT_DEST" != "/" ]]; do EXPORT_DEST="${EXPORT_DEST%/}"; done
+  [[ $CHECK == 1 ]] \
+    || die "--export publishes on the --check comparison path; rerun with --check (usage: flow/core/par.sh <asap7-checkout> --check --export <dir>)"
+  [[ ! -e "$EXPORT_DEST" && ! -L "$EXPORT_DEST" ]] \
+    || die "export destination already exists: $EXPORT_DEST (a failed run leaves it free for a retry; remove a published bundle or choose another path)"
+fi
 
 # ---- pins, read from the spec -------------------------------------------
 # Label-anchored and fail-closed (flow/lib.sh); the same reads the smoke flow
@@ -286,11 +321,78 @@ PY
   die "$RESP_ERR" 1
 fi
 
-# ---- compare (--check) against HEAD:layout/cve2_top.gds ---------------------
+# ---- compare (--check) and export (--check --export <dir>) ------------------
+# The export is published only on the byte-identical path, after the response
+# validation and the DEF/Verilog existence checks above, so a rejected route,
+# a missing output or a GDS difference publishes nothing. The bundle is staged
+# beside the destination -- same directory, hence one filesystem, hence one
+# rename makes it visible as a unit -- and every failure removes the staging
+# directory, leaving the requested destination free for a retry. The manifest
+# digests are computed from the staged copies, so they always describe the
+# bytes the destination actually receives, and the leak guard runs over the
+# staged bundle for the same reason it runs over a staged record: nothing
+# published from this flow may name a host path.
+EXPORT_STAGE=""
+export_bundle() {
+  EXPORT_STAGE="$EXPORT_DEST.export.$$"
+  rm -rf "$EXPORT_STAGE"
+  mkdir -p "$(dirname "$EXPORT_DEST")" "$EXPORT_STAGE" || return 1
+  local f
+  for f in "$TOP.def" "$TOP.v"; do
+    cp "$PR/$f" "$EXPORT_STAGE/$f" || return 1
+  done
+  # An ODB accompanies the DEF when the pinned run produced one; it is
+  # optional, so its absence is not a failure.
+  [[ ! -s "$PR/$TOP.odb" ]] || cp "$PR/$TOP.odb" "$EXPORT_STAGE/$TOP.odb" || return 1
+  python3 -I - "$EXPORT_STAGE" "$TOP" "$INPUT_REV" "$NETLIST_SRC" "$NETLIST_SHA" \
+    "$(sha "$PR/$TOP.gds")" <<'PY' || return 1
+import hashlib, json, os, sys
+stage, top, rev, nl_path, nl_sha, gds_sha = sys.argv[1:7]
+def sha256(path):
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(65536), b""):
+            h.update(chunk)
+    return h.hexdigest()
+artifacts = [{"filename": n, "sha256": sha256(os.path.join(stage, n))}
+             for n in sorted(os.listdir(stage))]
+manifest = {
+    "schema_version": 1,
+    "note": "Routed export published by flow/core/par.sh --check --export: the "
+            "routed DEF and the matching routed Verilog (plus the ODB when the "
+            "pinned run produced one) of the top cell below, exported only "
+            "after the regenerated GDS compared byte-identical with the "
+            "committed HEAD:layout/cve2_top.gds, so gds.sha256 is the digest "
+            "of both. Predictive PDK; nothing here is fabricated or measured.",
+    "predicted": True,
+    "top_cell": top,
+    "input_rev": rev,
+    "input_netlist": {"path": nl_path, "sha256": nl_sha},
+    "gds": {"path": "layout/cve2_top.gds", "sha256": gds_sha},
+    "artifacts": artifacts,
+}
+with open(os.path.join(stage, "manifest.json"), "w", encoding="utf-8") as f:
+    json.dump(manifest, f, indent=2, sort_keys=True)
+    f.write("\n")
+PY
+  ( record_leak_guard "$EXPORT_STAGE" ) || return 1
+  [[ ! -e "$EXPORT_DEST" && ! -L "$EXPORT_DEST" ]] || return 1
+  mv "$EXPORT_STAGE" "$EXPORT_DEST" || return 1
+}
 if [[ $CHECK == 1 ]]; then
   if cmp -s "$PR/$TOP.gds" "$COMMITTED_GDS"; then
     echo "par.sh: regenerated GDS is byte-identical to HEAD:layout/cve2_top.gds" \
          "(sha256:$(sha "$COMMITTED_GDS"))" >&2
+    if [[ $EXPORT_GIVEN == 1 ]]; then
+      if ! export_bundle; then
+        [[ -z "$EXPORT_STAGE" ]] || rm -rf "$EXPORT_STAGE"
+        if [[ -e "$EXPORT_DEST" || -L "$EXPORT_DEST" ]]; then
+          die "publishing the export to $EXPORT_DEST failed: the destination exists (nothing of this run was published there); remove it or choose another path" 1
+        fi
+        die "publishing the export to $EXPORT_DEST failed; nothing was left published, retry the run" 1
+      fi
+      echo "par.sh: export -> $EXPORT_DEST (routed DEF and netlist of $TOP with manifest.json)" >&2
+    fi
     exit 0
   fi
   echo "par.sh: regenerated GDS DIFFERS from HEAD:layout/cve2_top.gds" \
