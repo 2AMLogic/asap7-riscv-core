@@ -19,7 +19,8 @@
 #
 # Prerequisites: `uvx` and network egress (the pinned klt is resolved
 # automatically), or KLT_CMD + KLT_DECK_FILE to run a pre-resolved klt and
-# deck file.
+# deck file. Record publication uses GNU `ln -T` to link each record file
+# into place without replacement (flow/core/record_publish.sh).
 #
 # Environment:
 #   RECORD_DATE     record directory name (default: today, UTC). The script
@@ -40,6 +41,8 @@ set -euo pipefail
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 # shellcheck source=flow/lib.sh
 source "$REPO/flow/lib.sh"
+# shellcheck source=flow/core/record_publish.sh
+source "$REPO/flow/core/record_publish.sh"
 TOP=cve2_rv32imc_wrapper
 GDS_PATH=layout/cve2_top.gds
 
@@ -188,8 +191,11 @@ KLT_V="$("${KLT[@]}" version 2>&1 | head -1 || true)"
 record_leak_guard "$STAGE"
 
 # ---- publish dated record --------------------------------------------------
-# Records only: exclusive create, so nothing existing is overwritten, and a
-# failure removes exactly what this run created.
+# Records only: each file is installed exclusively (flow/core/record_publish.sh:
+# the copy is finished under a private name and linked to its final pathname
+# without replacement, so nothing existing is overwritten and a copy that
+# fails partway leaves no record behind), and a failure removes exactly what
+# this run created.
 CREATED=()
 OUT_MADE=0
 [[ -d "$OUT" ]] || OUT_MADE=1
@@ -200,12 +206,8 @@ publish_rollback() {
   return 0
 }
 publish() {
-  local f
   mkdir -p "$OUT" || return 1
-  for f in drc.json tool-versions.txt; do
-    ( set -o noclobber; cat "$STAGE/$f" >"$OUT/$f" ) || return 1
-    CREATED+=("$OUT/$f")
-  done
+  record_publish "$STAGE" "$OUT" drc.json tool-versions.txt || return 1
   ( record_leak_guard "$OUT" ) || return 1
 }
 if ! publish; then

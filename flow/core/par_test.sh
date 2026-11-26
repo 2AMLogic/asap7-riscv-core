@@ -10,9 +10,11 @@
 # scratch fixture repository with stubbed router/provenance tools (--check
 # against HEAD:layout/cve2_top.gds even on a dirty working tree, response
 # validation in both modes, staging + leak-guarding records before publishing
-# outputs, and the --check --export bundle: routed DEF and routed Verilog
-# published with a provenance manifest only on the byte-identical path, with
-# every failure leaving the requested destination free for a retry).
+# outputs, record publication that leaves nothing of the run behind when a
+# copy fails partway or another writer holds a record pathname, and the
+# --check --export bundle: routed DEF and routed Verilog published with a
+# provenance manifest only on the byte-identical path, with every failure
+# leaving the requested destination free for a retry).
 #
 # The template is extracted from the script and rendered with the same
 # values the script assigns, so a drifted setting fails here instead of in
@@ -146,6 +148,10 @@ if [[ "${1:-}" == "place-and-route" ]]; then
   sha256sum cve2_rv32imc_wrapper_synth.v | cut -d' ' -f1 >"${STUB_NETLIST_SEEN:-/dev/null}"
   [[ -z "${STUB_EDIT_SRC:-}" ]] || printf 'edited-during-route\n' >"$STUB_EDIT_SRC"
   [[ -z "${STUB_MKDIR_AT:-}" ]] || mkdir -p "$STUB_MKDIR_AT"
+  if [[ -n "${STUB_SQUAT_FILE:-}" ]]; then
+    mkdir -p -- "$(dirname -- "$STUB_SQUAT_FILE")"
+    printf '%s' "${STUB_SQUAT_CONTENT:-}" >"$STUB_SQUAT_FILE"
+  fi
   printf '%s' "${STUB_GDS_CONTENT:-committed-gds-v1}" > .klt/place-and-route/cve2_rv32imc_wrapper.gds
   # The routed Verilog carries different bytes from the synthesis input, so a
   # test can tell an exported routed netlist from an exported input netlist.
@@ -185,7 +191,7 @@ SHA_PDK="$(git -C "$FA/asap7_pdk_r1p7" rev-parse HEAD)"
 FX="$W/repo"
 mkdir -p "$FX/flow/core/records/2026-11-20" "$FX/spec" "$FX/layout"
 cp "$REPO/flow/lib.sh" "$REPO/flow/record_lib.py" "$REPO/flow/merge_lib.py" "$FX/flow/"
-cp "$PAR" "$FX/flow/core/par.sh"
+cp "$PAR" "$REPO/flow/core/record_publish.sh" "$FX/flow/core/"
 chmod +x "$FX/flow/core/par.sh"
 cat >"$FX/spec/pdk-bringup.md" <<EOF
 | Upstream repo | $SHA_UP |
@@ -390,6 +396,143 @@ RECORD_DATE=2026-11-29 STUB_GDS_CONTENT="publish-retry-gds" STUB_RESPONSE_JSON="
   run_par bash "$FX/flow/core/par.sh" "$FA" >"$W/pubretry.err" 2>&1 || rc=$?
 eq "retry after a failed publish exits 0" 0 "$rc"
 eq "retry publishes the new layout" "publish-retry-gds" "$(cat "$FX/layout/cve2_top.gds")"
+
+# 9b. A record copy that fails partway, or a record pathname another writer
+# holds (issue #286). Each record is copied to completion under a private
+# name in the dated directory and linked to its final pathname only then,
+# without replacement: a partial copy never occupies a record pathname (a
+# truncated par.json would read as an existing record and refuse the retry),
+# and a rollback removes what this run installed and nothing else, leaving
+# whatever another writer put there byte-for-byte. The stubbed `cat` writes
+# four bytes of one staged record and exits 1, recording the pathname it was
+# writing, so each case can see the partial copy was made inside the dated
+# directory and then removed.
+REAL_CAT="$(command -v cat)"
+cat >"$BIN/cat" <<STUB
+#!/usr/bin/env bash
+if [[ \$# -gt 0 && \${*: -1} == *"/\$STUB_CAT_FAIL" ]]; then
+  exec 3>&1
+  readlink /proc/self/fd/3 >"\$STUB_CAT_SEEN"
+  head -c 4 -- "\${*: -1}"
+  exit 1
+fi
+exec "$REAL_CAT" "\$@"
+STUB
+chmod +x "$BIN/cat"
+REC="$FX/flow/core/records"
+cp "$FX/layout/cve2_top.gds" "$W/prev.gds"
+: >"$W/refmode"
+dated() {  # <date>: every entry of the dated directory, hidden names included
+  ls -A "$REC/$1" 2>/dev/null | LC_ALL=C sort | tr '\n' ' ' | sed 's/ $//'
+}
+after_failure() {  # <date> <expected entries> <label>
+  eq "$3: the dated directory holds exactly those entries, hidden names included" \
+    "$2" "$(dated "$1")"
+  if cmp -s "$W/prev.gds" "$FX/layout/cve2_top.gds"; then
+    ok "$3: the previous layout is byte-identical"
+  else
+    no "$3: the previous layout is byte-identical"
+  fi
+  if compgen -G "$FX/layout/*.tmp.*" >/dev/null; then
+    no "$3: no temporary layout remains"
+  else
+    ok "$3: no temporary layout remains"
+  fi
+}
+partial_copy() {  # <label> <date> <record>: run with that record's copy failing partway
+  local seen="$W/catseen.$2"
+  rc=0
+  RECORD_DATE="$2" STUB_GDS_CONTENT="partial-$2-gds" STUB_RESPONSE_JSON="$VALID_RESP" \
+    STUB_CAT_FAIL="$3" STUB_CAT_SEEN="$seen" \
+    run_par bash "$FX/flow/core/par.sh" "$FA" >"$W/partial_$2.err" 2>&1 || rc=$?
+  eq "$1: record mode exits 1" 1 "$rc"
+  eq "$1: the partial copy was written inside the dated directory" \
+    "$REC/$2" "$(dirname "$(cat "$seen")")"
+  [[ ! -e "$(cat "$seen")" ]] && ok "$1: the partial copy is removed" || no "$1: the partial copy is removed"
+  [[ ! -e "$REC/$2" ]] && ok "$1: the dated directory the run created is removed" || no "$1: the dated directory the run created is removed"
+  after_failure "$2" "" "$1"
+}
+partial_copy "a par.json copy that fails partway" 2026-12-10 par.json
+partial_copy "a tool-versions.txt copy that fails partway" 2026-12-11 tool-versions.txt
+[[ ! -e "$REC/2026-12-11/par.json" ]] \
+  && ok "a failed tool-versions.txt copy rolls back the completed par.json with it" \
+  || no "a failed tool-versions.txt copy rolls back the completed par.json with it"
+rm "$BIN/cat"
+
+# Another writer creates the second record's pathname after preflight (the
+# router stub does, well past the gate): the run fails, its completed
+# par.json is rolled back and the other writer's file is untouched.
+SQUAT="$REC/2026-12-12/tool-versions.txt"
+printf '%s' 'competitor-tool-versions' >"$W/competitor.want"
+rc=0
+RECORD_DATE=2026-12-12 STUB_GDS_CONTENT="competed-gds" STUB_RESPONSE_JSON="$VALID_RESP" \
+  STUB_SQUAT_FILE="$SQUAT" STUB_SQUAT_CONTENT="competitor-tool-versions" \
+  run_par bash "$FX/flow/core/par.sh" "$FA" >"$W/competed.err" 2>&1 || rc=$?
+eq "a competing tool-versions.txt: record mode exits 1" 1 "$rc"
+if cmp -s "$W/competitor.want" "$SQUAT"; then
+  ok "a competing tool-versions.txt: the other writer's bytes survive"
+else
+  no "a competing tool-versions.txt: the other writer's bytes survive"
+fi
+after_failure 2026-12-12 "tool-versions.txt" "a competing tool-versions.txt"
+
+# A directory at the second record's pathname fails the publication without
+# gaining a file, and keeps its own contents.
+mkdir -p "$REC/2026-12-13/tool-versions.txt"
+printf 'keep-me\n' >"$REC/2026-12-13/tool-versions.txt/inner"
+rc=0
+RECORD_DATE=2026-12-13 STUB_GDS_CONTENT="dir-squat-gds" STUB_RESPONSE_JSON="$VALID_RESP" \
+  run_par bash "$FX/flow/core/par.sh" "$FA" >"$W/dirsquat.err" 2>&1 || rc=$?
+eq "a directory at tool-versions.txt: record mode exits 1" 1 "$rc"
+eq "a directory at tool-versions.txt: it gains no file" "inner" \
+  "$(ls -A "$REC/2026-12-13/tool-versions.txt" | tr '\n' ' ' | sed 's/ $//')"
+eq "a directory at tool-versions.txt: its own file is untouched" "keep-me" \
+  "$(cat "$REC/2026-12-13/tool-versions.txt/inner")"
+after_failure 2026-12-13 "tool-versions.txt" "a directory at tool-versions.txt"
+
+# Both records installed, then the published-record leak check fails on a
+# JSON another writer left in the dated directory: the run's two records
+# are rolled back and the other writer's file is not.
+LEAKER="$REC/2026-12-14/competitor.json"
+printf '%s' '{"path":"/tmp/competitor"}' >"$W/leaker.want"
+rc=0
+RECORD_DATE=2026-12-14 STUB_GDS_CONTENT="leaked-dir-gds" STUB_RESPONSE_JSON="$VALID_RESP" \
+  STUB_SQUAT_FILE="$LEAKER" STUB_SQUAT_CONTENT='{"path":"/tmp/competitor"}' \
+  run_par bash "$FX/flow/core/par.sh" "$FA" >"$W/leaked_dir.err" 2>&1 || rc=$?
+eq "a leaking competing record: record mode exits 1" 1 "$rc"
+if grep -q "leaks an absolute host path" "$W/leaked_dir.err"; then
+  ok "a leaking competing record: the published-record leak check fails the run"
+else
+  no "a leaking competing record: the published-record leak check fails the run"
+fi
+if cmp -s "$W/leaker.want" "$LEAKER"; then
+  ok "a leaking competing record: the other writer's bytes survive"
+else
+  no "a leaking competing record: the other writer's bytes survive"
+fi
+after_failure 2026-12-14 "competitor.json" "a leaking competing record"
+
+# Clearing each fault leaves the same date retryable.
+retry_date() {  # <label> <date>
+  rc=0
+  RECORD_DATE="$2" STUB_GDS_CONTENT="retry-$2-gds" STUB_RESPONSE_JSON="$VALID_RESP" \
+    run_par bash "$FX/flow/core/par.sh" "$FA" >"$W/retry_$2.err" 2>&1 || rc=$?
+  eq "$1: the same date retries cleanly" 0 "$rc"
+}
+retry_date "a failed par.json copy" 2026-12-10
+retry_date "a failed tool-versions.txt copy" 2026-12-11
+eq "the retried date holds exactly the two records" "par.json tool-versions.txt" "$(dated 2026-12-11)"
+eq "a published par.json has the mode of a plain redirect, not the private copy's 0600" \
+  "$(stat -c %a "$W/refmode")" "$(stat -c %a "$REC/2026-12-11/par.json")"
+eq "a published tool-versions.txt has the mode of a plain redirect" \
+  "$(stat -c %a "$W/refmode")" "$(stat -c %a "$REC/2026-12-11/tool-versions.txt")"
+rm "$SQUAT"
+retry_date "a competing file" 2026-12-12
+rm "$REC/2026-12-13/tool-versions.txt/inner"
+rmdir "$REC/2026-12-13/tool-versions.txt"
+retry_date "a directory at a record pathname" 2026-12-13
+rm "$LEAKER"
+retry_date "a leaking competing record" 2026-12-14
 
 # 10. --check input pin (issue #266): the byte-compare validates the newest
 # committed par.json's regeneration claim, so --check must first refuse unless
