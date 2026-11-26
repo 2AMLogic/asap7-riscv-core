@@ -97,10 +97,12 @@ on ASAP7, designed and verified by AI agents. **Digital.**
        `check_version` in `verification/lib.sh` accepts each pin exactly or
        followed by a dot (`13.0.1`, `3.12.13`); `12.0`, `13.1` and `3.13` are
        refused. Verilator is checked on the smoke path only.
-    2. Check the host can fetch the cold start's inputs: `cocotb` from PyPI,
-       and the pinned inputs `verification/core/setup.sh` downloads from
-       GitHub (release assets, raw files, one commit over git). Probe each
-       origin:
+    2. Check the host can reach the cold start's inputs: `cocotb` through
+       pip (`verification/run.sh` installs `verification/requirements.txt`
+       with whatever source pip is configured for, so a mirror or wheelhouse
+       counts), and the pinned inputs `verification/core/setup.sh` downloads
+       from GitHub (`flow/core/sv2v.sh` and `flow/core/fetch.sh` name the
+       pins). These probes are diagnostic, not a gate:
 
        ```bash
        for u in https://pypi.org/simple/cocotb/ \
@@ -110,12 +112,22 @@ on ASAP7, designed and verified by AI agents. **Digital.**
        done
        ```
 
-    When both hold, do the two steps above in the worktree and commit both
-    envelopes in this PR. When either fails, or the cold start does not
-    complete, record the specific missing prerequisite or failure in the
-    PR — the tool and the version found against its pin, the URL that could
-    not be fetched, or the cold start's exit status and failing step — so a
-    capable host can finish it.
+       The PyPI line only shows public PyPI is unreachable; if pip is
+       pointed at a mirror or local wheelhouse (`PIP_INDEX_URL`,
+       `PIP_FIND_LINKS`, `PIP_NO_INDEX`), confirm through that source
+       instead (`pip download --no-deps -d "$(mktemp -d)" -r
+       verification/requirements.txt`). The GitHub lines use moving
+       references (`latest`, `HEAD`) as reachability checks only; they do
+       not say which revision the cold start fetches.
+
+    When the versions match, attempt the two steps above in the worktree
+    and commit both envelopes in this PR, even if a probe failed: a failed
+    probe does not by itself mean an input is unavailable. Hand off only
+    when the cold start fails or an input is confirmed unavailable, and
+    record the specific missing prerequisite or failure in the PR — the
+    tool and the version found against its pin, the input that could not
+    be fetched and through which source, or the cold start's exit status
+    and failing step — so a capable host can finish it.
 
   `--python 3.12` is load-bearing for both: `uvx` puts its own environment
   first on `PATH`, and each envelope's harness checks run `verification/run.sh`,
