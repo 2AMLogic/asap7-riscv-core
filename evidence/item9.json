@@ -66,14 +66,14 @@
         "role": "testbench",
         "path": "verification/core/archtest_common.py",
         "passed": true,
-        "content_hash": "sha256:421a782f2235decb053f4cc71e79d105793502438492334b18ff0b2eeb1fd420"
+        "content_hash": "sha256:cca4331fff90c61e207ba9fe44d6178458f42e0a203e23ba0368d999e92b9968"
       },
       {
         "check": "present",
         "role": "testbench",
         "path": "verification/core/build_tests.py",
         "passed": true,
-        "content_hash": "sha256:9d29459f2c49f231d3c7b7b300e09cad064fbdabe77228fe3d06a9b1b9c9ce71"
+        "content_hash": "sha256:99df39d0d3109d643202d0669aebd0b078ac7060909aa16091fae2e978f41581"
       },
       {
         "check": "present",
@@ -115,7 +115,7 @@
         "role": "testbench",
         "path": "verification/core/tb_core.v",
         "passed": true,
-        "content_hash": "sha256:7638b5223f0f2ed7804c54b588fafd59c2ed5aa15d3f7588b1bfdabaca4aebc4"
+        "content_hash": "sha256:1f126f01e66dd993d45d3a507a48fab0c907ca3a537b2192b40dd355f6971f97"
       },
       {
         "check": "present",
