@@ -66,7 +66,7 @@
         "role": "testbench",
         "path": "verification/core/archtest_common.py",
         "passed": true,
-        "content_hash": "sha256:a89e463c461a44b849ec759ea958d38aa89d678f499ca44da6985f117ac990e5"
+        "content_hash": "sha256:461fad8cc2c5c59ac60fa939ea03f023d8859220b1ca2bb047230a92b579e823"
       },
       {
         "check": "present",

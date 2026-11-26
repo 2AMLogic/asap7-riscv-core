@@ -112,7 +112,7 @@ EOF
 
 # Every image here is the start of a repeating 0..255 pattern.
 image() {  # nbytes [program] : hex_image()'s text
-  python3 -I - "$CORE" "$1" "${2:-prog}" <<'PYEOF'
+  python3 ${PYOPT:+"$PYOPT"} -I - "$CORE" "$1" "${2:-prog}" <<'PYEOF'
 import sys
 sys.path.insert(0, sys.argv[1])
 from archtest_common import hex_image
@@ -148,13 +148,13 @@ sha() { sha256sum | cut -d' ' -f1; }
 
 arch_hex() {  # nbytes : build_tests.py's hex for the one program
   rm -rf "$SCRATCH/arch"
-  STUB_BIN_BYTES="$1" python3 -I "$CORE/build_tests.py" "$SCRATCH/arch" >/dev/null \
+  STUB_BIN_BYTES="$1" python3 ${PYOPT:+"$PYOPT"} -I "$CORE/build_tests.py" "$SCRATCH/arch" >/dev/null \
     && cat "$SCRATCH/arch/I-add-01.hex"
 }
 
 lock_hex() {  # nbytes : lockstep.py's hex for the longer program
   rm -rf "$SCRATCH/lock"
-  STUB_BIN_BYTES="$1" python3 -I - "$CORE" "$STUBS" "$SCRATCH/lock" <<'PYEOF' && cat "$SCRATCH/lock/lockstep-prog.hex"
+  STUB_BIN_BYTES="$1" python3 ${PYOPT:+"$PYOPT"} -I - "$CORE" "$STUBS" "$SCRATCH/lock" <<'PYEOF' && cat "$SCRATCH/lock/lockstep-prog.hex"
 import sys
 from pathlib import Path
 
@@ -207,6 +207,19 @@ yes "build_tests.py writes no hex file for it" test ! -e "$SCRATCH/arch/I-add-01
 rejects "lockstep.py rejects it, naming the program" \
   "lockstep-prog does not fit in memory" lock_hex $((LIMIT + 1))
 yes "lockstep.py writes no hex file for it" test ! -e "$SCRATCH/lock/lockstep-prog.hex"
+
+echo
+echo "# 5. the same limit under optimized Python (python -O strips asserts)"
+PYOPT=-O eq "-O: three bytes short of the limit is still accepted" "524257" "$(PYOPT=-O image $((LIMIT - 3)) | wc -l)"
+PYOPT=-O eq "-O: at the limit, byte for byte" "$LIMIT_SHA" "$(PYOPT=-O image "$LIMIT" | sha)"
+PYOPT=-O rejects "-O: one byte over the limit is rejected, naming the program" \
+  "prog does not fit in memory" image $((LIMIT + 1))
+PYOPT=-O rejects "-O: build_tests.py rejects one byte over, naming the program" \
+  "I-add-01 does not fit in memory" arch_hex $((LIMIT + 1))
+yes "-O: build_tests.py writes no hex file for it" test ! -e "$SCRATCH/arch/I-add-01.hex"
+PYOPT=-O rejects "-O: lockstep.py rejects one byte over, naming the program" \
+  "lockstep-prog does not fit in memory" lock_hex $((LIMIT + 1))
+yes "-O: lockstep.py writes no hex file for it" test ! -e "$SCRATCH/lock/lockstep-prog.hex"
 
 echo
 if [ "$FAIL" -eq 0 ]; then

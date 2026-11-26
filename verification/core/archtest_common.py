@@ -49,10 +49,13 @@ def convert(p, out: Path) -> Path:
 def hex_image(raw: bytes, name: str) -> str:
     """An objcopy binary as the $readmemh text tb_core.v loads: little-endian
     32-bit words from LOAD_WORD, the last word zero-padded. An image that does
-    not fit in the RAM above LOAD_WORD fails an assert naming the program."""
+    not fit in the RAM above LOAD_WORD raises ValueError naming the program,
+    before any word list is built. The check is a raise, not an assert, so it
+    holds under python -O."""
+    if LOAD_WORD + -(-len(raw) // 4) > MEM_WORDS:
+        raise ValueError(f"{name} does not fit in memory")
     padded = raw + b"\0" * (-len(raw) % 4)
     words = [int.from_bytes(padded[i:i + 4], "little") for i in range(0, len(padded), 4)]
-    assert LOAD_WORD + len(words) <= MEM_WORDS, f"{name} does not fit in memory"
     return f"@{LOAD_WORD:x}\n" + "".join(f"{w:08x}\n" for w in words)
 
 
