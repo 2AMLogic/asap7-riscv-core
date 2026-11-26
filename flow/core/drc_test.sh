@@ -8,8 +8,10 @@
 # klayout, the pinned deck by file, the decision 0012 category count, JSON
 # output), and the staging + publication invariants in a scratch fixture
 # repository with a stubbed klt (record published with the input pins
-# written, redaction of host paths before anything is published, and the
-# append-only refusal on a second run).
+# written, redaction of host paths before anything is published, the
+# append-only refusal on a second run, and nothing of a failed publication
+# left behind when a record copy fails partway or another writer holds a
+# record pathname).
 #
 # ASAP7 is a predictive PDK; nothing here is fabricated or measured, and
 # this script makes no claim about any design.
@@ -77,6 +79,10 @@ if [[ "${1:-}" == "version" ]]; then
   exit 0
 fi
 if [[ "${1:-}" == "drc" ]]; then
+  if [[ -n "${STUB_SQUAT_FILE:-}" ]]; then
+    mkdir -p -- "$(dirname -- "$STUB_SQUAT_FILE")"
+    printf '%s' "${STUB_SQUAT_CONTENT:-}" >"$STUB_SQUAT_FILE"
+  fi
   printf '%s\n' "${STUB_REPORT_JSON:-}"
   exit "${STUB_KLT_RC:-0}"
 fi
@@ -98,7 +104,7 @@ FX="$W/repo"
 mkdir -p "$FX/flow/core/records" "$FX/spec" "$FX/layout"
 cp "$REPO/flow/lib.sh" "$REPO/flow/record_lib.py" "$FX/flow/"
 mkdir -p "$FX/flow/core"
-cp "$DRC" "$FX/flow/core/drc.sh"
+cp "$DRC" "$REPO/flow/core/record_publish.sh" "$FX/flow/core/"
 chmod +x "$FX/flow/core/drc.sh"
 cat >"$FX/spec/pdk-bringup.md" <<EOF
 | Upstream repo | fake $SHA_UP |
@@ -248,6 +254,120 @@ if [[ ! -e "$FX/flow/core/records/$FXDATE/drc.json" ]]; then
 else
   no "the leaking run published no record"
 fi
+
+# ---- a record copy that fails partway, or a record pathname another writer
+# holds (issue #286): each record is copied to completion under a private
+# name in the dated directory and linked to its final pathname only then,
+# without replacement (flow/core/record_publish.sh). A partial copy never
+# occupies a record pathname, so it cannot read as an existing record and
+# refuse the retry, and a rollback removes what this run installed and
+# nothing else. The stubbed `cat` writes four bytes of one staged record and
+# exits 1, recording the pathname it was writing.
+REAL_CAT="$(command -v cat)"
+cat >"$BIN/cat" <<STUB
+#!/usr/bin/env bash
+if [[ \$# -gt 0 && \${*: -1} == *"/\$STUB_CAT_FAIL" ]]; then
+  exec 3>&1
+  readlink /proc/self/fd/3 >"\$STUB_CAT_SEEN"
+  head -c 4 -- "\${*: -1}"
+  exit 1
+fi
+exec "$REAL_CAT" "\$@"
+STUB
+chmod +x "$BIN/cat"
+REC="$FX/flow/core/records/$FXDATE"
+dated() {  # every entry of the dated directory, hidden names included
+  ls -A "$REC" 2>/dev/null | LC_ALL=C sort | tr '\n' ' ' | sed 's/ $//'
+}
+record_run() {  # <log>: the fixture driver with the valid report; the caller sets the STUB_* knobs
+  rc=0
+  ( STUB_REPORT_JSON="$VALID_REPORT" run_drc ) >"$1" 2>&1 || rc=$?
+}
+partial_copy() {  # <label> <record>: run with that record's copy failing partway
+  local seen="$W/catseen.$2"
+  STUB_CAT_FAIL="$2" STUB_CAT_SEEN="$seen" record_run "$W/partial_$2.out"
+  eq "$1: record mode exits 1" 1 "$rc"
+  eq "$1: the partial copy was written in a private directory inside the dated directory" \
+    "$REC" "$(dirname "$(dirname "$(cat "$seen")")")"
+  [[ ! -e "$(cat "$seen")" ]] && ok "$1: the partial copy is removed" || no "$1: the partial copy is removed"
+  [[ ! -e "$REC" ]] && ok "$1: the dated directory the run created is removed" || no "$1: the dated directory the run created is removed"
+  eq "$1: the dated directory holds nothing, hidden names included" "" "$(dated)"
+}
+partial_copy "a drc.json copy that fails partway" drc.json
+partial_copy "a tool-versions.txt copy that fails partway" tool-versions.txt
+[[ ! -e "$REC/drc.json" ]] \
+  && ok "a failed tool-versions.txt copy rolls back the completed drc.json with it" \
+  || no "a failed tool-versions.txt copy rolls back the completed drc.json with it"
+rm "$BIN/cat"
+record_run "$W/partial_retry.out"
+eq "the same date retries cleanly after a partial copy" 0 "$rc"
+eq "the retried date holds exactly the two records" "drc.json tool-versions.txt" "$(dated)"
+REFM="$REC/.refmode"; : >"$REFM"
+eq "a published drc.json has the mode of a plain redirect in the dated directory (same umask and default ACL)" \
+  "$(stat -c %a "$REFM")" "$(stat -c %a "$REC/drc.json")"
+eq "a published tool-versions.txt has the mode of a plain redirect in the dated directory" \
+  "$(stat -c %a "$REFM")" "$(stat -c %a "$REC/tool-versions.txt")"
+rm -f "$REC/.refmode"
+rm -rf "$REC"
+
+# Another writer creates the second record's pathname after preflight (the
+# klt stub does, well past the gate): the run fails, its completed drc.json
+# is rolled back and the other writer's file is untouched.
+SQUAT="$REC/tool-versions.txt"
+printf '%s' 'competitor-tool-versions' >"$W/competitor.want"
+STUB_SQUAT_FILE="$SQUAT" STUB_SQUAT_CONTENT="competitor-tool-versions" record_run "$W/competed.out"
+eq "a competing tool-versions.txt: record mode exits 1" 1 "$rc"
+if cmp -s "$W/competitor.want" "$SQUAT"; then
+  ok "a competing tool-versions.txt: the other writer's bytes survive"
+else
+  no "a competing tool-versions.txt: the other writer's bytes survive"
+fi
+eq "a competing tool-versions.txt: the dated directory holds only that file, hidden names included" \
+  "tool-versions.txt" "$(dated)"
+rm "$SQUAT"
+record_run "$W/competed_retry.out"
+eq "the same date retries cleanly once the competing file is gone" 0 "$rc"
+rm -rf "$REC"
+
+# A directory at the second record's pathname fails the publication without
+# gaining a file, and keeps its own contents.
+mkdir -p "$REC/tool-versions.txt"
+printf 'keep-me\n' >"$REC/tool-versions.txt/inner"
+record_run "$W/dirsquat.out"
+eq "a directory at tool-versions.txt: record mode exits 1" 1 "$rc"
+eq "a directory at tool-versions.txt: it gains no file" "inner" \
+  "$(ls -A "$REC/tool-versions.txt" | tr '\n' ' ' | sed 's/ $//')"
+eq "a directory at tool-versions.txt: its own file is untouched" "keep-me" "$(cat "$REC/tool-versions.txt/inner")"
+eq "a directory at tool-versions.txt: the dated directory holds only that directory, hidden names included" \
+  "tool-versions.txt" "$(dated)"
+rm "$REC/tool-versions.txt/inner"
+rmdir "$REC/tool-versions.txt"
+record_run "$W/dirsquat_retry.out"
+eq "the same date retries cleanly once the directory is gone" 0 "$rc"
+rm -rf "$REC"
+
+# Both records installed, then the published-record leak check fails on a
+# JSON another writer left in the dated directory: the run's two records
+# are rolled back and the other writer's file is not.
+LEAKER="$REC/competitor.json"
+printf '%s' '{"path":"/tmp/competitor"}' >"$W/leaker.want"
+STUB_SQUAT_FILE="$LEAKER" STUB_SQUAT_CONTENT='{"path":"/tmp/competitor"}' record_run "$W/leaked_dir.out"
+eq "a leaking competing record: record mode exits 1" 1 "$rc"
+if grep -q "leaks an absolute host path" "$W/leaked_dir.out"; then
+  ok "a leaking competing record: the published-record leak check fails the run"
+else
+  no "a leaking competing record: the published-record leak check fails the run"
+fi
+if cmp -s "$W/leaker.want" "$LEAKER"; then
+  ok "a leaking competing record: the other writer's bytes survive"
+else
+  no "a leaking competing record: the other writer's bytes survive"
+fi
+eq "a leaking competing record: the dated directory holds only that file, hidden names included" \
+  "competitor.json" "$(dated)"
+rm "$LEAKER"
+record_run "$W/leaked_dir_retry.out"
+eq "the same date retries cleanly once the competing record is gone" 0 "$rc"
 
 echo "1..$((NPASS + NBAD)) pass=$NPASS fail=$NBAD"
 [[ $NBAD -eq 0 ]]

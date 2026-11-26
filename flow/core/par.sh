@@ -52,7 +52,9 @@
 # `26Q3-1510-g6cb3f2b704` produced the committed layout, recorded in
 # flow/core/records/2026-11-22/tool-versions.txt), `uvx` and `python3`;
 # writing a new record also queries `yosys -V` for tool-versions.txt.
-# --export uses Linux renameat2(RENAME_NOREPLACE) on the destination filesystem.
+# --export uses Linux renameat2(RENAME_NOREPLACE) on the destination
+# filesystem; record publication uses GNU `ln -T` to link each record file
+# into place without replacement (flow/core/record_publish.sh).
 #
 # Environment:
 #   RECORD_DATE     record directory name (default: today, UTC). The script
@@ -76,6 +78,8 @@ set -euo pipefail
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 # shellcheck source=flow/lib.sh
 source "$REPO/flow/lib.sh"
+# shellcheck source=flow/core/record_publish.sh
+source "$REPO/flow/core/record_publish.sh"
 TOP=cve2_rv32imc_wrapper
 CELL_LIB=asap7sc7p5t_28_R
 GDS_OUT="$REPO/layout/cve2_top.gds"
@@ -461,12 +465,15 @@ KLT_V="$("${KLT[@]}" version 2>&1 | head -1 || true)"
 record_leak_guard "$STAGE"
 
 # ---- publish dated record and layout ----------------------------------------
-# Order matters for retryability: the record files are written first (exclusive
-# create, so nothing existing is overwritten and a directory squatting on a
-# target path is an error), the leak guard runs over the published record, and
-# layout/cve2_top.gds is replaced last by one atomic rename. Any failure before
-# that rename removes exactly what this run created, leaving the previous
-# layout in place and the record directory free for a retry.
+# Order matters for retryability: the record files are installed first
+# (flow/core/record_publish.sh: each copy is finished under a private name
+# and linked to its final pathname without replacement, so nothing existing
+# is overwritten, a copy that fails partway leaves no record behind, and a
+# directory squatting on a target path is an error), the leak guard runs
+# over the published record, and layout/cve2_top.gds is replaced last by one
+# atomic rename. Any failure before that rename removes exactly what this
+# run created, leaving the previous layout in place and the record directory
+# free for a retry.
 CREATED=()
 GDS_TMP="$GDS_OUT.tmp.$$"
 OUT_MADE=0
@@ -479,13 +486,9 @@ publish_rollback() {
   return 0
 }
 publish() {
-  local f
   mkdir -p "$OUT" "$(dirname "$GDS_OUT")" || return 1
   cp "$PR/$TOP.gds" "$GDS_TMP" || return 1
-  for f in par.json tool-versions.txt; do
-    ( set -o noclobber; cat "$STAGE/$f" >"$OUT/$f" ) || return 1
-    CREATED+=("$OUT/$f")
-  done
+  record_publish "$STAGE" "$OUT" par.json tool-versions.txt || return 1
   ( record_leak_guard "$OUT" ) || return 1
   mv -f "$GDS_TMP" "$GDS_OUT" || return 1
 }
