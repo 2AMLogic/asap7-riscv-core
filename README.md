@@ -63,13 +63,11 @@ All frequencies are predicted by STA against ASAP7's predictive models.
 Maturity ladder: ASAP7 brought up under `klt` → spec ratified → core RTL
 passing the architectural tests in simulation → synthesized → placed and
 routed → DRC/LVS-clean → post-route multi-corner STA closed at the target.
-**That is the end of the ladder; there is no fabrication step.** **Current
-position: synthesized** — PDK brought up under `klt` (see
-`spec/pdk-bringup.md`), spec ratified, the architectural tests passing on the
-core in simulation and at gate level, and a committed ASAP7 gate-level
-netlist. The next rung, placed and routed, is not reached: P&R of the core is
-blocked upstream on
-[klayout-tools#5074](https://github.com/2AMLogic/klayout-tools/issues/5074).
+**That is the end of the ladder; there is no fabrication step.**
+**The core is placed and routed.** The [P&R record](flow/core/records/2026-11-22/par.json)
+binds the synthesized netlist to the committed core GDS. The next rung requires
+clean DRC and LVS. The [first core DRC run](flow/core/analysis/2026-11-24-drc.md)
+reported 20,540 markers, and a matching core LVS report is still outstanding.
 
 ## Repo layout
 
