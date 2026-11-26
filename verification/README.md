@@ -142,6 +142,12 @@ retirements) and then with one bit of that write-back flipped **in the
 observation path only** — the DUT is untouched — and requires the failure
 above, so an unrelated failure cannot satisfy it.
 
+Every simulation of a program compares against one Spike reference and one
+disassembly, prepared per program per invocation (`core/lockstep.py`, offline
+self-test `core/test_lockstep_driver.py`), so the control runs Spike once
+for its two runs and the full suite's report reuses the trace the longer
+program was compared against.
+
 This lane is deliberately a separate job, not part of `verification/run.sh`,
 its item 9 attestation, or CI (#204 allows documenting it as one): it needs
 the pinned Spike (a C++ build via `core/spike_setup.sh`, with dtc and Boost
