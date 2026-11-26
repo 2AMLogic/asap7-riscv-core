@@ -10,8 +10,9 @@
 # template with its own netlist and clock port), and the driver's verification
 # and publication invariants in a
 # scratch fixture repository with stubbed router/provenance tools (--check
-# against HEAD:layout/cve2_top.gds even on a dirty working tree, response
-# validation in both modes, staging + leak-guarding records before publishing
+# against HEAD:layout/cve2_top.gds even on a dirty working tree, the PDK
+# overlay the router receives, response validation in both modes, staging +
+# leak-guarding records before publishing
 # outputs, record publication that leaves nothing of the run behind when a
 # copy fails partway or another writer holds a record pathname, and the
 # --check --export bundle: routed DEF and routed Verilog published with a
@@ -196,7 +197,7 @@ for g in AO INVBUF OA SEQ SIMPLE; do
 done
 printf 'VERSION 5.8 ;\n' >"$FA/asap7sc7p5t_28/LEF/asap7sc7p5t_28_R_1x_220121a.lef"
 printf 'stubcellgds' >"$FA/asap7sc7p5t_28/GDS/asap7sc7p5t_28_R_220121a.gds"
-printf 'VERSION 5.8 ;\n' >"$FA/asap7sc7p5t_28/techlef_misc/asap7_tech_1x_201209.lef"
+printf 'tech LEF fixture\n' >"$FA/asap7sc7p5t_28/techlef_misc/asap7_tech_1x_201209.lef"
 printf '# layermap\n' >"$FA/asap7_pdk_r1p7/cdslib/asap7_TechLib_10/asap7_fromAPR.layermap"
 
 for sub in "$FA/asap7sc7p5t_28" "$FA/asap7_pdk_r1p7" "$FA"; do
@@ -263,8 +264,12 @@ STUB_GDS_CONTENT="router-gds-v2" STUB_RESPONSE_JSON="$VALID_RESP" \
   run_par bash "$FX/flow/core/par.sh" "$FA" --check >"$W/diff1.err" 2>&1 || rc=$?
 eq "--check on clean tree exits 1 when router emits different GDS" 1 "$rc"
 
+# The run keeps its scratch directory, under a TMPDIR of its own, so 3b can
+# read the PDK overlay as the router received it.
+STAGE_TMP="$W/stage-tmp"; mkdir -p "$STAGE_TMP"
 rc=0
-RECORD_DATE=2026-11-22 STUB_GDS_CONTENT="router-gds-v2" STUB_RESPONSE_JSON="$VALID_RESP" \
+RECORD_DATE=2026-11-22 KEEP_SCRATCH=1 TMPDIR="$STAGE_TMP" \
+  STUB_GDS_CONTENT="router-gds-v2" STUB_RESPONSE_JSON="$VALID_RESP" \
   run_par bash "$FX/flow/core/par.sh" "$FA" >"$W/recok.err" 2>&1 || rc=$?
 eq "valid record run exits 0" 0 "$rc"
 eq "valid record run updates working-tree layout/cve2_top.gds" "router-gds-v2" "$(cat "$FX/layout/cve2_top.gds")"
@@ -273,6 +278,61 @@ if [[ -f "$FX/flow/core/records/2026-11-22/par.json" && -f "$FX/flow/core/record
 else
   no "valid record run writes par.json and tool-versions.txt"
 fi
+
+# 3b. The PDK overlay the driver routes on (issue #301) is the one physical
+# staging both flow drivers share (stage_physical_overlay, flow/lib.sh): the
+# four physical inputs are regular files holding the checkout's bytes --
+# copied, not linked, because OpenROAD rejects a symlinked LEF (ORD-0001) --
+# and the manifest build_liberty_overlay wrote for SS carries that Liberty
+# entry beside the KLayout asset the layer map is registered under. The
+# tool-versions.txt provenance rows still identify and hash the staged
+# sources, through the names the stager sets.
+overlay_manifest_ok() {  # <overlay-root>/klt-pdk.json: the SS Liberty entry beside the KLayout asset
+  python3 -I - "$1" <<'PY'
+import json, os, sys
+d = json.load(open(sys.argv[1]))
+assert d["liberty"] == {"asap7sc7p5t_28_R": {"SS": "lib/asap7sc7p5t_28_R_SS.lib"}}, d["liberty"]
+assert d["assets"] == {"libs_ref": "libs", "klayout": "klayout"}, d["assets"]
+lib = os.path.join(os.path.dirname(os.path.abspath(sys.argv[1])), d["liberty"]["asap7sc7p5t_28_R"]["SS"])
+assert os.path.isfile(lib) and os.path.getsize(lib) > 0, lib
+PY
+}
+overlays=("$STAGE_TMP"/asap7-corepar.*/pdk)
+OV="${overlays[0]-}"
+[[ -d "$OV" ]] || OV=""
+ok_if "the kept scratch directory holds the PDK overlay root" test -n "$OV"
+for pair in \
+    "asap7sc7p5t_28/LEF/asap7sc7p5t_28_R_1x_220121a.lef=libs/asap7sc7p5t_28_R/lef/asap7sc7p5t_28_R.lef" \
+    "asap7sc7p5t_28/GDS/asap7sc7p5t_28_R_220121a.gds=libs/asap7sc7p5t_28_R/gds/asap7sc7p5t_28_R.gds" \
+    "asap7sc7p5t_28/techlef_misc/asap7_tech_1x_201209.lef=libs/asap7sc7p5t_28_R/techlef/asap7sc7p5t_28_R__nom.tlef" \
+    "asap7_pdk_r1p7/cdslib/asap7_TechLib_10/asap7_fromAPR.layermap=klayout/tech/asap7.map"; do
+  dst="${pair#*=}"
+  if [[ -n "$OV" && -f "$OV/$dst" && ! -L "$OV/$dst" ]] && cmp -s "$FA/${pair%%=*}" "$OV/$dst"; then
+    ok "the overlay's $dst is a regular file with the checkout's bytes"
+  else
+    no "the overlay's $dst is a regular file with the checkout's bytes"
+  fi
+done
+if [[ -n "$OV" && -z "$(find "$OV" -type l | head -1)" ]]; then
+  ok "the overlay holds no symlink (OpenROAD rejects a symlinked LEF, ORD-0001)"
+else
+  no "the overlay holds no symlink (OpenROAD rejects a symlinked LEF, ORD-0001)"
+fi
+ok_if "the overlay's manifest carries the SS Liberty entry beside the KLayout asset" \
+  overlay_manifest_ok "$OV/klt-pdk.json"
+TV="$FX/flow/core/records/2026-11-22/tool-versions.txt"
+eq "tool-versions.txt hashes the staged tech LEF's source" \
+  "tech_lef_source:  sha256:$(sha256sum "$FA/asap7sc7p5t_28/techlef_misc/asap7_tech_1x_201209.lef" | cut -d' ' -f1)" \
+  "$(grep '^tech_lef_source:' "$TV")"
+eq "tool-versions.txt identifies and hashes the staged layer map's source" \
+  "layer_map:    sha256:$(sha256sum "$FA/asap7_pdk_r1p7/cdslib/asap7_TechLib_10/asap7_fromAPR.layermap" | cut -d' ' -f1)  (asap7_pdk_r1p7 cdslib/asap7_TechLib_10/asap7_fromAPR.layermap)" \
+  "$(grep '^layer_map:' "$TV")"
+eq "tool-versions.txt hashes the staged cell LEF's source" \
+  "cell_lef:     sha256:$(sha256sum "$FA/asap7sc7p5t_28/LEF/asap7sc7p5t_28_R_1x_220121a.lef" | cut -d' ' -f1)" \
+  "$(grep '^cell_lef:' "$TV")"
+eq "tool-versions.txt hashes the staged cell GDS's source" \
+  "cell_gds:     sha256:$(sha256sum "$FA/asap7sc7p5t_28/GDS/asap7sc7p5t_28_R_220121a.gds" | cut -d' ' -f1)" \
+  "$(grep '^cell_gds:' "$TV")"
 
 rc=0
 STUB_GDS_CONTENT="router-gds-v2" STUB_RESPONSE_JSON="$VALID_RESP" \

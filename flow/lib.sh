@@ -53,6 +53,12 @@
 #                                        extract_rvt_liberty into <root>/lib/7z, then merge the RVT
 #                                        Liberty for each corner under <root>/lib and write
 #                                        <root>/klt-pdk.json
+#   stage_physical_overlay <asap7> <root> <cell-lib>
+#                                        copy the cell LEF, cell GDS and tech LEF from the pinned
+#                                        checkout into <root>/libs and its DEF->GDS layer map to
+#                                        <root>/klayout/tech/asap7.map; register that map in
+#                                        <root>/klt-pdk.json (so it runs after build_liberty_overlay);
+#                                        sets CELL_LEF_SRC, CELL_GDS_SRC, TECH_SRC and LAYERMAP_SRC
 #   par_request <toplevel> <clock-port> <cell-lib>
 #                                        the klt place-and-route request both flow drivers send (the
 #                                        smoke flow's counter, the core wrapper), on stdout, with
@@ -219,6 +225,42 @@ build_liberty_overlay() {  # asap7 root cell_lib corner...
     for c in "$@"; do printf '%s"%s":"lib/%s_%s.lib"' "$sep" "$c" "$cell_lib" "$c"; sep=","; done
     printf '}}}\n'
   } >"$root/klt-pdk.json"
+}
+
+stage_physical_overlay() {  # asap7 root cell-lib -- the physical half of the scratch PDK overlay
+  # The physical half of the overlay both routing drivers build on top of
+  # build_liberty_overlay: flow/smoke/run.sh for the counter, flow/core/par.sh
+  # for the core wrapper. The cell LEF, cell GDS and tech LEF are copied
+  # unmodified from the pinned checkout -- copied, not symlinked, because
+  # OpenROAD rejects a symlinked LEF (ORD-0001); the tech LEF needs no edit,
+  # klayout-tools #4088 (negative M2 OFFSET) being fixed in the pinned
+  # release -- and the pinned PDK's own asap7_fromAPR.layermap is staged as
+  # the KLayout layer map klt reads at <assets.klayout>/tech/<variant>.map for
+  # the DEF->GDS merge. Without that map, routing shapes land on KLayout's
+  # sequential default layers and overwrite device layers. The map is then
+  # registered in <root>/klt-pdk.json, so this runs after
+  # build_liberty_overlay, which writes that manifest, and leaves the Liberty
+  # entries as it found them. One stager gives the source filenames and the
+  # destinations their single edit site (#301).
+  #
+  # Sets CELL_LEF_SRC, CELL_GDS_SRC, TECH_SRC and LAYERMAP_SRC for the calling
+  # driver: its tool-versions.txt provenance rows hash the staged sources by
+  # these names.
+  local asap7="$1" root="$2" cell_lib="$3"
+  mkdir -p "$root/libs/$cell_lib/lef" "$root/libs/$cell_lib/techlef" "$root/libs/$cell_lib/gds" "$root/klayout/tech"
+  CELL_LEF_SRC="$asap7/asap7sc7p5t_28/LEF/asap7sc7p5t_28_R_1x_220121a.lef"
+  cp "$CELL_LEF_SRC" "$root/libs/$cell_lib/lef/$cell_lib.lef"
+  CELL_GDS_SRC="$asap7/asap7sc7p5t_28/GDS/asap7sc7p5t_28_R_220121a.gds"
+  cp "$CELL_GDS_SRC" "$root/libs/$cell_lib/gds/$cell_lib.gds"
+  TECH_SRC="$asap7/asap7sc7p5t_28/techlef_misc/asap7_tech_1x_201209.lef"
+  cp "$TECH_SRC" "$root/libs/$cell_lib/techlef/${cell_lib}__nom.tlef"
+  LAYERMAP_SRC="$asap7/asap7_pdk_r1p7/cdslib/asap7_TechLib_10/asap7_fromAPR.layermap"
+  cp "$LAYERMAP_SRC" "$root/klayout/tech/asap7.map"
+  python3 -I - "$root/klt-pdk.json" <<'PY'
+import json, sys
+d = json.load(open(sys.argv[1])); d["assets"]["klayout"] = "klayout"
+json.dump(d, open(sys.argv[1], "w"), indent=1); open(sys.argv[1], "a").write("\n")
+PY
 }
 
 record_leak_guard() {  # record-dir

@@ -2,8 +2,9 @@
 # Self-test for the shared helpers in flow/lib.sh: the label-anchored,
 # fail-closed pin reads, the synthesized-netlist locator, the shared
 # provenance-row head of the flow tool-versions.txt records, the
-# record-selection rule behind synth.sh --check, and extract_rvt_liberty's
-# counted fail-closed guard -- plus the record redaction plumbing: the
+# record-selection rule behind synth.sh --check, extract_rvt_liberty's
+# counted fail-closed guard, and the physical-overlay staging both routing
+# drivers share -- plus the record redaction plumbing: the
 # leak guard and the substitution order behind flow/*/records/.
 #
 # Needs no PDK checkout, no klt and no network: every case is either a read of
@@ -512,6 +513,174 @@ eq "the core driver renders the wrapper's request through the shared writer" \
 eq "the smoke driver renders the counter's request through the shared writer" \
   'par_request "$DUT" clk "$CELL_LIB" >"$W/par.req.json"' \
   "$(grep -F 'par_request "$DUT" clk "$CELL_LIB" >"$W/par.req.json"' "$SELF_REPO/flow/smoke/run.sh" | sed 's/^ *//')"
+
+echo
+echo "# 14. stage_physical_overlay: one physical staging serves both drivers"
+# flow/smoke/run.sh (the counter) and flow/core/par.sh (the core wrapper) route
+# on the same physical overlay: the cell LEF, cell GDS and tech LEF copied
+# unmodified into the scratch PDK root, with the pinned PDK's DEF->GDS layer
+# map registered there as the KLayout asset. Each driver staged it with its own
+# copy of the same commands, so a source filename or a destination had two edit
+# sites (#301); one stager gives them one. The Liberty half stays each driver's
+# own build_liberty_overlay call -- SS for the core, SS and TT for the smoke
+# flow -- and the stager runs after it, adding to the manifest it wrote, which
+# must leave the Liberty entries exactly as they were.
+PA="$(mktemp -d "$SCRATCH/asap7.XXXXXX")"
+mkdir -p "$PA/asap7sc7p5t_28/LEF" "$PA/asap7sc7p5t_28/GDS" "$PA/asap7sc7p5t_28/techlef_misc" \
+         "$PA/asap7_pdk_r1p7/cdslib/asap7_TechLib_10"
+printf 'fixture cell LEF\n' >"$PA/asap7sc7p5t_28/LEF/asap7sc7p5t_28_R_1x_220121a.lef"
+printf 'fixture cell GDS\377\001' >"$PA/asap7sc7p5t_28/GDS/asap7sc7p5t_28_R_220121a.gds"
+printf 'fixture tech LEF\n' >"$PA/asap7sc7p5t_28/techlef_misc/asap7_tech_1x_201209.lef"
+printf 'fixture layer map\n' >"$PA/asap7_pdk_r1p7/cdslib/asap7_TechLib_10/asap7_fromAPR.layermap"
+# The agreed mapping: <source under the checkout>=<destination under the overlay root>.
+PHYSICAL_INPUTS=(
+  "asap7sc7p5t_28/LEF/asap7sc7p5t_28_R_1x_220121a.lef=libs/asap7sc7p5t_28_R/lef/asap7sc7p5t_28_R.lef"
+  "asap7sc7p5t_28/GDS/asap7sc7p5t_28_R_220121a.gds=libs/asap7sc7p5t_28_R/gds/asap7sc7p5t_28_R.gds"
+  "asap7sc7p5t_28/techlef_misc/asap7_tech_1x_201209.lef=libs/asap7sc7p5t_28_R/techlef/asap7sc7p5t_28_R__nom.tlef"
+  "asap7_pdk_r1p7/cdslib/asap7_TechLib_10/asap7_fromAPR.layermap=klayout/tech/asap7.map"
+)
+# build_liberty_overlay's manifest before the stager adds to it: the smoke
+# flow's two corners, then the core's one. The overlay manifests are the same
+# text with the layer map registered as the KLayout asset.
+LIBERTY_SSTT='{"schema_version":1,"variant":"asap7","assets":{"libs_ref":"libs"},
+ "liberty":{"asap7sc7p5t_28_R":{"SS":"lib/asap7sc7p5t_28_R_SS.lib","TT":"lib/asap7sc7p5t_28_R_TT.lib"}}}
+'
+LIBERTY_SS='{"schema_version":1,"variant":"asap7","assets":{"libs_ref":"libs"},
+ "liberty":{"asap7sc7p5t_28_R":{"SS":"lib/asap7sc7p5t_28_R_SS.lib"}}}
+'
+OVERLAY_SSTT='{
+ "schema_version": 1,
+ "variant": "asap7",
+ "assets": {
+  "libs_ref": "libs",
+  "klayout": "klayout"
+ },
+ "liberty": {
+  "asap7sc7p5t_28_R": {
+   "SS": "lib/asap7sc7p5t_28_R_SS.lib",
+   "TT": "lib/asap7sc7p5t_28_R_TT.lib"
+  }
+ }
+}
+'
+OVERLAY_SS='{
+ "schema_version": 1,
+ "variant": "asap7",
+ "assets": {
+  "libs_ref": "libs",
+  "klayout": "klayout"
+ },
+ "liberty": {
+  "asap7sc7p5t_28_R": {
+   "SS": "lib/asap7sc7p5t_28_R_SS.lib"
+  }
+ }
+}
+'
+
+# stage_overlay <checkout> <root> <starting-manifest>: the shared stager over
+# a root holding the manifest build_liberty_overlay wrote, called the way both
+# flow drivers call it -- a plain command in a set -euo pipefail shell, which
+# is what stops it when a copy fails. The status is the stager's.
+stage_overlay() {  # checkout root manifest
+  mkdir -p "$2"
+  printf '%s' "$3" >"$2/klt-pdk.json"
+  bash -c 'set -euo pipefail; REPO="$1"; source "$REPO_LIB"; stage_physical_overlay "$2" "$3" asap7sc7p5t_28_R' \
+    _ "$SELF_REPO" "$1" "$2" >/dev/null
+}
+
+# check_overlay <label> <root> <overlay-manifest>: every staged input is a
+# regular file holding its source's bytes, the root holds the five files both
+# drivers always staged and not one symlink, and the manifest is the starting
+# one plus the KLayout asset, byte for byte.
+check_overlay() {  # label root want-manifest
+  local label="$1" root="$2" pair dst
+  for pair in "${PHYSICAL_INPUTS[@]}"; do
+    dst="${pair#*=}"
+    if [[ -f "$root/$dst" && ! -L "$root/$dst" ]] && cmp -s "$PA/${pair%%=*}" "$root/$dst"; then
+      ok "$label: $dst is a regular file with the source bytes"
+    else
+      no "$label: $dst is a regular file with the source bytes"
+    fi
+  done
+  eq "$label: the root holds exactly the five files both drivers always staged" \
+    "$(printf '%s\n' klt-pdk.json "${PHYSICAL_INPUTS[@]#*=}" | LC_ALL=C sort | tr '\n' ' ' | sed 's/ $//')" \
+    "$(cd "$root" && find . -type f | sed 's|^\./||' | LC_ALL=C sort | tr '\n' ' ' | sed 's/ $//')"
+  if [[ -z "$(find "$root" -type l | head -1)" ]]; then
+    ok "$label: the overlay holds no symlink (OpenROAD rejects a symlinked LEF, ORD-0001)"
+  else
+    no "$label: the overlay holds no symlink (OpenROAD rejects a symlinked LEF, ORD-0001)"
+  fi
+  printf '%s' "$3" >"$root.want"
+  if cmp -s "$root/klt-pdk.json" "$root.want"; then
+    ok "$label: the manifest gains the KLayout asset and keeps its Liberty entries, byte for byte"
+  else
+    no "$label: the manifest gains the KLayout asset and keeps its Liberty entries, byte for byte"
+  fi
+}
+
+OSTT="$(mktemp -d "$SCRATCH/overlay.XXXXXX")"
+stage_overlay "$PA" "$OSTT" "$LIBERTY_SSTT"
+eq "the smoke flow's overlay (SS and TT Liberty) stages cleanly" 0 "$?"
+check_overlay "SS and TT" "$OSTT" "$OVERLAY_SSTT"
+OSS="$(mktemp -d "$SCRATCH/overlay.XXXXXX")"
+stage_overlay "$PA" "$OSS" "$LIBERTY_SS"
+eq "the core's overlay (SS Liberty) stages cleanly" 0 "$?"
+check_overlay "SS" "$OSS" "$OVERLAY_SS"
+
+# Both drivers' tool-versions.txt hash the tech LEF and the layer map through
+# TECH_SRC and LAYERMAP_SRC, the names their staging blocks set inline.
+eq "the stager names the four sources for the calling driver's provenance rows" \
+  "$(printf '%s\n' "${PHYSICAL_INPUTS[@]%%=*}" | sed "s|^|$PA/|")" \
+  "$(bash -c 'set -euo pipefail; REPO="$1"; source "$REPO_LIB"
+      stage_physical_overlay "$2" "$3" asap7sc7p5t_28_R
+      printf "%s\n" "$CELL_LEF_SRC" "$CELL_GDS_SRC" "$TECH_SRC" "$LAYERMAP_SRC"' _ "$SELF_REPO" "$PA" "$OSS")"
+
+# Fails closed: a source the checkout does not have stops the driver before
+# the stager touches the manifest, so a half-staged overlay is never
+# registered as a PDK.
+PM="$(mktemp -d "$SCRATCH/asap7.XXXXXX")"
+mkdir -p "$PM/asap7sc7p5t_28/LEF" "$PM/asap7sc7p5t_28/techlef_misc" "$PM/asap7_pdk_r1p7/cdslib/asap7_TechLib_10"
+cp "$PA/asap7sc7p5t_28/LEF/asap7sc7p5t_28_R_1x_220121a.lef" "$PM/asap7sc7p5t_28/LEF/"
+cp "$PA/asap7sc7p5t_28/techlef_misc/asap7_tech_1x_201209.lef" "$PM/asap7sc7p5t_28/techlef_misc/"
+cp "$PA/asap7_pdk_r1p7/cdslib/asap7_TechLib_10/asap7_fromAPR.layermap" "$PM/asap7_pdk_r1p7/cdslib/asap7_TechLib_10/"
+OM="$(mktemp -d "$SCRATCH/overlay.XXXXXX")"
+printf '%s' "$LIBERTY_SS" >"$OM.want"
+rc=0
+stage_overlay "$PM" "$OM" "$LIBERTY_SS" 2>"$SCRATCH/missing.err" || rc=$?
+if [[ $rc -ne 0 ]] && grep -q 'asap7sc7p5t_28_R_220121a.gds' "$SCRATCH/missing.err"; then
+  ok "a checkout without the cell GDS refuses to stage, naming the missing source"
+else
+  no "a checkout without the cell GDS refuses to stage, naming the missing source: rc=$rc"
+fi
+if cmp -s "$OM/klt-pdk.json" "$OM.want"; then
+  ok "a refused staging leaves the manifest as build_liberty_overlay wrote it"
+else
+  no "a refused staging leaves the manifest as build_liberty_overlay wrote it"
+fi
+
+# One edit site: the destination layout and the manifest registration are
+# spelled in flow/lib.sh alone, and each driver keeps its own Liberty corners
+# and stages the physical half through the shared stager, after the Liberty
+# builder whose manifest the stager adds to.
+eq "the physical staging is spelled in flow/lib.sh alone" "flow/lib.sh" \
+  "$(grep -l --exclude='*_test.sh' -e '__nom\.tlef' -e 'klayout/tech' -e 'assets.\["klayout"\]' \
+      "$SELF_REPO"/flow/*.sh "$SELF_REPO"/flow/*/*.sh | sed "s|^$SELF_REPO/||" | sort | tr '\n' ' ' | sed 's/ $//')"
+for driver in "flow/core/par.sh|SS" "flow/smoke/run.sh|SS TT"; do
+  drv="${driver%%|*}"; corners="${driver#*|}"
+  eq "$drv still builds its Liberty overlay for $corners" \
+    "build_liberty_overlay \"\$ASAP7\" \"\$ROOT\" \"\$CELL_LIB\" $corners" \
+    "$(grep -F "build_liberty_overlay \"\$ASAP7\" \"\$ROOT\" \"\$CELL_LIB\" $corners" "$SELF_REPO/$drv" | sed 's/^ *//')"
+  eq "$drv stages the physical overlay through the shared stager" \
+    'stage_physical_overlay "$ASAP7" "$ROOT" "$CELL_LIB"' \
+    "$(grep -F 'stage_physical_overlay "$ASAP7" "$ROOT" "$CELL_LIB"' "$SELF_REPO/$drv" | sed 's/^ *//')"
+  first="$(grep -n -e 'build_liberty_overlay "\$ASAP7"' -e 'stage_physical_overlay "\$ASAP7"' "$SELF_REPO/$drv" | head -1)"
+  if [[ "$first" == *'build_liberty_overlay '* ]]; then
+    ok "$drv builds the Liberty overlay before staging the physical half"
+  else
+    no "$drv builds the Liberty overlay before staging the physical half"
+  fi
+done
 
 echo
 echo "flow/lib_test.sh: $PASS passed, $FAIL failed"

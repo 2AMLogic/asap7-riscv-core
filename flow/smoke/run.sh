@@ -169,7 +169,6 @@ not_run() {
 
 # ---- PDK overlay in scratch (the checkout is read only) ------------------
 LIBDIR="$ASAP7/asap7sc7p5t_28/LIB/NLDM"
-mkdir -p "$ROOT/libs/$CELL_LIB/lef" "$ROOT/libs/$CELL_LIB/techlef" "$ROOT/libs/$CELL_LIB/gds"
 build_liberty_overlay "$ASAP7" "$ROOT" "$CELL_LIB" SS TT
 LIBJSON="$SCRATCH/liberty.json"
 python3 -I - "$ROOT/lib" "$LIBDIR" "$CELL_LIB" >"$LIBJSON" <<'PY2'
@@ -186,23 +185,13 @@ for c in ("SS", "TT"):
     }
 print(json.dumps(out, indent=1))
 PY2
-# Copied, not symlinked: OpenROAD rejects a symlinked LEF (ORD-0001). The tech LEF is
-# used unmodified; klayout-tools #4088 (negative M2 OFFSET) is fixed in the pinned release.
-cp "$ASAP7/asap7sc7p5t_28/LEF/asap7sc7p5t_28_R_1x_220121a.lef" "$ROOT/libs/$CELL_LIB/lef/$CELL_LIB.lef"
-cp "$ASAP7/asap7sc7p5t_28/GDS/asap7sc7p5t_28_R_220121a.gds" "$ROOT/libs/$CELL_LIB/gds/$CELL_LIB.gds"
-TECH_SRC="$ASAP7/asap7sc7p5t_28/techlef_misc/asap7_tech_1x_201209.lef"
-cp "$TECH_SRC" "$ROOT/libs/$CELL_LIB/techlef/${CELL_LIB}__nom.tlef"
-# KLayout LEF/DEF layer map for the DEF->GDS merge (klt looks for <assets.klayout>/tech/<variant>.map). Without
-# one, routing shapes land on KLayout's sequential default layers and overwrite device layers. The map is the
-# pinned PDK's own asap7_fromAPR.layermap, copied unmodified.
-LAYERMAP_SRC="$ASAP7/asap7_pdk_r1p7/cdslib/asap7_TechLib_10/asap7_fromAPR.layermap"
-mkdir -p "$ROOT/klayout/tech"
-cp "$LAYERMAP_SRC" "$ROOT/klayout/tech/asap7.map"
-python3 -I - "$ROOT/klt-pdk.json" <<'PY3'
-import json, sys
-d = json.load(open(sys.argv[1])); d["assets"]["klayout"] = "klayout"
-json.dump(d, open(sys.argv[1], "w"), indent=1); open(sys.argv[1], "a").write("\n")
-PY3
+# The physical half -- the cell LEF/GDS and tech LEF copied unmodified and
+# the pinned PDK's own asap7_fromAPR.layermap registered as the KLayout layer
+# map for the DEF->GDS merge -- is the one staging both routing drivers share
+# (stage_physical_overlay, flow/lib.sh). It runs after build_liberty_overlay
+# because it adds to the manifest that function wrote, and it names the four
+# sources the tool-versions.txt rows below hash.
+stage_physical_overlay "$ASAP7" "$ROOT" "$CELL_LIB"
 PDKARGS=(--pdk asap7 --pdk-root "$ROOT")
 
 # ---- tool-versions.txt ----------------------------------------------------
@@ -215,8 +204,8 @@ PDKARGS=(--pdk asap7 --pdk-root "$ROOT")
   echo "pinned_drc_deck: $PIN_DECK"
   echo "tech_lef_source:  sha256:$(sha "$TECH_SRC")"
   echo "layer_map:    sha256:$(sha "$LAYERMAP_SRC")  (asap7_pdk_r1p7 cdslib/asap7_TechLib_10/asap7_fromAPR.layermap)"
-  echo "cell_lef:     sha256:$(sha "$ASAP7/asap7sc7p5t_28/LEF/asap7sc7p5t_28_R_1x_220121a.lef")"
-  echo "cell_gds:     sha256:$(sha "$ASAP7/asap7sc7p5t_28/GDS/asap7sc7p5t_28_R_220121a.gds")"
+  echo "cell_lef:     sha256:$(sha "$CELL_LEF_SRC")"
+  echo "cell_gds:     sha256:$(sha "$CELL_GDS_SRC")"
   echo "cell_cdl:     sha256:$(sha "$ASAP7/asap7sc7p5t_28/CDL/LVS/asap7sc7p5t_28_R.cdl")"
   echo "counter.sv:   sha256:$(sha "$DUT_SRC")"
 } >"$OUT/tool-versions.txt"

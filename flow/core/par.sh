@@ -219,24 +219,15 @@ cp "$NETLIST_IN" "$W/${TOP}_synth.v"
 
 # ---- PDK overlay in scratch (the checkout is read only) ------------------
 # The same overlay the smoke flow builds (flow/smoke/run.sh): merged RVT SS
-# Liberty, the cell LEF/GDS and tech LEF copied unmodified (OpenROAD rejects
-# a symlinked LEF, ORD-0001), and the pinned PDK's own asap7_fromAPR.layermap
-# as the KLayout layer map for the DEF->GDS merge.
+# Liberty, then the physical half through the one staging both routing drivers
+# share (stage_physical_overlay, flow/lib.sh) -- the cell LEF/GDS and tech LEF
+# copied unmodified (OpenROAD rejects a symlinked LEF, ORD-0001) and the
+# pinned PDK's own asap7_fromAPR.layermap as the KLayout layer map for the
+# DEF->GDS merge. The stager also names the four sources that the
+# tool-versions.txt rows below hash.
 ROOT="$SCRATCH/pdk"; mkdir -p "$ROOT"
 build_liberty_overlay "$ASAP7" "$ROOT" "$CELL_LIB" SS
-mkdir -p "$ROOT/libs/$CELL_LIB/lef" "$ROOT/libs/$CELL_LIB/techlef" "$ROOT/libs/$CELL_LIB/gds"
-cp "$ASAP7/asap7sc7p5t_28/LEF/asap7sc7p5t_28_R_1x_220121a.lef" "$ROOT/libs/$CELL_LIB/lef/$CELL_LIB.lef"
-cp "$ASAP7/asap7sc7p5t_28/GDS/asap7sc7p5t_28_R_220121a.gds" "$ROOT/libs/$CELL_LIB/gds/$CELL_LIB.gds"
-TECH_SRC="$ASAP7/asap7sc7p5t_28/techlef_misc/asap7_tech_1x_201209.lef"
-cp "$TECH_SRC" "$ROOT/libs/$CELL_LIB/techlef/${CELL_LIB}__nom.tlef"
-LAYERMAP_SRC="$ASAP7/asap7_pdk_r1p7/cdslib/asap7_TechLib_10/asap7_fromAPR.layermap"
-mkdir -p "$ROOT/klayout/tech"
-cp "$LAYERMAP_SRC" "$ROOT/klayout/tech/asap7.map"
-python3 -I - "$ROOT/klt-pdk.json" <<'PY3'
-import json, sys
-d = json.load(open(sys.argv[1])); d["assets"]["klayout"] = "klayout"
-json.dump(d, open(sys.argv[1], "w"), indent=1); open(sys.argv[1], "a").write("\n")
-PY3
+stage_physical_overlay "$ASAP7" "$ROOT" "$CELL_LIB"
 PDKARGS=(--pdk asap7 --pdk-root "$ROOT")
 
 # ---- the request ----------------------------------------------------------
@@ -417,8 +408,8 @@ KLT_V="$("${KLT[@]}" version 2>&1 | head -1 || true)"
   echo "asap7_pdk_r1p7: $PIN_PDK"
   echo "tech_lef_source:  sha256:$(sha "$TECH_SRC")"
   echo "layer_map:    sha256:$(sha "$LAYERMAP_SRC")  (asap7_pdk_r1p7 cdslib/asap7_TechLib_10/asap7_fromAPR.layermap)"
-  echo "cell_lef:     sha256:$(sha "$ASAP7/asap7sc7p5t_28/LEF/asap7sc7p5t_28_R_1x_220121a.lef")"
-  echo "cell_gds:     sha256:$(sha "$ASAP7/asap7sc7p5t_28/GDS/asap7sc7p5t_28_R_220121a.gds")"
+  echo "cell_lef:     sha256:$(sha "$CELL_LEF_SRC")"
+  echo "cell_gds:     sha256:$(sha "$CELL_GDS_SRC")"
   echo "liberty_corner: RVT SS (merged)  sha256:$(sha "$ROOT/lib/${CELL_LIB}_SS.lib")"
   echo "input_netlist: $NETLIST_SRC  sha256:$NETLIST_SHA  (blob at HEAD ${INPUT_REV:0:12})"
   echo "gds:          layout/cve2_top.gds  sha256:$GDS_SHA"
