@@ -11,7 +11,8 @@
 # written, redaction of host paths before anything is published, the
 # append-only refusal on a second run, and nothing of a failed publication
 # left behind when a record copy fails partway or another writer holds a
-# record pathname).
+# record pathname), and that a checkout advancing after the input commit is
+# resolved leaves the record bound to that commit's GDS.
 #
 # ASAP7 is a predictive PDK; nothing here is fabricated or measured, and
 # this script makes no claim about any design.
@@ -372,6 +373,65 @@ eq "a leaking competing record: the dated directory holds only that file, hidden
 rm "$LEAKER"
 record_run "$W/leaked_dir_retry.out"
 eq "the same date retries cleanly once the competing record is gone" 0 "$rc"
+
+# ---- a checkout that advances mid-run (issue #309) -----------------------------
+# Two commits each hold a different GDS and a routing record pinning it. The
+# checkout advances to the second right after the driver resolves its input
+# commit -- a `git` on PATH that detaches the fixture once, after the driver's
+# revision read, the technique of flow/core/par_test.sh -- so the driver must
+# take the GDS from the commit it resolved: a driver reading HEAD again would
+# check the later layout against the earlier routing record and refuse with
+# a pin mismatch no input has. Every fixture git call is logged to assert
+# both GDS reads name the captured commit.
+rm -rf "$REC"
+fx_commit "date directory free for the moving-checkout case" >/dev/null 2>&1 || true
+FX_HEAD="$(git -C "$FX" rev-parse HEAD)"
+printf '%s' 'fixture-gds-v2' >"$FX/layout/cve2_top.gds"
+GDS2_SHA="$(sha256sum "$FX/layout/cve2_top.gds" | cut -d' ' -f1)"
+mkdir -p "$FX/flow/core/records/2026-11-23"
+cat >"$FX/flow/core/records/2026-11-23/par.json" <<EOF
+{"core_flow":{"gds":{"path":"layout/cve2_top.gds","sha256":"$GDS2_SHA"}}}
+EOF
+fx_commit "re-routed layout with the par record pinning it"
+NEXT_REV="$(git -C "$FX" rev-parse HEAD)"
+git -C "$FX" checkout -q --detach "$FX_HEAD"
+REAL_GIT="$(command -v git)"
+cat >"$BIN/git" <<'STUB'
+#!/usr/bin/env bash
+set -eu
+if [[ ${2:-} == "$STUB_REPO" ]]; then printf '%s\n' "$*" >>"$STUB_GIT_LOG"; fi
+"$REAL_GIT" "$@"
+if [[ ${2:-} == "$STUB_REPO" && ! -e "$0.moved" ]]; then
+  case "${3:-}:${4:-}:${5:-}" in
+    rev-parse:--verify:HEAD^{commit})
+      "$REAL_GIT" -C "$STUB_REPO" checkout -q --detach "$STUB_NEXT_REV"
+      touch "$0.moved" ;;
+  esac
+fi
+STUB
+chmod +x "$BIN/git"
+GITARGS="$W/moved.gitargs"; : >"$GITARGS"
+out="$W/moved.out"; rc=0
+( REAL_GIT="$REAL_GIT" STUB_REPO="$FX" STUB_NEXT_REV="$NEXT_REV" STUB_GIT_LOG="$GITARGS" \
+    STUB_REPORT_JSON="$VALID_REPORT" run_drc ) >"$out" 2>&1 || rc=$?
+eq "a checkout advancing after the input commit is resolved records cleanly (exit 0)" 0 "$rc"
+eq "the fixture checkout advanced to the later commit during the run" "$NEXT_REV" "$(git -C "$FX" rev-parse HEAD)"
+eq "both GDS reads name the captured commit" 2 \
+  "$(grep -c -- " $FX_HEAD:layout/cve2_top.gds\$" "$GITARGS")"
+REC="$FX/flow/core/records/$FXDATE/drc.json"
+AT="$(j 'd["core_flow"]["input_pin"]["at_commit"]')"
+GDS_REC="$(j 'd["core_flow"]["input_gds"]["sha256"]')"
+eq "the record names the commit resolved before the checkout advanced" "${FX_HEAD:0:12}" "$AT"
+eq "the record's GDS digest is the resolved commit's layout" "$GDS_SHA" "$GDS_REC"
+eq "the record names the resolved commit's routing record" "flow/core/records/2026-11-22/par.json" \
+  "$(j 'd["core_flow"]["input_pin"]["record"]')"
+if [[ -n "$AT" ]] \
+  && [[ "$(git -C "$FX" show "$AT:layout/cve2_top.gds" | sha256sum | cut -d' ' -f1)" == "$GDS_REC" ]]; then
+  ok "the recorded digest matches the GDS blob at the recorded commit"
+else
+  no "the recorded digest matches the GDS blob at the recorded commit"
+fi
+rm -f "$BIN/git" "$BIN/git.moved"
 
 echo "1..$((NPASS + NBAD)) pass=$NPASS fail=$NBAD"
 [[ $NBAD -eq 0 ]]
