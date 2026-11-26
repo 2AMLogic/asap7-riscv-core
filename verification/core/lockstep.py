@@ -21,7 +21,10 @@ the CVE2 closure through flow/core/sv2v.sh with -DRVFI (the same entry point
 as the attested netlist conversion; the extra define exposes the RVFI port
 and the per-CSR verification-only observation), builds once with Icarus, then
 runs one cocotb test per program (test_lockstep.py) feeding retirements to
-lockstep_compare.Lockstep.
+lockstep_compare.Lockstep. The reference trace and the disassembly are
+prepared once per program per invocation, and every simulation of that
+program compares against them (issue #302); nothing is reused across
+invocations. test_lockstep_driver.py self-tests this offline.
 
 Writes <run-dir>/results.xml (JUnit, one testcase per program),
 <run-dir>/record.json (programs, retirement counts, runtimes, tools, the
@@ -107,28 +110,35 @@ def reference_for(elf, tohost):
     return st.trace_for(elf, tohost)
 
 
-def run_one(runner, build_dir, meta, tests_dir, out: Path, inject=None):
-    """One cocotb program run; returns (passed, stats, message, testcases)."""
-    ref = reference_for(tests_dir / f"{meta['name']}.elf", meta["tohost"])
-    spec = {"name": meta["name"], "tohost": meta["tohost"], "reference": ref,
-            "disasm": {f"{pc:x}": text for pc, text in disasm(paths(), tests_dir / f"{meta['name']}.elf").items()},
-            "inject": inject}
-    j = out / f"{meta['name']}.lockstep.json"
-    j.write_text(json.dumps(spec))
-    stats_path = out / f"{meta['name']}.stats.json"
+def program_spec(meta, tests_dir) -> dict:
+    """What every simulation of one program compares against: its Spike
+    reference trace and disassembly, prepared once per program per
+    invocation and shared by all of its runs."""
+    elf = tests_dir / f"{meta['name']}.elf"
+    return {"name": meta["name"], "tohost": meta["tohost"],
+            "reference": reference_for(elf, meta["tohost"]),
+            "disasm": {f"{pc:x}": text for pc, text in disasm(paths(), elf).items()}}
+
+
+def run_one(runner, build_dir, spec, tests_dir, out: Path, inject=None):
+    """One cocotb program run against a prepared spec; returns
+    (passed, stats, message, testcases)."""
+    j = out / f"{spec['name']}.lockstep.json"
+    j.write_text(json.dumps({**spec, "inject": inject}))
+    stats_path = out / f"{spec['name']}.stats.json"
     stats_path.unlink(missing_ok=True)
-    xml = out / f"{meta['name']}.xml"
+    xml = out / f"{spec['name']}.xml"
     runner.test(hdl_toplevel="tb_core", test_module="test_lockstep", test_dir=HERE,
                 build_dir=build_dir, results_xml=xml,
-                plusargs=[f"+HEX={tests_dir / (meta['name'] + '.hex')}",
-                          f"+TOHOST={meta['tohost']:x}"],
+                plusargs=[f"+HEX={tests_dir / (spec['name'] + '.hex')}",
+                          f"+TOHOST={spec['tohost']:x}"],
                 extra_env={"LOCKSTEP_JSON": str(j), "LOCKSTEP_STATS": str(stats_path),
                            "PYTHONPATH": str(HERE)},
                 test_filter=None)
     bad = None
     tcs = []
     for tc in ET.parse(xml).getroot().iter("testcase"):
-        tc.set("name", meta["name"])
+        tc.set("name", spec["name"])
         tcs.append(tc)
         b = tc.find("failure")
         if b is None:
@@ -140,10 +150,12 @@ def run_one(runner, build_dir, meta, tests_dir, out: Path, inject=None):
     return bad is None, stats, bad, tcs
 
 
-def negative_control(runner, build_dir, meta, tests_dir, out: Path) -> dict:
+def negative_control(runner, build_dir, spec, tests_dir, out: Path) -> dict:
     """Clean pass required, then the injected run must fail on the exact
-    retirement, pc, destination and value (issue #206 acceptance criterion)."""
-    ref = reference_for(tests_dir / f"{meta['name']}.elf", meta["tohost"])
+    retirement, pc, destination and value (issue #206 acceptance criterion).
+    Both runs compare against the one reference trace the corrupted
+    write-back is chosen from."""
+    ref = spec["reference"]
     ordinal = next(i + 1 for i, r in enumerate(ref)
                    if not r.get("exception") and r["rd"] not in (None, 0)
                    and (r["rd_val"] or 0) != 0)
@@ -151,10 +163,10 @@ def negative_control(runner, build_dir, meta, tests_dir, out: Path) -> dict:
     bit = 0
     expect_val, observed_val = rec["rd_val"], rec["rd_val"] ^ (1 << bit)
 
-    ok, stats, _, _ = run_one(runner, build_dir, meta, tests_dir, out)
+    ok, stats, _, _ = run_one(runner, build_dir, spec, tests_dir, out)
     if not ok:
         return {"outcome": "clean-run-failed", "ordinal": ordinal}
-    ok, stats2, msg, _ = run_one(runner, build_dir, meta, tests_dir, out,
+    ok, stats2, msg, _ = run_one(runner, build_dir, spec, tests_dir, out,
                                  inject=f"{ordinal}:{bit}")
     want = [f"retirement {ordinal}", f"{rec['pc']:#010x}", f"x{rec['rd']}",
             f"expected {expect_val:#x} ({expect_val})", f"dut {observed_val:#x} ({observed_val})"]
@@ -181,7 +193,8 @@ def main(run_dir: Path, negative: bool) -> int:
                  build_dir=build_dir, always=True, build_args=["-g2012"])
 
     if negative:
-        neg = negative_control(runner, build_dir, long_meta, tests_dir, run_dir)
+        neg = negative_control(runner, build_dir, program_spec(long_meta, tests_dir),
+                               tests_dir, run_dir)
         record = {"suite": "spike-lockstep-negative-control",
                   "date_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
                   "program": long_meta["source"], "control": scrub(neg, [(str(run_dir), "<scratch>")])}
@@ -195,10 +208,14 @@ def main(run_dir: Path, negative: bool) -> int:
     merged = ET.Element("testsuites")
     suite = ET.SubElement(merged, "testsuite", name="spike-lockstep")
     failed, failures, per_test = 0, [], []
+    long_retirements = 0
     for meta in [{**json.loads((tests_dir / f"{n}.json").read_text()), "name": n} for n in names] \
             + [long_meta]:
         t1 = time.monotonic()
-        ok, stats, msg, tcs = run_one(runner, build_dir, meta, tests_dir, run_dir)
+        spec = program_spec(meta, tests_dir)
+        if meta["name"] == LONG_NAME:
+            long_retirements = len(spec["reference"])
+        ok, stats, msg, tcs = run_one(runner, build_dir, spec, tests_dir, run_dir)
         dt = time.monotonic() - t1
         suite.extend(tcs)
         if not ok:
@@ -215,7 +232,6 @@ def main(run_dir: Path, negative: bool) -> int:
 
     iv = subprocess.run(["iverilog", "-V"], capture_output=True, text=True).stdout.splitlines()[0]
     import cocotb
-    long_ref = reference_for(tests_dir / f"{long_meta['name']}.elf", long_meta["tohost"])
     record = {
         "suite": "spike-lockstep",
         "mode": "RTL simulation of the sv2v-converted CVE2 closure with -DRVFI, "
@@ -226,7 +242,7 @@ def main(run_dir: Path, negative: bool) -> int:
         "excluded": json.loads((HERE / "excluded.json").read_text()),
         "longer_program": {"source": long_meta["source"],
                            "source_sha256": long_meta["source_sha256"],
-                           "retirements": len(long_ref),
+                           "retirements": long_retirements,
                            "retired_in_sim": next(t["retirements"] for t in per_test
                                                   if t["test"] == long_meta["name"])},
         "runtime_seconds": round(wall, 1),
