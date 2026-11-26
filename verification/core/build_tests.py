@@ -18,10 +18,9 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))  # archtest_common runs this with -I, which drops the script dir
 
-from archtest_common import paths  # noqa: E402
+from archtest_common import hex_image, paths  # noqa: E402
 
 BASE = 0x80000000
-MEM_WORDS = 1 << 19  # 2 MiB
 
 # Tests not run, with the reason. Empty entries mean "run everything".
 EXCLUDE = json.loads((HERE / "excluded.json").read_text())
@@ -67,13 +66,7 @@ def build_one(p, at, ext, src, out):
     objcopy = gcc_bin / "riscv-none-elf-objcopy"
     binf = out / f"{name}.bin"
     subprocess.run([str(objcopy), "-O", "binary", str(elf), str(binf)], check=True)
-    raw = binf.read_bytes()
-    raw += b"\0" * (-len(raw) % 4)
-    entry_off = 0x80
-    # The objcopy binary starts at the first loaded section (0x80000080).
-    words = [int.from_bytes(raw[i:i + 4], "little") for i in range(0, len(raw), 4)]
-    assert entry_off // 4 + len(words) <= MEM_WORDS, f"{name} does not fit in memory"
-    (out / f"{name}.hex").write_text(f"@{entry_off // 4:x}\n" + "".join(f"{w:08x}\n" for w in words))
+    (out / f"{name}.hex").write_text(hex_image(binf.read_bytes(), name))
     binf.unlink()
     syms = subprocess.run([str(gcc_bin / "riscv-none-elf-nm"), str(elf)], check=True,
                           capture_output=True, text=True).stdout

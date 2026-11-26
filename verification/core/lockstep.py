@@ -45,7 +45,7 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))  # lockstep.sh runs this with -I, which drops the script dir
 
 import spike_trace as st  # noqa: E402
-from archtest_common import REPO, paths  # noqa: E402
+from archtest_common import REPO, hex_image, paths  # noqa: E402
 from fv import scrub  # noqa: E402
 
 BUILD = REPO / "verification" / "build"
@@ -80,11 +80,7 @@ def build_long_program(p, out: Path) -> dict:
     binf = out / f"{LONG_NAME}.bin"
     subprocess.run([str(gcc_bin / "riscv-none-elf-objcopy"), "-O", "binary",
                     str(elf), str(binf)], check=True)
-    raw = binf.read_bytes()
-    raw += b"\0" * (-len(raw) % 4)
-    words = [int.from_bytes(raw[i:i + 4], "little") for i in range(0, len(raw), 4)]
-    (out / f"{LONG_NAME}.hex").write_text(
-        "@20\n" + "".join(f"{w:08x}\n" for w in words))
+    (out / f"{LONG_NAME}.hex").write_text(hex_image(binf.read_bytes(), LONG_NAME))
     binf.unlink()
     syms = subprocess.run([str(gcc_bin / "riscv-none-elf-nm"), str(elf)], check=True,
                           capture_output=True, text=True).stdout

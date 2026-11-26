@@ -22,6 +22,11 @@ NETLIST = REPO / "flow" / "core" / "records" / "2026-11-14" / "netlist.v"
 # Zero-delay functional run: ignore the models' specify blocks (timing arcs and
 # $setuphold checks); the vendor files themselves are used unmodified.
 GATE_BUILD_ARGS = ["-g2012", "-gno-specify"]
+# tb_core.v's RAM (its localparam WORDS): 32-bit words at 0x80000000.
+MEM_WORDS = 1 << 19
+# The objcopy binary starts at the first loaded section (link.ld: 0x80000080,
+# tb_core's boot address), which is that RAM's word address 0x20.
+LOAD_WORD = 0x80 // 4
 
 
 def paths():
@@ -36,6 +41,16 @@ def convert(p, out: Path) -> Path:
          str(REPO / "rtl" / f"{TOP}.sv"), TOP, str(dest)],
         check=True)
     return dest
+
+
+def hex_image(raw: bytes, name: str) -> str:
+    """An objcopy binary as the $readmemh text tb_core.v loads: little-endian
+    32-bit words from LOAD_WORD, the last word zero-padded. An image that does
+    not fit in the RAM above LOAD_WORD fails an assert naming the program."""
+    padded = raw + b"\0" * (-len(raw) % 4)
+    words = [int.from_bytes(padded[i:i + 4], "little") for i in range(0, len(padded), 4)]
+    assert LOAD_WORD + len(words) <= MEM_WORDS, f"{name} does not fit in memory"
+    return f"@{LOAD_WORD:x}\n" + "".join(f"{w:08x}\n" for w in words)
 
 
 def gate_sources(p):
