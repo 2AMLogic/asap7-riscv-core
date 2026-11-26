@@ -81,9 +81,41 @@ on ASAP7, designed and verified by AI agents. **Digital.**
     ```
 
     This re-attest runs `attest/item9.json`'s `local_only` cold start
-    (`verification/run.sh --core`, timeout 1800 s), so it needs a host with
-    `iverilog`, `python 3.12` and network egress — it
-    cannot be done in a sweep worktree (cf. #107, #112).
+    (`verification/run.sh --core`, timeout 1800 s). Check whether the host
+    can run it rather than assume it cannot (#290):
+
+    1. Compare the two versions `verification/run.sh` checks for `--core`
+       with `verification/tool-versions.txt` (`iverilog=13.0`, `python=3.12`):
+
+       ```bash
+       iverilog -V | sed -n '1s/.*version \([0-9][0-9.]*\).*/\1/p'
+       uvx --python 3.12 --from "klayout-tools==0.8.0" python --version
+       ```
+
+       The second is the pinned invocation with `python --version` in place
+       of `klt signoff …`, so it reports the `python3` the cold start sees.
+       `check_version` in `verification/lib.sh` accepts each pin exactly or
+       followed by a dot (`13.0.1`, `3.12.13`); `12.0`, `13.1` and `3.13` are
+       refused. Verilator is checked on the smoke path only.
+    2. Check the host can fetch the cold start's inputs: `cocotb` from PyPI,
+       and the pinned inputs `verification/core/setup.sh` downloads from
+       GitHub (release assets, raw files, one commit over git). Probe each
+       origin:
+
+       ```bash
+       for u in https://pypi.org/simple/cocotb/ \
+                https://github.com/zachjs/sv2v/releases/latest/download/sv2v-Linux.zip \
+                https://raw.githubusercontent.com/openhwgroup/cve2/HEAD/rtl/cve2_top.sv; do
+         curl --connect-timeout 10 -fsSILo /dev/null "$u" || echo "cannot fetch: $u"
+       done
+       ```
+
+    When both hold, do the two steps above in the worktree and commit both
+    envelopes in this PR. When either fails, or the cold start does not
+    complete, record the specific missing prerequisite or failure in the
+    PR — the tool and the version found against its pin, the URL that could
+    not be fetched, or the cold start's exit status and failing step — so a
+    capable host can finish it.
 
   `--python 3.12` is load-bearing for both: `uvx` puts its own environment
   first on `PATH`, and each envelope's harness checks run `verification/run.sh`,
