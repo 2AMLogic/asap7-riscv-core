@@ -675,6 +675,27 @@ eq "--check --export exits 1 on a GDS mismatch against HEAD" 1 "$rc"
 eq "GDS mismatch leaves the dirty working-tree layout untouched" "dirty-working-layout" "$(cat "$FX/layout/cve2_top.gds")"
 git -C "$FX" checkout -q -- layout/cve2_top.gds
 
+# A checksum failure after the byte comparison must leave no export. Only
+# fail sha256sum for the routed GDS, so input pinning and comparison succeed.
+REAL_SHA256SUM="$(command -v sha256sum)"
+cat >"$BIN/sha256sum" <<'STUB'
+#!/usr/bin/env bash
+if [[ ${1:-} == */place-and-route/cve2_rv32imc_wrapper.gds ]]; then exit 1; fi
+exec "$REAL_SHA256SUM" "$@"
+STUB
+chmod +x "$BIN/sha256sum"
+EXP_SHA="$W/exp-checksum"
+rc=0
+REAL_SHA256SUM="$REAL_SHA256SUM" STUB_GDS_CONTENT="router-gds-v4" STUB_RESPONSE_JSON="$VALID_RESP" \
+  run_par bash "$FX/flow/core/par.sh" "$FA" --check --export "$EXP_SHA" >"$W/exp_checksum.err" 2>&1 || rc=$?
+eq "an unreadable routed GDS checksum fails the export" 1 "$rc"
+[[ ! -e "$EXP_SHA" ]] && ok "checksum failure publishes nothing" || no "checksum failure publishes nothing"
+rm "$BIN/sha256sum"
+rc=0
+STUB_GDS_CONTENT="router-gds-v4" STUB_RESPONSE_JSON="$VALID_RESP" \
+  run_par bash "$FX/flow/core/par.sh" "$FA" --check --export "$EXP_SHA" >"$W/exp_checksum_retry.err" 2>&1 || rc=$?
+eq "the export can be retried after checksum failure" 0 "$rc"
+
 # A destination that appears mid-run -- after the early refusal, before the
 # rename -- fails the export, removes the staging directory and leaves the
 # squatter untouched.
@@ -697,6 +718,59 @@ if [[ -d "$EXP4" && -z "$(ls -A "$EXP4")" ]]; then
   ok "the mid-run squatter on the destination is left untouched"
 else
   no "the mid-run squatter on the destination is left untouched"
+fi
+
+# Both runs reach the final publish command with a complete stage. Hold
+# that command at a barrier so a check followed by a plain mv reliably races.
+RACE="$W/race"; RACE_DEST="$W/exp-concurrent"; mkdir -p "$RACE/bin"
+cat >"$RACE/barrier" <<'STUB'
+#!/usr/bin/env bash
+if [[ ${*: -1} == "$STUB_RACE_DEST" ]]; then
+  touch "$STUB_RACE_DIR/ready-$PUBLISHER"
+  # Let one rename first, after both processes have passed any pre-check.
+  until [[ -f "$STUB_RACE_DIR/ready-one" && -f "$STUB_RACE_DIR/ready-two" ]] \
+     && [[ $PUBLISHER == one || -d "$STUB_RACE_DEST" ]]; do
+    (( SECONDS < 15 )) || exit 1
+    sleep 0.05
+  done
+fi
+exec "$0.real" "$@"
+STUB
+chmod +x "$RACE/barrier"
+for tool in mv python3; do
+  ln -s "$RACE/barrier" "$RACE/bin/$tool"
+  ln -s "$(command -v "$tool")" "$RACE/bin/$tool.real"
+done
+pids=()
+for publisher in one two; do
+  PATH="$RACE/bin:$PATH" STUB_RACE_DIR="$RACE" STUB_RACE_DEST="$RACE_DEST" PUBLISHER="$publisher" \
+    STUB_GDS_CONTENT="router-gds-v4" STUB_RESPONSE_JSON="$VALID_RESP" STUB_ODB_CONTENT="$publisher" \
+    run_par bash "$FX/flow/core/par.sh" "$FA" --check --export "$RACE_DEST" >"$RACE/$publisher.log" 2>&1 &
+  pids+=("$!")
+done
+one=0; two=0
+wait "${pids[0]}" || one=$?
+wait "${pids[1]}" || two=$?
+if [[ -f "$RACE/ready-one" && -f "$RACE/ready-two" ]]; then
+  ok "both contenders reached publication"
+else
+  no "both contenders reached publication"
+fi
+case "$one $two" in
+  "0 1") winner=one ;;
+  "1 0") winner=two ;;
+  *) winner=none ;;
+esac
+if [[ $winner != none ]] && [[ "$(cat "$RACE_DEST/cve2_rv32imc_wrapper.odb")" == "$winner" ]]; then
+  ok "exactly one publisher succeeds and its ODB is at the destination root"
+else
+  no "expected one winning publisher, got exit statuses $one and $two"
+fi
+if cmp -s "$RACE_DEST/cve2_rv32imc_wrapper.def" "$W/exp.def.want" \
+   && cmp -s "$RACE_DEST/cve2_rv32imc_wrapper.v" "$W/exp.v.want" && bundle_consistent "$RACE_DEST"; then
+  ok "concurrent publication leaves one complete bundle with no nested stage"
+else
+  no "concurrent publication leaves one complete bundle with no nested stage"
 fi
 
 # Retry: the failed attempt left the destination free, so the retry at the
@@ -722,11 +796,19 @@ else
   no "the retried export publishes a manifest-consistent bundle"
 fi
 
-# A trailing slash on the destination is normalised, not published into.
+# Keep a sibling at the old PID-derived staging path. exec preserves the
+# shell PID, so this also exercises a collision with the old staging scheme.
 rc=0
 STUB_GDS_CONTENT="router-gds-v4" STUB_RESPONSE_JSON="$VALID_RESP" \
-  run_par bash "$FX/flow/core/par.sh" "$FA" --check --export "$W/exp-slash/" >"$W/exp_slash.err" 2>&1 || rc=$?
+  run_par bash -c '
+    mkdir "$3.export.$$" && echo owner >"$3.export.$$/keep" || exit 1
+    echo "$3.export.$$" >"$4"
+    exec bash "$1" "$2" --check --export "$3/"
+  ' _ "$FX/flow/core/par.sh" "$FA" "$W/exp-slash" "$W/foreign-stage" >"$W/exp_slash.err" 2>&1 || rc=$?
 eq "--export normalises a trailing slash on the destination (exit 0)" 0 "$rc"
+foreign_stage="$(cat "$W/foreign-stage")"
+eq "an existing PID-named sibling keeps its contents" owner "$(cat "$foreign_stage/keep" 2>/dev/null)"
+if [[ -d "$foreign_stage" ]]; then rm "$foreign_stage/keep" && rmdir "$foreign_stage"; fi
 if [[ -f "$W/exp-slash/manifest.json" ]]; then
   ok "the trailing-slash destination receives the bundle"
 else

@@ -52,6 +52,7 @@
 # `26Q3-1510-g6cb3f2b704` produced the committed layout, recorded in
 # flow/core/records/2026-11-22/tool-versions.txt), `uvx` and `python3`;
 # writing a new record also queries `yosys -V` for tool-versions.txt.
+# --export uses Linux renameat2(RENAME_NOREPLACE) on the destination filesystem.
 #
 # Environment:
 #   RECORD_DATE     record directory name (default: today, UTC). The script
@@ -332,20 +333,23 @@ fi
 # bytes the destination actually receives, and the leak guard runs over the
 # staged bundle for the same reason it runs over a staged record: nothing
 # published from this flow may name a host path.
-EXPORT_STAGE=""
-export_bundle() {
-  EXPORT_STAGE="$EXPORT_DEST.export.$$"
-  rm -rf "$EXPORT_STAGE"
-  mkdir -p "$(dirname "$EXPORT_DEST")" "$EXPORT_STAGE" || return 1
-  local f
+export_bundle() (
+  local f stage gds_sha
+  if ! gds_sha="$(sha "$PR/$TOP.gds")" || [[ ! $gds_sha =~ ^[0-9a-f]{64}$ ]]; then
+    echo "par.sh: cannot compute SHA-256 for $TOP.gds" >&2
+    return 1
+  fi
+  mkdir -p -- "$(dirname -- "$EXPORT_DEST")" || return 1
+  stage="$(mktemp -d -- "$EXPORT_DEST.export.XXXXXX")" || return 1
+  trap 'rm -rf -- "$stage"' EXIT
   for f in "$TOP.def" "$TOP.v"; do
-    cp "$PR/$f" "$EXPORT_STAGE/$f" || return 1
+    cp -- "$PR/$f" "$stage/$f" || return 1
   done
   # An ODB accompanies the DEF when the pinned run produced one; it is
   # optional, so its absence is not a failure.
-  [[ ! -s "$PR/$TOP.odb" ]] || cp "$PR/$TOP.odb" "$EXPORT_STAGE/$TOP.odb" || return 1
-  python3 -I - "$EXPORT_STAGE" "$TOP" "$INPUT_REV" "$NETLIST_SRC" "$NETLIST_SHA" \
-    "$(sha "$PR/$TOP.gds")" <<'PY' || return 1
+  [[ ! -s "$PR/$TOP.odb" ]] || cp -- "$PR/$TOP.odb" "$stage/$TOP.odb" || return 1
+  python3 -I - "$stage" "$TOP" "$INPUT_REV" "$NETLIST_SRC" "$NETLIST_SHA" \
+    "$gds_sha" <<'PY' || return 1
 import hashlib, json, os, sys
 stage, top, rev, nl_path, nl_sha, gds_sha = sys.argv[1:7]
 def sha256(path):
@@ -375,17 +379,28 @@ with open(os.path.join(stage, "manifest.json"), "w", encoding="utf-8") as f:
     json.dump(manifest, f, indent=2, sort_keys=True)
     f.write("\n")
 PY
-  ( record_leak_guard "$EXPORT_STAGE" ) || return 1
-  [[ ! -e "$EXPORT_DEST" && ! -L "$EXPORT_DEST" ]] || return 1
-  mv "$EXPORT_STAGE" "$EXPORT_DEST" || return 1
-}
+  record_leak_guard "$stage" || return 1
+  # The existence check and the rename must be one filesystem operation,
+  # including when a competing process creates an empty destination directory.
+  python3 -I - "$stage" "$EXPORT_DEST" <<'PY' || return 1
+import ctypes, os, sys
+
+libc = ctypes.CDLL(None, use_errno=True)
+if not hasattr(libc, "renameat2"):
+    sys.exit("par.sh: --export requires renameat2(RENAME_NOREPLACE)")
+AT_FDCWD, RENAME_NOREPLACE = -100, 1
+stage, dest = map(os.fsencode, sys.argv[1:])
+if libc.renameat2(AT_FDCWD, stage, AT_FDCWD, dest, RENAME_NOREPLACE) != 0:
+    sys.exit(f"par.sh: cannot publish {sys.argv[2]}: {os.strerror(ctypes.get_errno())}")
+PY
+  trap - EXIT
+)
 if [[ $CHECK == 1 ]]; then
   if cmp -s "$PR/$TOP.gds" "$COMMITTED_GDS"; then
     echo "par.sh: regenerated GDS is byte-identical to HEAD:layout/cve2_top.gds" \
          "(sha256:$(sha "$COMMITTED_GDS"))" >&2
     if [[ $EXPORT_GIVEN == 1 ]]; then
       if ! export_bundle; then
-        [[ -z "$EXPORT_STAGE" ]] || rm -rf "$EXPORT_STAGE"
         if [[ -e "$EXPORT_DEST" || -L "$EXPORT_DEST" ]]; then
           die "publishing the export to $EXPORT_DEST failed: the destination exists (nothing of this run was published there); remove it or choose another path" 1
         fi
