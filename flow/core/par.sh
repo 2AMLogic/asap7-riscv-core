@@ -138,16 +138,19 @@ setup_scratch corepar
 # Pin RECORD_DATE once so a run crossing UTC midnight checks and writes the
 # same directory, and defer creating $OUT until the staged record passes every
 # check so a rejected run leaves neither a partial record dir nor a replaced
-# layout behind. In --check mode, snapshot the immutable GDS blob at HEAD now
-# so working-tree edits (including a preceding non-check run) cannot self-compare.
+# layout behind. Capture HEAD once so the reference GDS, netlist and P&R
+# record come from the same commit even if the checkout advances mid-run.
 RECORD_DATE="${RECORD_DATE:-$(date -u +%Y-%m-%d)}"
 DATE="$RECORD_DATE"
 OUT="$REPO/flow/core/records/$DATE"
+INPUT_REV="$(git -C "$REPO" rev-parse --verify 'HEAD^{commit}')" \
+  || die "cannot resolve HEAD to select the committed routing inputs" 2
 if [[ $CHECK == 1 ]]; then
-  git -C "$REPO" cat-file -e HEAD:layout/cve2_top.gds 2>/dev/null \
+  GDS_REF="$INPUT_REV:layout/cve2_top.gds"
+  git -C "$REPO" cat-file -e "$GDS_REF" 2>/dev/null \
     || die "no committed HEAD:layout/cve2_top.gds to compare against" 2
   COMMITTED_GDS="$SCRATCH/committed.gds"
-  git -C "$REPO" cat-file blob HEAD:layout/cve2_top.gds >"$COMMITTED_GDS"
+  git -C "$REPO" cat-file blob "$GDS_REF" >"$COMMITTED_GDS"
   [[ -s "$COMMITTED_GDS" ]] \
     || die "committed HEAD:layout/cve2_top.gds is empty" 2
 else
@@ -162,8 +165,6 @@ fi
 # tree is never consulted, so an untracked or edited netlist cannot become the
 # routed input, and the bytes hashed for the records are the bytes the router
 # receives (a pristine copy is hashed; the router gets a second copy).
-INPUT_REV="$(git -C "$REPO" rev-parse --verify 'HEAD^{commit}')" \
-  || die "cannot resolve HEAD to select the committed netlist" 2
 NETLIST_SRC="$(git -C "$REPO" ls-tree -r --name-only "$INPUT_REV" -- flow/core/records/ \
   | grep -E '^flow/core/records/[^/]+/netlist\.v$' | LC_ALL=C sort | tail -n 1)" || true
 [[ -n "$NETLIST_SRC" ]] \
@@ -366,7 +367,7 @@ manifest = {
             "routed DEF and the matching routed Verilog (plus the ODB when the "
             "pinned run produced one) of the top cell below, exported only "
             "after the regenerated GDS compared byte-identical with the "
-            "committed HEAD:layout/cve2_top.gds, so gds.sha256 is the digest "
+            "committed layout/cve2_top.gds at input_rev, so gds.sha256 is the digest "
             "of both. Predictive PDK; nothing here is fabricated or measured.",
     "predicted": True,
     "top_cell": top,

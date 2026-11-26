@@ -815,6 +815,39 @@ else
   no "the trailing-slash destination receives the bundle"
 fi
 
+# Two commits share the netlist and its pin but have different GDS bytes.
+# Advance the checkout after the first revision or GDS blob read. This also
+# catches a driver that captures input_rev early but still reads GDS at HEAD.
+printf '%s' 'router-gds-v5' >"$FX/layout/cve2_top.gds"
+git -C "$FX" -c user.email=t@t -c user.name=t commit -q -m "advance fixture layout" -- layout/cve2_top.gds
+NEXT_REV="$(git -C "$FX" rev-parse HEAD)"
+git -C "$FX" checkout -q --detach "$FX_HEAD"
+cat >"$BIN/git" <<'STUB'
+#!/usr/bin/env bash
+set -eu
+"$REAL_GIT" "$@"
+if [[ ${2:-} == "$STUB_REPO" && ! -e "$0.moved" ]]; then
+  case "${3:-}:${4:-}:${5:-}" in
+    rev-parse:*|cat-file:blob:*:layout/cve2_top.gds)
+      "$REAL_GIT" -C "$STUB_REPO" checkout -q --detach "$STUB_NEXT_REV"
+      touch "$0.moved" ;;
+  esac
+fi
+STUB
+chmod +x "$BIN/git"
+EXP_MOVED="$W/exp-head-moved"
+rc=0
+REAL_GIT="$(command -v git)" STUB_REPO="$FX" STUB_NEXT_REV="$NEXT_REV" \
+  STUB_GDS_CONTENT="router-gds-v4" STUB_RESPONSE_JSON="$VALID_RESP" \
+  run_par bash "$FX/flow/core/par.sh" "$FA" --check --export "$EXP_MOVED" >"$W/exp_head_moved.err" 2>&1 || rc=$?
+eq "fixture HEAD advanced during export" "$NEXT_REV" "$(git -C "$FX" rev-parse HEAD)"
+eq "export succeeds with the original reference after HEAD advances" 0 "$rc"
+manifest_rev="$(mj "$EXP_MOVED" 'm["input_rev"]')"
+eq "export records the commit that supplied the reference GDS" "$FX_HEAD" "$manifest_rev"
+eq "export GDS digest matches the blob at the manifest's input_rev" \
+  "$(git -C "$FX" show "$manifest_rev:layout/cve2_top.gds" | sha256sum | cut -d' ' -f1)" \
+  "$(mj "$EXP_MOVED" 'm["gds"]["sha256"]')"
+
 # No staging directory survives any export path in this section.
 if compgen -G "$W/exp*.export.*" >/dev/null; then
   no "no export staging directories are left behind"
