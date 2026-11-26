@@ -30,7 +30,22 @@ Reproducible from a clean checkout with:
 ```
 flow/core/par.sh <asap7-checkout> --check    # regenerates, validates, and byte-compares against HEAD:layout/cve2_top.gds
 flow/core/par.sh <asap7-checkout>            # validates and writes a new dated record + layout/cve2_top.gds
+flow/core/par.sh <asap7-checkout> --check --export <dir>    # as --check, and publishes the routed DEF/Verilog bundle with a manifest at <dir>
 ```
+
+`--export <dir>` (with `--check`) publishes the routed
+`cve2_rv32imc_wrapper.def` and the matching routed Verilog — plus the ODB when
+the pinned run produced one, and a `manifest.json` naming the top cell, the
+input revision, the input netlist's path and sha256, the compared GDS's
+sha256 and every exported artifact's filename and sha256 — as one directory,
+staged beside `<dir>` and made visible in a single rename only after the
+byte-compare has passed. That bundle is what a Spot worker copies as a unit
+(#284); the manifest's GDS digest lets it verify the bundle against the
+committed `layout/cve2_top.gds` before accepting it. Export requires Linux
+`renameat2(RENAME_NOREPLACE)` support on the destination filesystem. The driver
+refuses an existing destination before routing (exit 2). If another publisher
+claims the path during routing or staging, the losing run exits 1 and the
+winner's bundle stays intact. A checksum failure leaves the path free for retry.
 
 Two independent full runs (2026-11-22, pinned `klt` 0.9.0, OpenROAD
 `26Q3-1510-g6cb3f2b704`, seed 1) produced byte-identical GDS streams at the
