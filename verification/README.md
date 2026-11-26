@@ -164,9 +164,11 @@ must fail on exactly that — the same `negative_control_verdict` rule as the
 smoke control, so only a detected one-word signature mismatch exits 0.
 Because the control runs that one program only, its build stops at the first
 program in suite order (`I-add-01`): `build_tests.py --first-only` compiles
-one ELF and runs Sail once, into `<run dir>/tests/` rather than the shared
-`verification/build/tests/`, so the full-suite `tests.json` there is left as
-the normal invocation wrote it. The gate-level and `fv.sh` controls share
+one ELF and runs Sail once, into `<run dir>/tests/`. If that path resolves to
+the shared `verification/build/tests/` (for example, when `fv.sh` is given
+`verification/build` as its output directory), the control uses a fresh
+`control-tests-*` directory inside the run directory to preserve the full
+suite's manifest. The gate-level and `fv.sh` controls share
 this path (`core/archtest_common.py`; self-test:
 `core/build_tests_test.sh`).
 

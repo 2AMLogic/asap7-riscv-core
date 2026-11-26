@@ -212,6 +212,14 @@ eq "no conversion runs for the gate-level DUT" "0" "$(calls '^sv2v.sh ')"
 eq "no tool is pointed at the shared tests directory" "0" "$(calls " $BUILD/tests/")"
 yes "the shared manifest is not replaced" cmp -s "$SCRATCH/shared.json" "$BUILD/tests/tests.json"
 
+# fv.sh accepts an explicit output directory, including verification/build.
+negative="$(prepare "$BUILD" negative rtl)" || no "prepare() exits non-zero with the build directory as output"
+control_tests="${negative%%|*}"
+yes "the control stores its program under the supplied output" test "$(dirname "$control_tests")" = "$BUILD"
+yes "the control has its own tests directory" test ! "$control_tests" -ef "$BUILD/tests"
+eq "the control manifest names only the first program" "I-add-01" "$(names "$control_tests/tests.json")"
+yes "the explicit output preserves the full manifest byte for byte" cmp -s "$SCRATCH/shared.json" "$BUILD/tests/tests.json"
+
 echo
 echo "# 7. prepare(): an RTL run gets the converted closure from either build"
 : >"$CALLS"

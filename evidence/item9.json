@@ -66,7 +66,7 @@
         "role": "testbench",
         "path": "verification/core/archtest_common.py",
         "passed": true,
-        "content_hash": "sha256:b67c0be31af856fbd755ac46a142f8d12487ec933843254b061482ff31f97b03"
+        "content_hash": "sha256:cca4331fff90c61e207ba9fe44d6178458f42e0a203e23ba0368d999e92b9968"
       },
       {
         "check": "present",
@@ -115,7 +115,7 @@
         "role": "testbench",
         "path": "verification/core/tb_core.v",
         "passed": true,
-        "content_hash": "sha256:7638b5223f0f2ed7804c54b588fafd59c2ed5aa15d3f7588b1bfdabaca4aebc4"
+        "content_hash": "sha256:1f126f01e66dd993d45d3a507a48fab0c907ca3a537b2192b40dd355f6971f97"
       },
       {
         "check": "present",

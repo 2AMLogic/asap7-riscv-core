@@ -38,7 +38,7 @@ module tb_core;
   wire [18:0] didx = data_addr[20:2];
 
   integer k;
-  reg [1023:0] hexfile;
+  string hexfile;
   initial begin
     for (k = 0; k < WORDS; k = k + 1) mem[k] = 32'h0;
 `ifdef HEX_FILE
