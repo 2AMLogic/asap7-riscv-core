@@ -35,8 +35,7 @@ Issues currently being built (`loom:building`).
 
 - **#200**: Fetch ASAP7 cell models only when preparing gate-level tests
 - **#241**: flow/merge_lib.py drops appended groups' table templates: merged Liberty loses SEQ delay tables, sta reports incomplete constraints
-- **#289**: Share the ASAP7 place-and-route request between counter and core
-- **#290**: CLAUDE.md: the item 9 re-attest can run on a sweep worker that carries the pinned tools
+- **#293**: Consolidate repeated command assertions in the place-and-route self-test
 
 ## PRs Awaiting Review
 
@@ -48,7 +47,7 @@ PRs waiting on Judge (`loom:review-requested`).
 
 PRs that passed review and are queued for Champion auto-merge (`loom:pr`).
 
-- **#291**: refactor(flow): write both place-and-route requests from one template
+- **#295**: refactor(flow): fold repeated par_test.sh assertions into one helper
 
 ## Proposed
 
@@ -62,7 +61,6 @@ Issues carrying `loom:curated`.
 - **#174**: Decisions 0012 (klt 0.9.0 pin) and 0013 still read "proposed" while spec/core.md already carries their pins *(curated)*
 - **#226**: Write the klt erc supply spec for VDD/VSS and exercise it on the routed counter before the core *(curated)*
 - **#241**: flow/merge_lib.py drops appended groups' table templates: merged Liberty loses SEQ delay tables, sta reports incomplete constraints *(curated)*
-- **#290**: CLAUDE.md: the item 9 re-attest can run on a sweep worker that carries the pinned tools *(curated)*
 
 ## Proposed (Architect / Hermit)
 
@@ -81,10 +79,10 @@ _None._
 | Very important | 0 |
 | Important | 3 |
 | Ready (`loom:issue`) | 0 |
-| In Progress (`loom:building`) | 4 |
+| In Progress (`loom:building`) | 3 |
 | PRs awaiting review | 1 |
 | Approved PRs awaiting merge | 1 |
-| Curated | 9 |
+| Curated | 8 |
 | Architect / Hermit proposals | 2 |
 | Active epics | 0 |
 <!-- guide:plan-body:end -->

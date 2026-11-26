@@ -5,6 +5,10 @@ triage role. Newest first.
 
 ### 2026-11-26
 
+- **PR #294**: docs: replace the item 9 sweep-worktree ban with a worker check
+- **Issue #290** (closed): CLAUDE.md: the item 9 re-attest can run on a sweep worker that carries the pinned tools
+- **PR #291**: refactor(flow): write both place-and-route requests from one template
+- **Issue #289** (closed): Share the ASAP7 place-and-route request between counter and core
 - **PR #287**: fix: link dated records into place only once their copy is complete
 - **Issue #286** (closed): Share dated record publication so partial writes can be retried
 - **PR #285**: feat: export the routed DEF and netlist via par.sh --check --export
