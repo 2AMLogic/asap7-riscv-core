@@ -35,7 +35,6 @@ Issues currently being built (`loom:building`).
 
 - **#200**: Fetch ASAP7 cell models only when preparing gate-level tests
 - **#241**: flow/merge_lib.py drops appended groups' table templates: merged Liberty loses SEQ delay tables, sta reports incomplete constraints
-- **#297**: Build only the first eligible arch test for the signature negative control
 
 ## PRs Awaiting Review
 
@@ -47,7 +46,7 @@ PRs waiting on Judge (`loom:review-requested`).
 
 PRs that passed review and are queued for Champion auto-merge (`loom:pr`).
 
-- **#299**: perf(verification): build one arch test for the negative controls — closes #297
+_None._
 
 ## Proposed
 
@@ -66,9 +65,6 @@ Issues carrying `loom:curated`.
 
 - **#256**: Remove discarded per-file Liberty hashes from smoke record generation *(hermit)*
 - **#265**: Remove the scratch file that misencodes record redaction paths *(hermit)*
-- **#300**: Share the testbench hex writer and enforce the RAM limit in lockstep *(hermit)*
-- **#301**: Stage the physical ASAP7 overlay once for both routing drivers *(hermit)*
-- **#302**: Generate the longer program’s Spike trace once per lockstep invocation *(hermit)*
 
 ## Epics
 
@@ -82,10 +78,10 @@ _None._
 | Very important | 0 |
 | Important | 3 |
 | Ready (`loom:issue`) | 0 |
-| In Progress (`loom:building`) | 3 |
+| In Progress (`loom:building`) | 2 |
 | PRs awaiting review | 1 |
-| Approved PRs awaiting merge | 1 |
+| Approved PRs awaiting merge | 0 |
 | Curated | 8 |
-| Architect / Hermit proposals | 5 |
+| Architect / Hermit proposals | 2 |
 | Active epics | 0 |
 <!-- guide:plan-body:end -->

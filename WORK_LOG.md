@@ -5,6 +5,12 @@ triage role. Newest first.
 
 ### 2026-11-26
 
+- **PR #304**: fix(verification): enforce the testbench RAM limit on both hex writers
+- **Issue #300** (closed): Share the testbench hex writer and enforce the RAM limit in lockstep
+- **PR #305**: perf(verification): prepare lockstep references once per invocation
+- **Issue #302** (closed): Generate the longer program’s Spike trace once per lockstep invocation
+- **PR #299**: perf(verification): build one arch test for the negative controls
+- **Issue #297** (closed): Build only the first eligible arch test for the signature negative control
 - **PR #295**: refactor(flow): fold repeated par_test.sh assertions into one helper
 - **Issue #293** (closed): Consolidate repeated command assertions in the place-and-route self-test
 - **PR #294**: docs: replace the item 9 sweep-worktree ban with a worker check
