@@ -5,6 +5,10 @@ triage role. Newest first.
 
 ### 2026-11-26
 
+- **PR #310**: fix(flow): read the DRC input GDS from the captured commit
+- **Issue #309** (closed): Use the captured commit for both DRC layout reads
+- **PR #308**: test: verify the klt DRC invocation in the fixture
+- **Issue #307** (closed): Check DRC arguments in the fixture and remove source greps
 - **PR #304**: fix(verification): enforce the testbench RAM limit on both hex writers
 - **Issue #300** (closed): Share the testbench hex writer and enforce the RAM limit in lockstep
 - **PR #305**: perf(verification): prepare lockstep references once per invocation
