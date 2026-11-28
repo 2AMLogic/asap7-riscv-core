@@ -3,6 +3,13 @@
 Chronological record of merged PRs and closed issues, maintained by the Guide
 triage role. Newest first.
 
+### 2026-11-28
+
+- **PR #318**: docs: point the AGENTS.md Loom link at 2AMLogic/loom
+- **Issue #314** (closed): AGENTS.md still points Loom at rjwalters/loom (same drift as CLAUDE.md, fixed in #313)
+- **Issue #319** (closed): Loom config resolver passes an oversized defaults.json to jq as one argument, aborting create-pr.sh (exit 126) on fleet workers
+- **Issue #317** (closed): WORK_PLAN snapshot omits #313 from Proposed while identically-labelled #241 is listed; Curated count reads 8 where the section rule yields 9
+
 ### 2026-11-26
 
 - **PR #310**: fix(flow): read the DRC input GDS from the captured commit
