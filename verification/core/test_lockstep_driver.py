@@ -18,6 +18,12 @@ control still detecting the committed mismatch; and the full suite's report
 taking the longer program's reference count from the trace its simulation
 compared against.
 
+It pins issue #323: an invocation's own artifacts stay in the run directory.
+The longer program is simulated from <run-dir> in both modes, the full suite
+copies no lockstep-prog.* into the shared corpus directory BUILD/tests,
+--negative-control creates nothing under BUILD at all, and paths.env is read
+once per invocation.
+
 Exit status: 0 every case passed; 1 a case failed.
 """
 
@@ -142,13 +148,15 @@ class StubRunner:
     def __init__(self, fault=None):
         self.fault = fault
         self.runs = []  # the spec of every simulation, in order
+        self.images = []  # each simulation's +HEX= plusarg, in order
 
     def build(self, **_kw):
         pass
 
-    def test(self, *, extra_env, results_xml, **_kw):
+    def test(self, *, extra_env, results_xml, plusargs, **_kw):
         spec = json.loads(Path(extra_env["LOCKSTEP_JSON"]).read_text())
         self.runs.append(spec)
+        self.images.append(next(a for a in plusargs if a.startswith("+HEX=")))
         disasm = {int(k, 16): v for k, v in spec["disasm"].items()}
         corrupt = tuple(int(x) for x in spec["inject"].split(":")) if spec["inject"] else None
         if self.fault == "clean" or (self.fault == "other" and corrupt):
@@ -182,12 +190,18 @@ class StubRunner:
 def drive(negative, runner):
     """The real main() with every external stood in.
 
-    Returns (exit status, record.json, trace requests, disassembly requests)."""
+    Returns what the run left behind: the exit status, record.json, the
+    trace and disassembly requests, how often paths() was called, everything
+    under BUILD, and image_of, the +HEX= plusarg each program must be
+    simulated from: the longer program's from the run directory, the
+    corpus's from BUILD/tests. The corpus build is stood in by a stub that,
+    like build_tests.py, creates its output directory."""
     traces, disasm = TraceProvider(), Disassembly()
+    paths_calls = []
     with tempfile.TemporaryDirectory(prefix="asap7-lockstep-driver.") as scratch, \
             contextlib.ExitStack() as stack:
         tmp = Path(scratch)
-        run_dir = tmp / "run"
+        run_dir, build = tmp / "run", tmp / "build"
         long_meta = {"name": lockstep.LONG_NAME, "tohost": TOHOST,
                      "source": "verification/core/lockstep_prog.S",
                      "source_sha256": "0" * 64}
@@ -203,39 +217,56 @@ def drive(negative, runner):
                     cmd, 0, stdout="Icarus Verilog version 13.0 (stable) (v13_0)\n")
             if cmd[1:3] == ["-I", str(HERE / "build_tests.py")]:
                 tests_dir = Path(cmd[3])
+                tests_dir.mkdir(parents=True, exist_ok=True)
                 (tests_dir / "tests.json").write_text(json.dumps(CORPUS))
                 for n in CORPUS:
                     (tests_dir / f"{n}.json").write_text(json.dumps({"tohost": TOHOST}))
                 return subprocess.CompletedProcess(cmd, 0)
             raise AssertionError(f"the driver ran an unexpected command: {cmd}")
 
+        def paths():
+            paths_calls.append(1)
+            return {}
+
         stack.enter_context(mock.patch.multiple(
-            lockstep, BUILD=tmp / "build", build_long_program=build_long_program,
+            lockstep, BUILD=build, build_long_program=build_long_program,
             convert_rvfi=lambda _p, out: out / "stub_rvfi.v",
-            get_runner=lambda _sim: runner, disasm=disasm, paths=lambda: {},
+            get_runner=lambda _sim: runner, disasm=disasm, paths=paths,
             subprocess=types.SimpleNamespace(run=run)))
         stack.enter_context(mock.patch.object(lockstep.st, "trace_for", traces))
         with contextlib.redirect_stdout(io.StringIO()):
             rc = lockstep.main(run_dir, negative)
         record = json.loads((run_dir / "record.json").read_text())
-    return rc, record, traces.requests, disasm.requests
+        under_build = sorted(str(f.relative_to(build)) for f in build.rglob("*")) \
+            if build.exists() else []
+        image_of = {lockstep.LONG_NAME: f"+HEX={run_dir / f'{lockstep.LONG_NAME}.hex'}",
+                    **{n: f"+HEX={build / 'tests' / f'{n}.hex'}" for n in CORPUS}}
+    return types.SimpleNamespace(rc=rc, record=record, traces=traces.requests,
+                                 disasms=disasm.requests, paths_calls=len(paths_calls),
+                                 under_build=under_build, image_of=image_of)
+
+
+def images_where_built(run, runner):
+    """Every simulation loaded its program's image from where that program
+    was built (run_dir for the longer program, BUILD/tests for the corpus)."""
+    return [run.image_of[s["name"]] for s in runner.runs] == runner.images
 
 
 print("# 1. the negative control: one reference, both simulations, the committed mismatch")
 runner = StubRunner()
-rc, record, traces, disasms = drive(True, runner)
-control = record["control"]
+run = drive(True, runner)
+control = run.record["control"]
 committed = json.loads(COMMITTED.read_text())["control"]
-check(rc == 0 and control["outcome"] == "detected",
-      f"the control is detected and lockstep.py exits 0 (got exit {rc}, {control['outcome']})")
+check(run.rc == 0 and control["outcome"] == "detected",
+      f"the control is detected and lockstep.py exits 0 (got exit {run.rc}, {control['outcome']})")
 FIELDS = ("outcome", "ordinal", "pc", "rd", "expected", "observed", "message")
 check({k: control[k] for k in FIELDS} == {k: committed[k] for k in FIELDS},
       "it reports the ordinal, pc, destination and expected/observed values of the committed "
       f"record {COMMITTED.parent.name}/{COMMITTED.name}")
-check(traces == [(LONG, TOHOST)],
-      f"Spike is asked for the reference once ({len(traces)} requests: {traces})")
-check(disasms == [LONG],
-      f"the program is disassembled once ({len(disasms)} requests: {disasms})")
+check(run.traces == [(LONG, TOHOST)],
+      f"Spike is asked for the reference once ({len(run.traces)} requests: {run.traces})")
+check(run.disasms == [LONG],
+      f"the program is disassembled once ({len(run.disasms)} requests: {run.disasms})")
 check([s["inject"] for s in runner.runs] == [None, "1:0"],
       f"both simulations ran, clean then injected ({len(runner.runs)} runs: "
       f"{[s['inject'] for s in runner.runs]})")
@@ -243,45 +274,60 @@ check([s["reference"] for s in runner.runs] == [as_json(TRACES[LONG])] * 2,
       "both simulations compared against the one requested reference")
 check(control["clean_retirements"] == len(TRACES[LONG]),
       "the clean run's retirement count is reported")
+check(images_where_built(run, runner),
+      "both simulations load the longer program's image from the run directory "
+      f"({runner.images})")
+check(run.under_build == [],
+      f"--negative-control creates nothing under BUILD ({len(run.under_build)} entries: "
+      f"{run.under_build})")
+check(run.paths_calls == 1,
+      f"paths() is called once per invocation ({run.paths_calls} calls)")
 
 print()
 print("# 2. the control still refuses a failed clean run and an unrelated failure")
 runner = StubRunner(fault="clean")
-rc, record, traces, _disasms = drive(True, runner)
-check(rc == 1 and record["control"]["outcome"] == "clean-run-failed",
-      f"a failed clean run is clean-run-failed, exit {rc}")
+run = drive(True, runner)
+check(run.rc == 1 and run.record["control"]["outcome"] == "clean-run-failed",
+      f"a failed clean run is clean-run-failed, exit {run.rc}")
 check(len(runner.runs) == 1,
       f"no injected simulation follows it ({len(runner.runs)} runs)")
-check(len(traces) == 1, f"and one reference was requested for it ({len(traces)} requests)")
+check(len(run.traces) == 1, f"and one reference was requested for it ({len(run.traces)} requests)")
 runner = StubRunner(fault="other")
-rc, record, traces, _disasms = drive(True, runner)
-check(rc == 1 and record["control"]["outcome"] == "NOT-DETECTED",
-      f"an injected run failing on another retirement is NOT-DETECTED, exit {rc}")
-check([s["inject"] for s in runner.runs] == [None, "1:0"] and len(traces) == 1,
+run = drive(True, runner)
+check(run.rc == 1 and run.record["control"]["outcome"] == "NOT-DETECTED",
+      f"an injected run failing on another retirement is NOT-DETECTED, exit {run.rc}")
+check([s["inject"] for s in runner.runs] == [None, "1:0"] and len(run.traces) == 1,
       "after both simulations ran against the one reference")
 
 print()
 print("# 3. the full suite: one reference per program, the report's count from the compared trace")
 runner = StubRunner()
-rc, record, traces, disasms = drive(False, runner)
+run = drive(False, runner)
 programs = [f"{n}.elf" for n in CORPUS] + [LONG]
-check(rc == 0 and record["tests_run"] == len(programs) and record["tests_failed"] == 0,
-      f"every program matches and lockstep.py exits 0 (exit {rc}, {record['tests_run']} run, "
-      f"{record['tests_failed']} failed)")
-check(traces == [(n, TOHOST) for n in programs],
+check(run.rc == 0 and run.record["tests_run"] == len(programs) and run.record["tests_failed"] == 0,
+      f"every program matches and lockstep.py exits 0 (exit {run.rc}, {run.record['tests_run']} run, "
+      f"{run.record['tests_failed']} failed)")
+check(run.traces == [(n, TOHOST) for n in programs],
       f"each program's reference is requested once, and the report requests none "
-      f"({len(traces)} requests: {[n for n, _t in traces]})")
-check(disasms == programs,
-      f"each program is disassembled once ({len(disasms)} requests: {disasms})")
+      f"({len(run.traces)} requests: {[n for n, _t in run.traces]})")
+check(run.disasms == programs,
+      f"each program is disassembled once ({len(run.disasms)} requests: {run.disasms})")
 check([s["name"] for s in runner.runs] == [n[:-4] for n in programs]
       and not any(s["inject"] for s in runner.runs),
       f"one clean simulation per program ({[s['name'] for s in runner.runs]})")
-longer = record["longer_program"]
-in_sim = next(t["retirements"] for t in record["tests"] if t["test"] == lockstep.LONG_NAME)
+longer = run.record["longer_program"]
+in_sim = next(t["retirements"] for t in run.record["tests"] if t["test"] == lockstep.LONG_NAME)
 check(longer["retirements"] == len(TRACES[LONG]) == longer["retired_in_sim"] == in_sim,
       "the report's reference count is the length of the trace the simulation compared "
       f"against, and the DUT retired as many (reference {longer['retirements']}, "
       f"in sim {longer['retired_in_sim']})")
+check(images_where_built(run, runner),
+      "the longer program is simulated from the run directory, the corpus from BUILD/tests "
+      f"({runner.images})")
+check(run.under_build == ["tests", "tests/I-add-01.json", "tests/tests.json"],
+      f"only the corpus build is under BUILD, no lockstep-prog copy ({run.under_build})")
+check(run.paths_calls == 1,
+      f"paths() is called once per invocation, not once per program ({run.paths_calls} calls)")
 
 print()
 print(f"test_lockstep_driver: {PASS} passed, {FAIL} failed")
